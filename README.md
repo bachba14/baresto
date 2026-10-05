@@ -77,6 +77,11 @@ Nécessite une offre avec **Node.js Apps** : Business, Cloud (Startup / Professi
 5. Supabase → Authentication → URL Configuration : *Site URL* = `https://votre-domaine.fr`,
    *Redirect URLs* += `https://votre-domaine.fr/auth/callback`.
 
+Le serveur de build d'Hostinger a une glibc trop ancienne pour le compilateur natif « gnu » de Next.js
+(`GLIBC_2.29 not found`). `scripts/ensure-next-swc.mjs` (lancé en `postinstall` et `prebuild`) installe alors
+la variante « musl », liée statiquement, que Next.js charge automatiquement. Ne pas descendre à Node 18 :
+Next.js 16 exige Node ≥ 20.9.
+
 Chaque `git push` sur `main` peut redéclencher le déploiement (option « déploiement automatique » dans hPanel).
 Après toute modification d'une variable `NEXT_PUBLIC_*`, relancer un build.
 

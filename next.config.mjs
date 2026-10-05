@@ -1,10 +1,9 @@
-import type { NextConfig } from "next";
-
 // Sites autorisés à intégrer les widgets, séparés par des espaces
 // (ex. "https://mon-resto.fr https://www.mon-resto.fr"). Par défaut : tous.
 const widgetAncestors = process.env.WIDGET_ALLOWED_ORIGINS?.trim() || "*";
 
-const nextConfig: NextConfig = {
+/** @type {import("next").NextConfig} */
+const nextConfig = {
   experimental: {
     serverActions: { bodySizeLimit: "5mb" }, // upload des photos de la carte
   },
