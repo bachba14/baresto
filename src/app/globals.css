@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+/* Le thème sombre des widgets est piloté par la classe .dark (paramètre ?theme=dark). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* Fond transparent par défaut : les widgets s'intègrent dans la page hôte. */
+html,
+body {
+  background: transparent;
+  color: #292524;
+}

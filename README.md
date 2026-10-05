@@ -1,0 +1,77 @@
+# Baresto
+
+SaaS de réservations en ligne pour restaurants : chaque restaurateur s'inscrit, configure son restaurant en 5 minutes
+et reçoit des réservations placées automatiquement sur ses tables.
+
+- **Landing page** (`/`) avec démo 3D interactive, **inscription** (`/signup`) et **connexion** (`/login`).
+- **Assistant de démarrage** (`/onboarding`) : restaurant et adresse publique, horaires, tables (configuration rapide), carte, règles de réservation.
+- **Back-office** (`/admin`) : tableau de bord, service sur plan 2D/3D, réservations, carte, plan de salle, réglages, intégration.
+- **Page publique** par restaurant (`/r/son-restaurant`) : carte + formulaire de réservation.
+- **Widgets** à intégrer sur n'importe quel site, et **API JSON** publique par restaurant.
+
+Stack : Next.js 16 (App Router) · Supabase (Postgres, Auth, Storage) · Tailwind CSS 4 · React Three Fiber.
+
+## Installation
+
+1. **Projet Supabase** sur [supabase.com](https://supabase.com).
+2. **Schéma** : SQL Editor → exécuter `supabase/migrations/0001_init.sql` puis `0002_saas.sql`
+   (0002 remplace le schéma mono-restaurant de 0001 et crée le restaurant de démo `/r/demo`).
+3. **Authentification** (Supabase → Authentication → URL Configuration) :
+   *Site URL* = l'URL du site (`http://localhost:3000` en local), et ajouter `…/auth/callback` aux *Redirect URLs*.
+   La confirmation d'e-mail est activée par défaut ; le service d'e-mail intégré de Supabase est limité à quelques
+   envois par heure : configurez un SMTP (Resend, Brevo…) avant l'ouverture au public.
+4. **App** :
+   ```bash
+   cp .env.example .env.local   # URL + clé publishable Supabase (Project Settings → API)
+   npm install
+   npm run dev
+   ```
+
+## Multi-restaurants et sécurité
+
+- Toutes les données portent un `restaurant_id` ; les règles RLS limitent chaque compte à son restaurant
+  (`restaurant_members`). Des clés étrangères composites empêchent de lier une table, un plat ou une réservation
+  à un autre restaurant.
+- Le public ne lit jamais les réservations : disponibilités et création passent par des fonctions SQL
+  (`get_availability`, `create_reservation`) qui valident horaires, capacité et tables.
+- Photos de la carte : dossier par restaurant dans le bucket `menu`, protégé par les règles de stockage.
+
+## Placement sur les tables
+
+- Chaque réservation en ligne est placée sur la plus petite table libre (ou deux tables combinables) pendant toute la
+  durée du repas. S'il n'y a plus de table adaptée, le créneau n'est plus proposé : avec la confirmation automatique,
+  le restaurant n'a rien à valider.
+- Une contrainte `exclude using gist` rend impossible l'affectation d'une même table à deux réservations qui se chevauchent.
+
+## Intégration sur un site
+
+```html
+<div data-baresto="reservation"></div>
+<div data-baresto="menu" data-theme="dark" data-color="#0f766e"></div>
+<button data-baresto-open="reservation">Réserver</button>
+
+<script src="https://VOTRE-DOMAINE/embed.js" data-restaurant="mon-restaurant" async></script>
+```
+
+Démo : `/demo.html`. API : `/api/r/{slug}/menu`, `/api/r/{slug}/availability?date=…&party=…`, `POST /api/r/{slug}/reservations`.
+
+## Déploiement
+
+Sur Vercel : importer le projet et renseigner les variables de `.env.example` (`NEXT_PUBLIC_SITE_URL` = URL de production),
+puis mettre à jour *Site URL* et *Redirect URLs* dans Supabase.
+
+## Structure
+
+```
+supabase/migrations/        schéma, fonctions SQL, RLS, restaurant de démo
+public/embed.js             script d'intégration
+src/app/page.tsx            landing page
+src/app/(auth)/             inscription, connexion
+src/app/onboarding/         assistant de démarrage
+src/app/admin/              back-office
+src/app/r/[slug]/           page publique d'un restaurant
+src/app/widget/[slug]/      pages affichées dans les iframes
+src/app/api/r/[slug]/       API publique
+src/components/floor/       plan de salle 2D (SVG) et 3D (three.js)
+src/proxy.ts                protection de /admin et /onboarding
+```

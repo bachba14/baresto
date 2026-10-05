@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Démo — site du restaurant</title>
+  <style>
+    body { margin: 0; font-family: Georgia, serif; background: #f5efe6; color: #2b2118; }
+    header { background: #2b2118; color: #f5efe6; padding: 48px 16px; text-align: center; }
+    header h1 { margin: 0 0 8px; font-size: 2.4rem; }
+    main { max-width: 760px; margin: 0 auto; padding: 32px 16px; }
+    h2 { border-bottom: 1px solid #c9b79c; padding-bottom: 6px; }
+    .cta { display: inline-block; margin-top: 16px; padding: 12px 24px; border: 0; border-radius: 999px;
+           background: #b45309; color: #fff; font: inherit; cursor: pointer; }
+    .card { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,.06); }
+    .note { font-family: monospace; font-size: 13px; background: #fff7e6; border: 1px dashed #c9b79c; padding: 10px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Le site de votre restaurant</h1>
+    <p>Page de démonstration : les blocs ci-dessous viennent de Baresto.</p>
+    <button class="cta" data-baresto-open="reservation">Réserver une table</button>
+  </header>
+
+  <main>
+    <h2>Notre carte</h2>
+    <p class="note">&lt;div data-baresto="menu"&gt;&lt;/div&gt;</p>
+    <div class="card" data-baresto="menu"></div>
+
+    <h2>Réservation</h2>
+    <p class="note">&lt;div data-baresto="reservation"&gt;&lt;/div&gt;</p>
+    <div class="card" data-baresto="reservation"></div>
+  </main>
+
+  <script src="/embed.js" data-restaurant="demo" async></script>
+  <script>
+    window.addEventListener("baresto:reservation", function (e) {
+      console.log("Nouvelle réservation depuis le widget :", e.detail);
+    });
+  </script>
+</body>
+</html>
