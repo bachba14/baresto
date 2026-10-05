@@ -55,10 +55,30 @@ Stack : Next.js 16 (App Router) · Supabase (Postgres, Auth, Storage) · Tailwin
 
 Démo : `/demo.html`. API : `/api/r/{slug}/menu`, `/api/r/{slug}/availability?date=…&party=…`, `POST /api/r/{slug}/reservations`.
 
-## Déploiement
+## Déploiement sur Hostinger
 
-Sur Vercel : importer le projet et renseigner les variables de `.env.example` (`NEXT_PUBLIC_SITE_URL` = URL de production),
-puis mettre à jour *Site URL* et *Redirect URLs* dans Supabase.
+Nécessite une offre avec **Node.js Apps** : Business, Cloud (Startup / Professional / Enterprise) ou VPS.
+
+1. hPanel → **Sites web → Ajouter un site → Node.js Apps** → **Importer un dépôt Git** → autoriser GitHub →
+   choisir `baresto`, branche `main`.
+2. Paramètres de build :
+   - Framework : **Next.js** · Version de Node : **22.x**
+   - Commande d'installation : `npm ci` · Build : `npm run build` · Démarrage : `npm start`
+3. **Variables d'environnement** (à saisir *avant* le premier build : les `NEXT_PUBLIC_*` sont intégrées au build) :
+
+   | Variable | Valeur |
+   | --- | --- |
+   | `NEXT_PUBLIC_SUPABASE_URL` | URL du projet Supabase |
+   | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | clé *publishable* Supabase |
+   | `NEXT_PUBLIC_SITE_URL` | `https://votre-domaine.fr` |
+   | `WIDGET_ALLOWED_ORIGINS` | (optionnel) sites autorisés à afficher les widgets |
+
+4. Associer le domaine à l'application, activer le SSL, déployer.
+5. Supabase → Authentication → URL Configuration : *Site URL* = `https://votre-domaine.fr`,
+   *Redirect URLs* += `https://votre-domaine.fr/auth/callback`.
+
+Chaque `git push` sur `main` peut redéclencher le déploiement (option « déploiement automatique » dans hPanel).
+Après toute modification d'une variable `NEXT_PUBLIC_*`, relancer un build.
 
 ## Structure
 
