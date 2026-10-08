@@ -1,8 +1,8 @@
 "use client";
 
-import { Canvas } from "@react-three/fiber";
-import { useEffect, useMemo } from "react";
-import { CanvasTexture, SRGBColorSpace } from "three";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { CanvasTexture, Color, SRGBColorSpace, type MeshStandardMaterial } from "three";
 import { ContactShadows, OrbitControls } from "@react-three/drei";
 import { chairPositions, STATE_COLORS, tableSize } from "@/lib/floor";
 import type { DiningTable } from "@/lib/types";
@@ -93,6 +93,11 @@ function Table3D({
   onClick?: (shiftKey: boolean) => void;
 }) {
   const { w, d } = tableSize(table);
+  // La couleur du plateau glisse vers celle de son nouvel état au lieu de changer d'un coup.
+  const material = useRef<MeshStandardMaterial>(null);
+  const [initialColor] = useState(color);
+  const targetColor = useMemo(() => new Color(color), [color]);
+  useFrame((_, delta) => material.current?.color.lerp(targetColor, 1 - Math.exp(-delta * 5)));
 
   return (
     <group
@@ -116,7 +121,8 @@ function Table3D({
           <boxGeometry args={[w, 0.05, d]} />
         )}
         <meshStandardMaterial
-          color={color}
+          ref={material}
+          color={initialColor}
           emissive={selected ? "#ffffff" : "#000000"}
           emissiveIntensity={selected ? 0.35 : 0}
           roughness={0.5}
@@ -141,7 +147,8 @@ function Table3D({
   );
 }
 
-export default function Floor3D({ room, tables, states, selectedIds = [], onSelectTable }: FloorViewProps) {
+export default function Floor3D({ room, tables, states, selectedIds = [], onSelectTable, autoRotate = false }: FloorViewProps) {
+  const [rotating, setRotating] = useState(autoRotate);
   const size = Math.max(room.width, room.depth);
 
   return (
@@ -195,6 +202,10 @@ export default function Floor3D({ room, tables, states, selectedIds = [], onSele
         <ContactShadows position={[0, 0.005, 0]} opacity={0.35} scale={size * 1.5} blur={2} far={2} />
         <OrbitControls
           makeDefault
+          autoRotate={rotating}
+          autoRotateSpeed={0.6}
+          enableDamping
+          onStart={() => setRotating(false)}
           target={[0, 0.5, 0]}
           maxPolarAngle={Math.PI / 2.15}
           minDistance={3}

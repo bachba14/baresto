@@ -14,3 +14,108 @@ body {
   background: transparent;
   color: #292524;
 }
+
+/* ── Animations de la landing page ─────────────────────────
+   Toutes désactivées si l'utilisateur a demandé à réduire les animations. */
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Tailwind 4 applique rotate-* et translate-* via les propriétés « rotate » et « translate » :
+   les keyframes ne touchent qu'à « transform », les deux s'additionnent. */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-14px) rotate(-1.5deg);
+  }
+}
+
+@keyframes drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(6%, 40px) scale(1.12);
+  }
+}
+
+@keyframes shine {
+  to {
+    background-position: 200% center;
+  }
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(217 119 6 / 0.55);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgb(217 119 6 / 0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  .animate-fade-up {
+    animation: fade-up 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  .animate-drift {
+    animation: drift 14s ease-in-out infinite;
+  }
+  .animate-shine {
+    background-size: 200% auto;
+    animation: shine 5s linear infinite;
+  }
+  .animate-pulse-dot {
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+
+  /* Apparition au défilement (voir components/landing/reveal.tsx).
+     Masqué seulement si JavaScript est actif, pour ne jamais cacher le contenu. */
+  .js .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition:
+      opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: var(--delay, 0ms);
+  }
+  .js .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Ouverture fluide des questions de la FAQ (navigateurs récents). */
+  :root {
+    interpolate-size: allow-keywords;
+  }
+  .faq details::details-content {
+    height: 0;
+    overflow: clip;
+    transition:
+      height 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+      content-visibility 0.4s allow-discrete;
+  }
+  .faq details[open]::details-content {
+    height: auto;
+  }
+}

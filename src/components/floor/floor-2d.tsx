@@ -14,6 +14,8 @@ export type FloorViewProps = {
   onMoveTable?: (id: string, x: number, y: number) => void;
   /** Dépôt d'une réservation (glisser-déposer) sur une table. */
   onDropReservation?: (tableId: string, reservationId: string) => void;
+  /** Vue 3D : rotation lente automatique jusqu'à la première interaction. */
+  autoRotate?: boolean;
 };
 
 const SNAP = 0.1;
@@ -112,9 +114,9 @@ export function Floor2D({ room, tables, states, selectedIds = [], onSelectTable,
               />
             ))}
             {t.shape === "round" ? (
-              <circle r={w / 2} fill={fill} fillOpacity={0.85} />
+              <circle r={w / 2} fillOpacity={0.85} style={{ fill, transition: "fill 0.7s ease" }} />
             ) : (
-              <rect x={-w / 2} y={-d / 2} width={w} height={d} rx={0.06} fill={fill} fillOpacity={0.85} />
+              <rect x={-w / 2} y={-d / 2} width={w} height={d} rx={0.06} fillOpacity={0.85} style={{ fill, transition: "fill 0.7s ease" }} />
             )}
             {(selected || isDrop) &&
               (t.shape === "round" ? (
