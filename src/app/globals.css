@@ -4,8 +4,22 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-momo-trust-display);
   --font-mono: var(--font-geist-mono);
+}
+
+/* Titres en Momo Trust Display (une seule graisse : pas de faux gras). */
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display);
+    font-synthesis-weight: none;
+  }
 }
 
 /* Fond transparent par défaut : les widgets s'intègrent dans la page hôte. */

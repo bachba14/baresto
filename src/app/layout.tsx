@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Inter, Momo_Trust_Display } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+});
+
+const momoTrustDisplay = Momo_Trust_Display({
+  variable: "--font-momo-trust-display",
+  weight: "400",
   subsets: ["latin"],
 });
 
@@ -20,7 +26,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     // suppressHydrationWarning : la classe « js » est ajoutée avant l'hydratation.
-    <html lang="fr" className={`${geistSans.variable} ${geistMono.variable} antialiased`} suppressHydrationWarning>
+    <html lang="fr" className={`${inter.variable} ${momoTrustDisplay.variable} ${geistMono.variable} antialiased`} suppressHydrationWarning>
       <head>
         {/* Active les animations d'apparition seulement quand JavaScript tourne. */}
         <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
