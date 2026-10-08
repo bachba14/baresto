@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useActionState } from "react";
 import { inputClass, labelClass } from "@/components/admin-styles";
 import { AuthShell } from "../auth-shell";
+import { GoogleButton } from "../google-button";
+import { UrlError } from "../url-error";
 import { login } from "../actions";
 
 export default function LoginPage() {
@@ -11,7 +13,9 @@ export default function LoginPage() {
 
   return (
     <AuthShell title="Bon retour 👋" subtitle="Connectez-vous à votre espace restaurant.">
-      <form action={action} className="space-y-4">
+      <UrlError />
+      <GoogleButton />
+      <form action={action} className="mt-4 space-y-4">
         <label className="block">
           <span className={labelClass}>E-mail</span>
           <input name="email" type="email" required autoComplete="email" className={inputClass} />

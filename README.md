@@ -105,3 +105,18 @@ src/app/api/r/[slug]/       API publique
 src/components/floor/       plan de salle 2D (SVG) et 3D (three.js)
 src/proxy.ts                protection de /admin et /onboarding
 ```
+
+## Connexion avec Google
+
+Le bouton « Continuer avec Google » (inscription et connexion) utilise Supabase Auth. Pour l'activer :
+
+1. **Google Cloud Console** → APIs & Services → *OAuth consent screen* : configurer l'écran (type *External*,
+   nom « Baresto », e-mail d'assistance, domaine `bachba.be`), puis publier l'application.
+2. *Credentials* → *Create credentials* → *OAuth client ID* → type **Web application** :
+   - *Authorized JavaScript origins* : `https://baresto.bachba.be` (et `http://localhost:3000` pour le local)
+   - *Authorized redirect URIs* : `https://<projet>.supabase.co/auth/v1/callback`
+3. **Supabase** → Authentication → Sign In / Providers → **Google** : activer, coller le *Client ID* et le
+   *Client Secret*, enregistrer.
+
+Un nouveau compte Google arrive directement dans l'assistant de démarrage ; un compte existant avec la même
+adresse e-mail est relié automatiquement. Tant que Google n'est pas activé, le bouton affiche un message clair.

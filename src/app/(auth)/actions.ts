@@ -51,6 +51,40 @@ export async function signup(_: AuthState, formData: FormData): Promise<AuthStat
   return { info: `Presque fini ! Cliquez sur le lien envoyé à ${email} pour activer votre compte.` };
 }
 
+/**
+ * Connexion / inscription avec Google : redirige vers Google, puis Google renvoie vers
+ * /auth/callback. Un nouveau compte arrive dans l'assistant (via /admin → /onboarding).
+ */
+export async function signInWithGoogle(): Promise<AuthState> {
+  // signInWithOAuth ne vérifie pas que le fournisseur est activé : sans ce contrôle,
+  // le visiteur atterrirait sur une erreur JSON brute de Supabase.
+  if (!(await isGoogleEnabled())) return { error: "La connexion avec Google n'est pas encore disponible." };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${await siteUrl()}/auth/callback?next=/admin`,
+      queryParams: { prompt: "select_account" },
+    },
+  });
+  if (error || !data.url) return { error: "Connexion Google impossible, réessayez." };
+  redirect(data.url);
+}
+
+async function isGoogleEnabled() {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/settings`, {
+      headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY! },
+      next: { revalidate: 60 },
+    });
+    const settings = (await res.json()) as { external?: { google?: boolean } };
+    return settings.external?.google === true;
+  } catch {
+    return true; // En cas de doute, on laisse Supabase répondre.
+  }
+}
+
 export async function logout() {
   const supabase = await createClient();
   await supabase.auth.signOut();

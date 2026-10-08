@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useActionState } from "react";
 import { inputClass, labelClass } from "@/components/admin-styles";
 import { AuthShell } from "../auth-shell";
+import { GoogleButton } from "../google-button";
+import { UrlError } from "../url-error";
 import { signup } from "../actions";
 
 export default function SignupPage() {
@@ -18,7 +20,10 @@ export default function SignupPage() {
           <p className="mt-2 text-sm text-emerald-800">Pensez à vérifier vos courriers indésirables.</p>
         </div>
       ) : (
-        <form action={action} className="space-y-4">
+        <>
+        <UrlError />
+        <GoogleButton />
+        <form action={action} className="mt-4 space-y-4">
           <label className="block">
             <span className={labelClass}>E-mail professionnel</span>
             <input name="email" type="email" required autoComplete="email" className={inputClass} />
@@ -33,6 +38,7 @@ export default function SignupPage() {
             {pending ? "Création…" : "Commencer gratuitement"}
           </button>
         </form>
+        </>
       )}
       <p className="mt-6 text-sm text-stone-500">
         Déjà inscrit ?{" "}
