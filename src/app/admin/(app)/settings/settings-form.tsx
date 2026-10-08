@@ -66,6 +66,34 @@ export function SettingsForm({ restaurant: settings, tableCount }: { restaurant:
         </label>
       </section>
 
+      <section className={`${cardClass} grid gap-4`}>
+        <div>
+          <h2 className="font-semibold">E-mails aux clients</h2>
+          <p className="text-sm text-stone-500">
+            Chaque client qui laisse son e-mail reçoit une confirmation avec un lien pour modifier ou annuler (jusqu&apos;à 24 h
+            avant). Les nouvelles réservations vous sont signalées à l&apos;adresse e-mail de l&apos;établissement ci-dessus.
+          </p>
+        </div>
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" name="send_reminders" defaultChecked={settings.send_reminders} />
+          Envoyer un rappel avant le repas (dans les 48 h qui précèdent)
+        </label>
+        <label>
+          <span className={labelClass}>Lien pour laisser un avis (Google, TripAdvisor…)</span>
+          <input
+            name="review_url"
+            type="url"
+            defaultValue={settings.review_url ?? ""}
+            placeholder="https://g.page/r/…/review"
+            className={inputClass}
+          />
+          <span className="mt-1 block text-xs text-stone-500">
+            Renseigné, il est envoyé par e-mail le lendemain du repas pour demander un avis. Sur Google : fiche
+            d&apos;établissement → « Demander des avis » → copier le lien.
+          </span>
+        </label>
+      </section>
+
       <section className={cardClass}>
         <h2 className="font-semibold">Horaires de réservation</h2>
         <p className="mb-3 text-sm text-stone-500">

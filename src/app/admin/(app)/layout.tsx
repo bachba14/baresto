@@ -4,6 +4,7 @@ import { requireRestaurant } from "@/lib/data";
 import { Logo } from "@/components/logo";
 import { logout } from "@/app/(auth)/actions";
 import { AdminNav } from "./admin-nav";
+import { LiveUpdates } from "./live-updates";
 
 export const metadata: Metadata = { title: "Back-office", robots: { index: false } };
 
@@ -16,6 +17,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
         <div className="flex items-center justify-between p-4 md:block">
           <Link href="/admin"><Logo /></Link>
           <p className="mt-1 hidden truncate text-sm font-medium text-stone-600 md:block">{restaurant.name}</p>
+          <div className="md:mt-2"><LiveUpdates restaurantId={restaurant.id} /></div>
           <form action={logout} className="md:hidden">
             <button className="text-sm text-stone-600 hover:text-stone-900">Déconnexion</button>
           </form>

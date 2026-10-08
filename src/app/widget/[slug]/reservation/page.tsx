@@ -7,7 +7,7 @@ import { WidgetShell, type WidgetParams } from "../../widget-shell";
 export const metadata: Metadata = { title: "Réservation", robots: { index: false } };
 
 export default async function ReservationWidget({ params, searchParams }: PageProps<"/widget/[slug]/reservation">) {
-  const [{ slug }, query] = await Promise.all([params, searchParams as Promise<WidgetParams>]);
+  const [{ slug }, query] = await Promise.all([params, searchParams as Promise<WidgetParams & { date?: string; party?: string }>]);
   const restaurant = await getRestaurantOr404(slug);
   const today = todayIn(restaurant.timezone);
 
@@ -26,6 +26,8 @@ export default async function ReservationWidget({ params, searchParams }: PagePr
         message={restaurant.reservation_message}
         phone={restaurant.phone}
         frameId={query.frame ?? ""}
+        initialDate={query.date}
+        initialParty={Number(query.party) || undefined}
       />
     </WidgetShell>
   );

@@ -3,6 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { cardClass } from "@/components/admin-styles";
+import { CustomerBadges } from "@/components/customer-badges";
 import { FloorView } from "@/components/floor/floor-view";
 import { fromMinutes, tableStates, toMinutes } from "@/lib/floor";
 import { formatTime, STATUS_LABELS } from "@/lib/format";
@@ -138,6 +139,9 @@ export function ServiceBoard({
                   )}
                   <span className={selected ? "text-stone-300" : "text-stone-500"}>{STATUS_LABELS[r.status]}</span>
                 </div>
+                {r.customer && (r.customer.tags.length > 0 || r.customer.no_show_count > 0 || r.customer.reservation_count > 1) && (
+                  <div className="mt-1"><CustomerBadges customer={r.customer} compact /></div>
+                )}
                 {r.notes && <p className={`mt-1 truncate text-xs italic ${selected ? "text-stone-300" : "text-stone-500"}`}>« {r.notes} »</p>}
               </li>
             );
@@ -188,6 +192,7 @@ export function ServiceBoard({
               {selectedRes.name} · {selectedRes.party_size}p · {formatTime(selectedRes.time)}
             </span>
             <span className="text-stone-500">→ cliquez sur une table</span>
+            {selectedRes.customer?.notes && <span className="w-full text-violet-800 sm:order-last">📝 {selectedRes.customer.notes}</span>}
             <div className="ml-auto flex flex-wrap gap-1">
               <button type="button" disabled={pending} onClick={() => run(() => autoAssign(selectedRes.id), "Placée automatiquement.")} className="rounded-md bg-white px-2 py-1 hover:bg-stone-50">
                 ✨ Auto

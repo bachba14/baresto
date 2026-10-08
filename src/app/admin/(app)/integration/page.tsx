@@ -1,19 +1,17 @@
-import { headers } from "next/headers";
+import QRCode from "qrcode";
 import { requireRestaurant } from "@/lib/data";
+import { siteUrl } from "@/lib/site";
 import { cardClass } from "@/components/admin-styles";
 import { CopyBlock } from "./copy-block";
 
-async function baseUrl() {
-  if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, "");
-  const h = await headers();
-  const host = h.get("x-forwarded-host") ?? h.get("host");
-  const proto = h.get("x-forwarded-proto") ?? (host?.startsWith("localhost") ? "http" : "https");
-  return `${proto}://${host}`;
-}
-
 export default async function IntegrationPage() {
   const { restaurant } = await requireRestaurant();
-  const base = await baseUrl();
+  const base = await siteUrl();
+  const pageUrl = `${base}/r/${restaurant.slug}`;
+  const [qrSvg, qrPng] = await Promise.all([
+    QRCode.toString(pageUrl, { type: "svg", margin: 2, errorCorrectionLevel: "M" }),
+    QRCode.toDataURL(pageUrl, { width: 1200, margin: 2, errorCorrectionLevel: "M" }),
+  ]);
   const script = `<script src="${base}/embed.js" data-restaurant="${restaurant.slug}" async></script>`;
   const widget = `${base}/widget/${restaurant.slug}`;
   const api = `${base}/api/r/${restaurant.slug}`;
@@ -57,7 +55,7 @@ export default async function IntegrationPage() {
     {
       title: "API JSON (développeurs)",
       text: "Pour une intégration 100 % sur mesure. CORS ouvert.",
-      code: `GET  ${api}/menu\nGET  ${api}/availability?date=2026-10-15&party=2\nPOST ${api}/reservations\n     { "date": "2026-10-15", "time": "20:00", "party_size": 2,\n       "name": "Jeanne", "email": "jeanne@exemple.fr", "phone": "", "notes": "" }`,
+      code: `GET  ${api}/menu\nGET  ${api}/availability?date=2026-10-15&party=2\nPOST ${api}/reservations\n     { "date": "2026-10-15", "time": "20:00", "party_size": 2,\n       "name": "Jeanne", "email": "jeanne@exemple.fr", "phone": "", "notes": "" }\nPOST ${api}/waitlist\n     { "date": "2026-10-15", "time": "20:00", "party_size": 2,\n       "name": "Jeanne", "email": "jeanne@exemple.fr" }`,
     },
   ];
 
@@ -70,6 +68,35 @@ export default async function IntegrationPage() {
           <a href="/demo.html" target="_blank" className="underline">Voir une page de démo ↗</a>
         </p>
       </div>
+
+      <section className={`${cardClass} flex flex-col gap-5 sm:flex-row sm:items-center`}>
+        <div
+          className="mx-auto h-44 w-44 shrink-0 sm:mx-0 [&_svg]:h-full [&_svg]:w-full"
+          dangerouslySetInnerHTML={{ __html: qrSvg }}
+          role="img"
+          aria-label={`QR code vers ${pageUrl}`}
+        />
+        <div className="space-y-2">
+          <h2 className="font-semibold">QR code de votre page</h2>
+          <p className="text-sm text-stone-500">
+            À imprimer sur vos tables, menus, vitrine ou cartes de visite : vos clients scannent et arrivent sur votre carte
+            et la réservation en ligne.
+          </p>
+          <p className="font-mono text-xs break-all text-stone-600">{pageUrl}</p>
+          <div className="flex flex-wrap gap-2 pt-1">
+            <a href={qrPng} download={`qr-${restaurant.slug}.png`} className="rounded-lg bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-700">
+              Télécharger (PNG)
+            </a>
+            <a
+              href={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(qrSvg)}`}
+              download={`qr-${restaurant.slug}.svg`}
+              className="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm font-medium hover:bg-stone-50"
+            >
+              Télécharger (SVG, pour l&apos;imprimeur)
+            </a>
+          </div>
+        </div>
+      </section>
 
       <div className="grid gap-4 lg:grid-cols-2">
         {snippets.map((s) => (

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { formatDate, formatTime } from "@/lib/format";
+import { WaitlistForm } from "./waitlist-form";
 
 type Slot = { time: string; remaining: number };
 
@@ -19,13 +20,21 @@ export function ReservationForm(props: {
   frameId: string;
   /** Base de l'API du restaurant, ex. "/api/r/le-comptoir". */
   apiBase: string;
+  /** Valeurs pré-remplies (ex. lien de l'e-mail de liste d'attente). */
+  initialDate?: string;
+  initialParty?: number;
 }) {
-  const [date, setDate] = useState(props.minDate);
-  const [party, setParty] = useState(2);
+  const [date, setDate] = useState(
+    props.initialDate && props.initialDate >= props.minDate && props.initialDate <= props.maxDate ? props.initialDate : props.minDate,
+  );
+  const [party, setParty] = useState(
+    props.initialParty && props.initialParty >= 1 && props.initialParty <= props.maxPartySize ? props.initialParty : 2,
+  );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [done, setDone] = useState<{ status: string; date: string; time: string; party: number } | null>(null);
+  const [done, setDone] = useState<{ status: string; date: string; time: string; party: number; manageUrl?: string } | null>(null);
   const [reload, setReload] = useState(0);
+  const [waitlist, setWaitlist] = useState(false);
 
   // Créneaux et horaire choisi sont liés à une requête (date + rechargement) :
   // une nouvelle requête les invalide automatiquement.
@@ -67,7 +76,7 @@ export function ReservationForm(props: {
         if (res.status === 409) setReload((r) => r + 1);
         return;
       }
-      setDone({ status: data.status, date, time, party });
+      setDone({ status: data.status, date, time, party, manageUrl: data.manage_url });
       window.parent?.postMessage(
         { type: "baresto:reservation", frameId: props.frameId, status: data.status, date, time, partySize: party },
         "*",
@@ -92,6 +101,14 @@ export function ReservationForm(props: {
         {done.status !== "confirmed" && (
           <p className="mt-2 text-sm text-stone-500">Le restaurant va confirmer votre réservation rapidement.</p>
         )}
+        {done.manageUrl && (
+          <p className="mt-3 text-sm">
+            <a href={done.manageUrl} target="_blank" rel="noreferrer" className="text-[var(--brand)] underline">
+              Modifier ou annuler
+            </a>
+            <span className="text-stone-500"> (jusqu&apos;à 24 h avant, lien aussi envoyé par e-mail)</span>
+          </p>
+        )}
         <button
           type="button"
           onClick={() => {
@@ -106,7 +123,21 @@ export function ReservationForm(props: {
     );
   }
 
-  const available = slots?.filter((s) => s.remaining > 0) ?? [];
+  const available = slots?.filter((s) => s.remaining >= party) ?? [];
+  // Liste d'attente : seulement si le restaurant ouvre ce jour-là et qu'au moins un créneau est complet.
+  const canWait = !!slots && slots.length > 0 && available.length < slots.length;
+
+  if (waitlist && slots) {
+    return (
+      <WaitlistForm
+        apiBase={props.apiBase}
+        date={date}
+        party={party}
+        times={slots.map((s) => s.time)}
+        onCancel={() => setWaitlist(false)}
+      />
+    );
+  }
 
   return (
     <form onSubmit={submit} className="space-y-4">
@@ -147,10 +178,21 @@ export function ReservationForm(props: {
         {slots === null ? (
           <p className="text-sm text-stone-500">Chargement des disponibilités…</p>
         ) : available.length === 0 ? (
-          <p className="text-sm text-stone-500">
-            Aucun créneau disponible ce jour-là. Essayez une autre date
-            {props.phone ? <> ou appelez-nous au {props.phone}</> : null}.
-          </p>
+          <div className="space-y-3">
+            <p className="text-sm text-stone-500">
+              {canWait ? "Complet ce jour-là." : "Aucun créneau disponible ce jour-là."} Essayez une autre date
+              {props.phone ? <> ou appelez-nous au {props.phone}</> : null}.
+            </p>
+            {canWait && (
+              <button
+                type="button"
+                onClick={() => setWaitlist(true)}
+                className="w-full rounded-lg border border-[var(--brand)] px-4 py-2 text-sm font-medium text-[var(--brand)] hover:bg-[var(--brand)]/5"
+              >
+                Être prévenu si une table se libère
+              </button>
+            )}
+          </div>
         ) : (
           <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
             {slots.map((s) => {
@@ -172,6 +214,15 @@ export function ReservationForm(props: {
                 </button>
               );
             })}
+            {canWait && (
+              <button
+                type="button"
+                onClick={() => setWaitlist(true)}
+                className="col-span-full text-left text-xs text-stone-500 underline hover:text-[var(--brand)]"
+              >
+                L&apos;horaire voulu est complet ? Rejoindre la liste d&apos;attente
+              </button>
+            )}
           </div>
         )}
       </div>

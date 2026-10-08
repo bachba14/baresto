@@ -95,13 +95,33 @@ export async function getFloor(supabase: Supabase, restaurantId: string) {
 export async function getPlacedReservations(supabase: Supabase, restaurantId: string, date: string): Promise<PlacedReservation[]> {
   const { data, error } = await supabase
     .from("reservations")
-    .select("*, reservation_tables(table_id)")
+    .select("*, reservation_tables(table_id), customers(id, reservation_count, no_show_count, notes, tags)")
     .eq("restaurant_id", restaurantId)
     .eq("date", date)
     .order("time");
   if (error) throw new Error(error.message);
-  return data.map(({ reservation_tables, ...r }) => ({
+  return data.map(({ reservation_tables, customers, ...r }) => ({
     ...(r as Reservation),
     table_ids: (reservation_tables as { table_id: string }[]).map((t) => t.table_id),
+    customer: (customers ?? null) as PlacedReservation["customer"],
   }));
 }
+
+// ── Gestion de sa réservation par le client (lien secret) ──
+
+export type TokenReservation = Pick<
+  Reservation,
+  "id" | "restaurant_id" | "date" | "time" | "party_size" | "duration_minutes" | "name" | "email" | "phone" | "notes" | "status"
+> & { token: string; deadline: string; can_modify: boolean };
+
+/** Réservation et restaurant à partir du lien de gestion, ou null. */
+export const getReservationByToken = cache(async (token: string) => {
+  if (!/^[a-f0-9]{32,80}$/.test(token)) return null;
+  const supabase = createPublicClient();
+  const { data } = await supabase.rpc("get_reservation_by_token", { p_token: token });
+  const row = (data as Omit<TokenReservation, "token">[] | null)?.[0];
+  if (!row) return null;
+  const { data: restaurant } = await supabase.from("restaurants").select("*").eq("id", row.restaurant_id).single();
+  if (!restaurant) return null;
+  return { reservation: { ...row, token } as TokenReservation, restaurant: restaurant as Restaurant };
+});

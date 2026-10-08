@@ -31,6 +31,8 @@ export async function saveSettings(_: string | null, formData: FormData): Promis
     };
     const color = String(formData.get("primary_color"));
     if (!/^#[0-9a-f]{6}$/i.test(color)) throw new Error("Couleur invalide.");
+    const reviewUrl = text("review_url");
+    if (reviewUrl && !/^https:\/\/\S+$/.test(reviewUrl)) throw new Error("Le lien d'avis doit commencer par https://");
 
     const { error } = await supabase
       .from("restaurants")
@@ -51,6 +53,8 @@ export async function saveSettings(_: string | null, formData: FormData): Promis
         dinner_minutes: int("dinner_minutes"),
         dinner_from: TIME.test(String(formData.get("dinner_from")).slice(0, 5)) ? String(formData.get("dinner_from")).slice(0, 5) : "16:00",
         auto_confirm: formData.get("auto_confirm") === "on",
+        send_reminders: formData.get("send_reminders") === "on",
+        review_url: reviewUrl,
         opening_hours: parseHours(String(formData.get("opening_hours"))),
       })
       .eq("id", restaurant.id);

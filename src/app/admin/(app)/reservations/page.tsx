@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { requireRestaurant } from "@/lib/data";
-import { addDays, formatDate, isValidDate, todayIn } from "@/lib/format";
+import { addDays, formatDate, formatTime, isValidDate, todayIn } from "@/lib/format";
 import { cardClass, inputClass, labelClass } from "@/components/admin-styles";
 import { SubmitButton } from "@/components/admin-ui";
-import { createReservation } from "./actions";
+import type { WaitlistEntry } from "@/lib/types";
+import { createReservation, deleteWaitlistEntry } from "./actions";
 import { RESERVATION_SELECT, ReservationRow, type ReservationWithTables } from "./reservation-row";
 
 export default async function ReservationsPage({ searchParams }: PageProps<"/admin/reservations">) {
@@ -11,14 +12,16 @@ export default async function ReservationsPage({ searchParams }: PageProps<"/adm
   const today = todayIn(restaurant.timezone);
   const date = isValidDate(params.date) ? params.date : today;
 
-  const [{ data }, { data: closure }] = await Promise.all([
+  const [{ data }, { data: closure }, { data: waiting }] = await Promise.all([
     supabase.from("reservations").select(RESERVATION_SELECT).eq("restaurant_id", restaurant.id).eq("date", date).order("time"),
     supabase.from("closures").select("reason").eq("restaurant_id", restaurant.id).eq("date", date).maybeSingle(),
+    supabase.from("waitlist").select("*").eq("restaurant_id", restaurant.id).eq("date", date).in("status", ["waiting", "notified"]).order("created_at"),
   ]);
+  const waitlist = (waiting ?? []) as WaitlistEntry[];
   const reservations = (data ?? []) as ReservationWithTables[];
   const active = reservations.filter((r) => r.status !== "cancelled" && r.status !== "no_show");
   const covers = active.reduce((n, r) => n + r.party_size, 0);
-  const lunch = active.filter((r) => r.time < "16:00").reduce((n, r) => n + r.party_size, 0);
+  const lunch = active.filter((r) => r.time < restaurant.dinner_from).reduce((n, r) => n + r.party_size, 0);
 
   return (
     <div className="max-w-5xl space-y-6">
@@ -34,6 +37,23 @@ export default async function ReservationsPage({ searchParams }: PageProps<"/adm
           <Link href={`?date=${addDays(date, 1)}`} className="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm">→</Link>
           {date !== today && <Link href="?" className="text-sm text-stone-600 underline">Aujourd&apos;hui</Link>}
         </form>
+      </div>
+
+      <div className="flex flex-wrap gap-2 text-sm">
+        <a href={`/admin/print?date=${date}`} target="_blank" className="rounded-lg border border-stone-300 bg-white px-3 py-1.5 hover:bg-stone-50">
+          🖨 Imprimer la feuille de service
+        </a>
+        <a href={`/admin/reservations/export?from=${date}&to=${date}`} className="rounded-lg border border-stone-300 bg-white px-3 py-1.5 hover:bg-stone-50">
+          ⬇ Export CSV du jour
+        </a>
+        <details className="relative">
+          <summary className="cursor-pointer list-none rounded-lg border border-stone-300 bg-white px-3 py-1.5 hover:bg-stone-50">⬇ Export CSV (période)</summary>
+          <form action="/admin/reservations/export" className="absolute z-10 mt-1 flex flex-wrap items-end gap-2 rounded-lg border border-stone-200 bg-white p-3 shadow-lg">
+            <label className="text-xs">Du<input type="date" name="from" defaultValue={addDays(date, -30)} required className={inputClass} /></label>
+            <label className="text-xs">Au<input type="date" name="to" defaultValue={date} required className={inputClass} /></label>
+            <button className="rounded-lg bg-stone-900 px-3 py-2 text-sm text-white">Télécharger</button>
+          </form>
+        </details>
       </div>
 
       {closure && (
@@ -64,6 +84,30 @@ export default async function ReservationsPage({ searchParams }: PageProps<"/adm
           </ul>
         )}
       </div>
+
+      {waitlist.length > 0 && (
+        <section className={cardClass}>
+          <h2 className="font-semibold">Liste d&apos;attente ({waitlist.length})</h2>
+          <p className="text-sm text-stone-500">
+            Ces personnes reçoivent automatiquement un e-mail dès qu&apos;une table adaptée se libère ce jour-là.
+          </p>
+          <ul className="mt-2 divide-y divide-stone-100">
+            {waitlist.map((w) => (
+              <li key={w.id} className="flex flex-wrap items-center gap-3 py-2 text-sm">
+                <span className="font-medium">{w.name} · {w.party_size} pers.</span>
+                <span className="text-stone-500">{w.time ? `vers ${formatTime(w.time)}` : "horaire libre"}</span>
+                <span className="text-stone-500">{[w.phone, w.email].filter(Boolean).join(" · ")}</span>
+                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${w.status === "notified" ? "bg-sky-100 text-sky-800" : "bg-amber-100 text-amber-800"}`}>
+                  {w.status === "notified" ? "Prévenu(e)" : "En attente"}
+                </span>
+                <form action={deleteWaitlistEntry.bind(null, w.id)} className="ml-auto">
+                  <SubmitButton variant="danger" aria-label="Retirer de la liste">✕</SubmitButton>
+                </form>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <details className={cardClass}>
         <summary className="cursor-pointer font-semibold">+ Ajouter une réservation (téléphone, sur place)</summary>
@@ -96,8 +140,12 @@ export default async function ReservationsPage({ searchParams }: PageProps<"/adm
             <label className={labelClass}>Remarques</label>
             <input name="notes" className={inputClass} />
           </div>
-          <div className="sm:col-span-4">
+          <div className="flex flex-wrap items-center gap-4 sm:col-span-4">
             <SubmitButton>Enregistrer (confirmée)</SubmitButton>
+            <label className="flex items-center gap-2 text-sm text-stone-600">
+              <input type="checkbox" name="send_email" defaultChecked />
+              Envoyer la confirmation par e-mail (si e-mail renseigné)
+            </label>
           </div>
         </form>
       </details>

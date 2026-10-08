@@ -33,3 +33,15 @@ export function createPublicClient() {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }
+
+/**
+ * Client « secret » qui contourne les règles RLS : uniquement côté serveur, pour les tâches sans utilisateur
+ * (e-mails programmés, liste d'attente). Null si SUPABASE_SECRET_KEY n'est pas configurée.
+ */
+export function createServiceClient() {
+  const key = process.env.SUPABASE_SECRET_KEY;
+  if (!key) return null;
+  return createPlainClient(url, key, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}

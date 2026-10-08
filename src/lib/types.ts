@@ -29,6 +29,8 @@ export type Restaurant = {
   lunch_minutes: number;
   dinner_minutes: number;
   dinner_from: string;
+  review_url: string | null;
+  send_reminders: boolean;
 };
 
 export type MenuCategory = {
@@ -67,6 +69,10 @@ export type Reservation = {
   status: ReservationStatus;
   source: "widget" | "admin";
   duration_minutes: number | null;
+  token: string;
+  customer_id: string | null;
+  reminder_sent_at: string | null;
+  review_requested_at: string | null;
   created_at: string;
 };
 
@@ -96,5 +102,40 @@ export type DiningTable = {
   bookable_online: boolean;
 };
 
-/** Réservation avec ses tables affectées (ids). */
-export type PlacedReservation = Reservation & { table_ids: string[] };
+/** Réservation avec ses tables affectées (ids) et la fiche client résumée. */
+export type PlacedReservation = Reservation & {
+  table_ids: string[];
+  customer: Pick<Customer, "id" | "reservation_count" | "no_show_count" | "notes" | "tags"> | null;
+};
+
+export type Customer = {
+  id: string;
+  restaurant_id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  notes: string | null;
+  tags: string[];
+  reservation_count: number;
+  no_show_count: number;
+  cancelled_count: number;
+  first_date: string | null;
+  last_date: string | null;
+  created_at: string;
+};
+
+export type WaitlistStatus = "waiting" | "notified" | "booked" | "cancelled";
+
+export type WaitlistEntry = {
+  id: string;
+  restaurant_id: string;
+  date: string;
+  time: string | null;
+  party_size: number;
+  name: string;
+  email: string;
+  phone: string | null;
+  status: WaitlistStatus;
+  notified_at: string | null;
+  created_at: string;
+};

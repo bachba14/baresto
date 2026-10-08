@@ -3,8 +3,11 @@ import { requireRestaurant } from "@/lib/data";
 import { addDays, formatDate, todayIn } from "@/lib/format";
 import { cardClass } from "@/components/admin-styles";
 import { RESERVATION_SELECT, ReservationRow, type ReservationWithTables } from "./reservations/reservation-row";
+import { PERIODS, Stats } from "./stats";
 
-export default async function Dashboard() {
+export default async function Dashboard({ searchParams }: PageProps<"/admin">) {
+  const { p } = await searchParams;
+  const period = PERIODS.find((n) => String(n) === p) ?? 30;
   const { supabase, restaurant } = await requireRestaurant();
   const today = todayIn(restaurant.timezone);
 
@@ -55,6 +58,8 @@ export default async function Dashboard() {
           </ul>
         )}
       </section>
+
+      <Stats supabase={supabase} restaurant={restaurant} period={period} />
     </div>
   );
 }

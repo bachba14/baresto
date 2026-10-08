@@ -15,7 +15,8 @@ export async function generateMetadata({ params }: PageProps<"/r/[slug]">): Prom
   };
 }
 
-export default async function RestaurantPage({ params }: PageProps<"/r/[slug]">) {
+export default async function RestaurantPage({ params, searchParams }: PageProps<"/r/[slug]">) {
+  const query = await searchParams;
   const restaurant = await getRestaurantOr404((await params).slug);
   const menu = await getPublicMenu(restaurant.id);
   const today = todayIn(restaurant.timezone);
@@ -57,6 +58,8 @@ export default async function RestaurantPage({ params }: PageProps<"/r/[slug]">)
               message={restaurant.reservation_message}
               phone={restaurant.phone}
               frameId=""
+              initialDate={typeof query.date === "string" ? query.date : undefined}
+              initialParty={Number(query.party) || undefined}
             />
           </div>
 

@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { SubmitButton } from "@/components/admin-ui";
+import { CUSTOMER_BRIEF, CustomerBadges, type CustomerBrief } from "@/components/customer-badges";
 import { formatDate, formatTime, STATUS_LABELS } from "@/lib/format";
 import type { Reservation, ReservationStatus } from "@/lib/types";
 import { deleteReservation, updateStatus } from "./actions";
@@ -30,10 +32,11 @@ const ACTION_LABELS: Record<ReservationStatus, string> = {
 
 export type ReservationWithTables = Reservation & {
   reservation_tables?: { dining_tables: { label: string } | null }[];
+  customers?: CustomerBrief | null;
 };
 
 // Sélection Supabase qui inclut le nom des tables affectées.
-export const RESERVATION_SELECT = "*, reservation_tables(dining_tables(label))";
+export const RESERVATION_SELECT = `*, reservation_tables(dining_tables(label)), ${CUSTOMER_BRIEF}`;
 
 export function ReservationRow({ r, showDate = false }: { r: ReservationWithTables; showDate?: boolean }) {
   const tables = (r.reservation_tables ?? []).map((t) => t.dining_tables?.label).filter(Boolean);
@@ -46,10 +49,16 @@ export function ReservationRow({ r, showDate = false }: { r: ReservationWithTabl
       </div>
       <div className="min-w-0 flex-1">
         <p className="font-medium">
-          {r.name} · <span className="text-stone-600">{r.party_size} pers.</span>
+          {r.customers ? (
+            <Link href={`/admin/clients/${r.customers.id}`} className="hover:underline">{r.name}</Link>
+          ) : (
+            r.name
+          )}{" "}
+          · <span className="text-stone-600">{r.party_size} pers.</span>
           <span className={`ml-2 rounded-full px-2 py-0.5 text-xs font-medium ${BADGE[r.status]}`}>
             {STATUS_LABELS[r.status]}
-          </span>
+          </span>{" "}
+          <CustomerBadges customer={r.customers} />
         </p>
         <p className="truncate text-sm text-stone-500">
           {[r.phone, r.email].filter(Boolean).join(" · ")}
@@ -65,6 +74,7 @@ export function ReservationRow({ r, showDate = false }: { r: ReservationWithTabl
           </p>
         )}
         {r.notes && <p className="mt-1 text-sm text-stone-700 italic">« {r.notes} »</p>}
+        {r.customers?.notes && <p className="mt-1 text-sm text-violet-800">📝 {r.customers.notes}</p>}
       </div>
       <div className="flex flex-wrap gap-1">
         {NEXT[r.status].map((s) => (

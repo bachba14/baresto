@@ -1,8 +1,11 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { after, NextResponse, type NextRequest } from "next/server";
 import { createPublicClient } from "@/lib/supabase/server";
 import { getRestaurantBySlug } from "@/lib/data";
 import { isValidDate } from "@/lib/format";
 import { CORS_HEADERS } from "@/lib/cors";
+import { emailClient, emailRestaurant } from "@/lib/notifications";
+import { siteUrl } from "@/lib/site";
+import type { ReservationStatus } from "@/lib/types";
 
 export function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
@@ -31,15 +34,22 @@ export async function POST(request: NextRequest, ctx: RouteContext<"/api/r/[slug
   if (!isValidDate(date)) return fail("Date invalide.");
   if (typeof time !== "string" || !/^\d{2}:\d{2}$/.test(time)) return fail("Heure invalide.");
 
+  const input = {
+    party_size: Number(body.party_size),
+    name: str(body.name, 120).trim(),
+    email: str(body.email, 200).trim() || null,
+    phone: str(body.phone, 40).trim() || null,
+    notes: str(body.notes, 1000).trim() || null,
+  };
   const { data, error } = await createPublicClient().rpc("create_reservation", {
     p_restaurant: restaurant.id,
     p_date: date,
     p_time: time,
-    p_party_size: Number(body.party_size),
-    p_name: str(body.name, 120),
-    p_email: str(body.email, 200),
-    p_phone: str(body.phone, 40),
-    p_notes: str(body.notes, 1000),
+    p_party_size: input.party_size,
+    p_name: input.name,
+    p_email: input.email ?? "",
+    p_phone: input.phone ?? "",
+    p_notes: input.notes ?? "",
   });
 
   if (error) {
@@ -47,6 +57,19 @@ export async function POST(request: NextRequest, ctx: RouteContext<"/api/r/[slug
     return error.code === "P0001" ? fail(error.message, 409) : fail("Une erreur est survenue, réessayez.", 500);
   }
 
-  const row = (data as { id: string; status: string }[])[0];
-  return NextResponse.json({ ok: true, id: row.id, status: row.status }, { status: 201, headers: CORS_HEADERS });
+  const row = (data as { id: string; status: ReservationStatus; token: string }[])[0];
+  const base = await siteUrl();
+  const reservation = { ...input, date, time, status: row.status, token: row.token };
+  // E-mails envoyés après la réponse, pour ne pas faire attendre le client.
+  after(() =>
+    Promise.all([
+      emailClient(row.status === "confirmed" ? "confirmed" : "received", reservation, restaurant, base),
+      emailRestaurant("new", reservation, restaurant, base),
+    ]),
+  );
+
+  return NextResponse.json(
+    { ok: true, id: row.id, status: row.status, manage_url: `${base}/reservation/${row.token}` },
+    { status: 201, headers: CORS_HEADERS },
+  );
 }

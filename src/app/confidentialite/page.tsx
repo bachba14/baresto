@@ -57,6 +57,15 @@ export default function PrivacyPage() {
             <ul>
               <li>Créer et sécuriser votre compte, vous permettre de vous connecter (exécution du service).</li>
               <li>Enregistrer et gérer les réservations, et les afficher au restaurant concerné.</li>
+              <li>
+                Envoyer les e-mails liés à une réservation : confirmation, lien de modification ou d&apos;annulation, rappel
+                avant le repas, alerte de liste d&apos;attente et, si le restaurant l&apos;a activée, une demande d&apos;avis le
+                lendemain.
+              </li>
+              <li>
+                Permettre au restaurant de tenir une fiche client (historique des réservations, notes) regroupant les
+                réservations faites avec la même adresse e-mail ou le même téléphone.
+              </li>
               <li>Assurer le bon fonctionnement, la sécurité et le support du service (intérêt légitime).</li>
             </ul>
             <p className="mt-3">Nous ne vendons aucune donnée et n&apos;affichons aucune publicité.</p>

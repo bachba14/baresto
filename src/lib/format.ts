@@ -56,3 +56,20 @@ export function parseList(value: FormDataEntryValue | null) {
     .map((s) => s.trim())
     .filter(Boolean);
 }
+
+/** Date et heure locales d'un fuseau ("2026-10-15", "20:00", "Europe/Paris") → instant UTC. */
+export function zonedToUtc(date: string, time: string, timezone: string) {
+  const [y, mo, d] = date.split("-").map(Number);
+  const [h, mi] = time.split(":").map(Number);
+  const asUtc = Date.UTC(y, mo - 1, d, h, mi);
+  const offset = (at: number) => {
+    const p = Object.fromEntries(
+      new Intl.DateTimeFormat("en-US", {
+        timeZone: timezone, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit",
+      }).formatToParts(at).map((x) => [x.type, x.value]),
+    );
+    return Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute) - at;
+  };
+  const guess = asUtc - offset(asUtc);
+  return new Date(asUtc - offset(guess));
+}

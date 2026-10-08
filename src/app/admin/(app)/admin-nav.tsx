@@ -7,6 +7,7 @@ const LINKS = [
   { href: "/admin", label: "Tableau de bord" },
   { href: "/admin/service", label: "Service (plan)" },
   { href: "/admin/reservations", label: "Réservations" },
+  { href: "/admin/clients", label: "Clients" },
   { href: "/admin/menu", label: "Carte" },
   { href: "/admin/floor", label: "Plan de salle" },
   { href: "/admin/settings", label: "Réglages" },

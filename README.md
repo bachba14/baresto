@@ -14,8 +14,9 @@ Stack : Next.js 16 (App Router) · Supabase (Postgres, Auth, Storage) · Tailwin
 ## Installation
 
 1. **Projet Supabase** sur [supabase.com](https://supabase.com).
-2. **Schéma** : SQL Editor → exécuter `supabase/migrations/0001_init.sql` puis `0002_saas.sql`
-   (0002 remplace le schéma mono-restaurant de 0001 et crée le restaurant de démo `/r/demo`).
+2. **Schéma** : SQL Editor → exécuter `supabase/migrations/0001_init.sql`, `0002_saas.sql` puis `0003_clients_emails.sql`
+   (0002 remplace le schéma mono-restaurant de 0001 et crée le restaurant de démo `/r/demo` ; 0003 ajoute fiches
+   clients, liste d'attente, gestion de la réservation par le client et temps réel).
 3. **Authentification** (Supabase → Authentication → URL Configuration) :
    *Site URL* = l'URL du site (`http://localhost:3000` en local), et ajouter `…/auth/callback` aux *Redirect URLs*.
    La confirmation d'e-mail est activée par défaut ; le service d'e-mail intégré de Supabase est limité à quelques
@@ -42,6 +43,38 @@ Stack : Next.js 16 (App Router) · Supabase (Postgres, Auth, Storage) · Tailwin
   durée du repas. S'il n'y a plus de table adaptée, le créneau n'est plus proposé : avec la confirmation automatique,
   le restaurant n'a rien à valider.
 - Une contrainte `exclude using gist` rend impossible l'affectation d'une même table à deux réservations qui se chevauchent.
+
+## E-mails aux clients (gratuit)
+
+Envoyés : confirmation (ou « demande reçue »), confirmation / refus par le restaurant, modification, annulation,
+rappel dans les 48 h avant le repas, demande d'avis le lendemain (si un lien d'avis est renseigné dans les réglages),
+« une table s'est libérée » pour la liste d'attente. Le restaurateur reçoit une alerte à chaque nouvelle réservation,
+modification ou annulation par un client (adresse e-mail des réglages).
+
+Chaque e-mail contient un lien secret `/reservation/{token}` : le client y voit sa réservation, l'ajoute à son
+agenda (.ics), et peut la **modifier ou l'annuler jusqu'à 24 h avant** (contrôlé côté base).
+
+1. **Fournisseur** (au choix, offres gratuites) :
+   - [Brevo](https://www.brevo.com) : 300 e-mails/jour. *Senders, Domains* → ajouter et authentifier `bachba.be`
+     (enregistrements DKIM/DMARC à ajouter dans la zone DNS), puis *SMTP & API* → *API Keys* → `BREVO_API_KEY`.
+   - ou [Resend](https://resend.com) : 3 000 e-mails/mois (100/jour). *Domains* → vérifier le domaine → `RESEND_API_KEY`.
+2. Variables : `EMAIL_FROM` (ex. `reservations@bachba.be`, sur le domaine vérifié), la clé du fournisseur,
+   `SUPABASE_SECRET_KEY` (Supabase → Project Settings → API Keys → *Secret key*) et `CRON_SECRET` (longue valeur aléatoire).
+3. **Tâche programmée** (rappels, avis, liste d'attente) : appeler `/api/cron` toutes les 15 minutes. Gratuit avec
+   Supabase (SQL Editor, extensions `pg_cron` et `pg_net`) :
+   ```sql
+   create extension if not exists pg_cron;
+   create extension if not exists pg_net;
+   select cron.schedule('baresto-emails', '*/15 * * * *', $$
+     select net.http_post(
+       url := 'https://baresto.bachba.be/api/cron',
+       headers := '{"Authorization": "Bearer VOTRE_CRON_SECRET"}'::jsonb
+     );
+   $$);
+   ```
+   (Alternative : [cron-job.org](https://cron-job.org), gratuit, URL `https://…/api/cron?key=VOTRE_CRON_SECRET`.)
+
+Sans ces variables, l'application fonctionne normalement mais n'envoie aucun e-mail.
 
 ## Intégration sur un site
 
@@ -72,6 +105,9 @@ Nécessite une offre avec **Node.js Apps** : Business, Cloud (Startup / Professi
    | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | clé *publishable* Supabase |
    | `NEXT_PUBLIC_SITE_URL` | `https://votre-domaine.fr` |
    | `WIDGET_ALLOWED_ORIGINS` | (optionnel) sites autorisés à afficher les widgets |
+   | `SUPABASE_SECRET_KEY` | clé *secret* Supabase (e-mails programmés, liste d'attente) |
+   | `EMAIL_FROM`, `BREVO_API_KEY` ou `RESEND_API_KEY` | envoi des e-mails (voir « E-mails aux clients ») |
+   | `CRON_SECRET` | protège `/api/cron` |
 
 4. Associer le domaine à l'application, activer le SSL, déployer.
 5. Supabase → Authentication → URL Configuration : *Site URL* = `https://votre-domaine.fr`,

@@ -59,8 +59,13 @@ const r = (
   notes: null,
   status,
   source: "widget",
+  token: "",
+  customer_id: null,
+  reminder_sent_at: null,
+  review_requested_at: null,
   created_at: "",
   table_ids: tables,
+  customer: null,
 });
 
 export const DEMO_RESERVATIONS: PlacedReservation[] = [
