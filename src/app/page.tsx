@@ -351,6 +351,7 @@ export default function Landing() {
             <Link href="/r/demo" className="transition-colors hover:text-stone-900">Démo</Link>
             <Link href="/login" className="transition-colors hover:text-stone-900">Connexion</Link>
             <Link href="/signup" className="transition-colors hover:text-stone-900">Inscription</Link>
+            <Link href="/confidentialite" className="transition-colors hover:text-stone-900">Confidentialité</Link>
           </div>
           <p>© {new Date().getFullYear()} Baresto</p>
         </div>

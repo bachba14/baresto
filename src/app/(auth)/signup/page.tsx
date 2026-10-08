@@ -40,6 +40,10 @@ export default function SignupPage() {
         </form>
         </>
       )}
+      <p className="mt-4 text-xs text-stone-400">
+        En créant un compte, vous acceptez notre{" "}
+        <Link href="/confidentialite" className="underline hover:text-stone-600">politique de confidentialité</Link>.
+      </p>
       <p className="mt-6 text-sm text-stone-500">
         Déjà inscrit ?{" "}
         <Link href="/login" className="font-medium text-amber-700 hover:underline">Se connecter</Link>

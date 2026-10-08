@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { googleOAuthConfig } from "@/lib/google-oauth";
 
 export type AuthState = { error?: string; info?: string } | null;
 
@@ -56,6 +57,10 @@ export async function signup(_: AuthState, formData: FormData): Promise<AuthStat
  * /auth/callback. Un nouveau compte arrive dans l'assistant (via /admin → /onboarding).
  */
 export async function signInWithGoogle(): Promise<AuthState> {
+  // Flux sur notre domaine (Google affiche baresto…) si les identifiants Google sont configurés.
+  if (googleOAuthConfig()) redirect("/auth/google?next=/admin");
+
+  // Sinon, flux OAuth géré par Supabase.
   // signInWithOAuth ne vérifie pas que le fournisseur est activé : sans ce contrôle,
   // le visiteur atterrirait sur une erreur JSON brute de Supabase.
   if (!(await isGoogleEnabled())) return { error: "La connexion avec Google n'est pas encore disponible." };
