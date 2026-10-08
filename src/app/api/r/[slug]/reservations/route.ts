@@ -5,6 +5,7 @@ import { isValidDate } from "@/lib/format";
 import { CORS_HEADERS } from "@/lib/cors";
 import { emailClient, emailRestaurant } from "@/lib/notifications";
 import { siteUrl } from "@/lib/site";
+import { calendarLinks } from "@/lib/calendar";
 import type { ReservationStatus } from "@/lib/types";
 
 export function OPTIONS() {
@@ -69,7 +70,13 @@ export async function POST(request: NextRequest, ctx: RouteContext<"/api/r/[slug
   );
 
   return NextResponse.json(
-    { ok: true, id: row.id, status: row.status, manage_url: `${base}/reservation/${row.token}` },
+    {
+      ok: true,
+      id: row.id,
+      status: row.status,
+      manage_url: `${base}/reservation/${row.token}`,
+      calendar: calendarLinks(reservation, restaurant, base),
+    },
     { status: 201, headers: CORS_HEADERS },
   );
 }

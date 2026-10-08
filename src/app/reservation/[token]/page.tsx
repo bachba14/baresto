@@ -4,6 +4,9 @@ import { notFound } from "next/navigation";
 import { getReservationByToken } from "@/lib/data";
 import { addDays, formatDate, formatTime, todayIn } from "@/lib/format";
 import { deadlineText } from "@/lib/notifications";
+import { calendarLinks } from "@/lib/calendar";
+import { siteUrl } from "@/lib/site";
+import { CalendarButtons } from "@/components/public/calendar-buttons";
 import { ManageForm } from "./manage-form";
 
 export const metadata: Metadata = { title: "Ma réservation", robots: { index: false } };
@@ -24,6 +27,7 @@ export default async function ManageReservationPage({ params }: PageProps<"/rese
   const today = todayIn(restaurant.timezone);
   const status = STATUS[r.status] ?? STATUS.pending;
   const active = r.status === "pending" || r.status === "confirmed";
+  const calendar = calendarLinks(r, restaurant, await siteUrl());
 
   return (
     <div className="min-h-screen bg-stone-50 px-4 py-10" style={{ "--brand": restaurant.primary_color } as CSSProperties}>
@@ -41,6 +45,8 @@ export default async function ManageReservationPage({ params }: PageProps<"/rese
           </p>
           {r.notes && <p className="mt-1 text-sm text-stone-500 italic">« {r.notes} »</p>}
         </div>
+
+        {active && <CalendarButtons links={calendar} />}
 
         {r.can_modify ? (
           <>
@@ -69,7 +75,6 @@ export default async function ManageReservationPage({ params }: PageProps<"/rese
         ) : null}
 
         <div className="flex flex-wrap gap-x-4 gap-y-1 border-t border-stone-100 pt-4 text-sm text-stone-500">
-          {active && <a href={`/reservation/${r.token}/ics`} className="underline">Ajouter à mon agenda</a>}
           {restaurant.address && <span>📍 {[restaurant.address, restaurant.city].filter(Boolean).join(", ")}</span>}
           {restaurant.phone && <a href={`tel:${restaurant.phone.replace(/\s/g, "")}`}>📞 {restaurant.phone}</a>}
         </div>

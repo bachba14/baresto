@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { formatDate, formatTime } from "@/lib/format";
+import type { CalendarLinks } from "@/lib/calendar";
+import { CalendarButtons } from "./calendar-buttons";
 import { WaitlistForm } from "./waitlist-form";
 
 type Slot = { time: string; remaining: number };
@@ -32,7 +34,7 @@ export function ReservationForm(props: {
   );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [done, setDone] = useState<{ status: string; date: string; time: string; party: number; manageUrl?: string } | null>(null);
+  const [done, setDone] = useState<{ status: string; date: string; time: string; party: number; manageUrl?: string; calendar?: CalendarLinks } | null>(null);
   const [reload, setReload] = useState(0);
   const [waitlist, setWaitlist] = useState(false);
 
@@ -76,7 +78,7 @@ export function ReservationForm(props: {
         if (res.status === 409) setReload((r) => r + 1);
         return;
       }
-      setDone({ status: data.status, date, time, party, manageUrl: data.manage_url });
+      setDone({ status: data.status, date, time, party, manageUrl: data.manage_url, calendar: data.calendar });
       window.parent?.postMessage(
         { type: "baresto:reservation", frameId: props.frameId, status: data.status, date, time, partySize: party },
         "*",
@@ -101,6 +103,7 @@ export function ReservationForm(props: {
         {done.status !== "confirmed" && (
           <p className="mt-2 text-sm text-stone-500">Le restaurant va confirmer votre réservation rapidement.</p>
         )}
+        {done.calendar && <CalendarButtons links={done.calendar} className="mt-4" center />}
         {done.manageUrl && (
           <p className="mt-3 text-sm">
             <a href={done.manageUrl} target="_blank" rel="noreferrer" className="text-[var(--brand)] underline">

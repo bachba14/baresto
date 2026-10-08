@@ -1,3 +1,4 @@
+import { calendarLinks } from "./calendar";
 import { sendEmail } from "./email";
 import { addDays, formatDate, formatTime } from "./format";
 import type { Reservation, Restaurant, WaitlistEntry } from "./types";
@@ -40,10 +41,14 @@ ${esc(formatTime(r.time))} · ${people(r.party_size)} · au nom de ${esc(r.name)
 ${r.notes ? `<br><span style="color:#78716c">« ${esc(r.notes)} »</span>` : ""}</td></tr></table>`;
 }
 
-function manageLinks(r: R, base: string) {
+function manageLinks(r: R, restaurant: Restaurant, base: string) {
+  const cal = calendarLinks(r, restaurant, base);
+  const link = (href: string, label: string) =>
+    `<a href="${esc(href)}" style="display:inline-block;margin:0 6px 6px 0;padding:6px 10px;border:1px solid #d6d3d1;border-radius:6px;color:#44403c;text-decoration:none;font-size:13px">${label}</a>`;
   return `<p style="font-size:14px;color:#57534e">Un empêchement ? Vous pouvez modifier ou annuler votre réservation en ligne jusqu'au
 ${esc(deadlineText(r))}. Au-delà, merci d'appeler le restaurant.</p>
-<p style="font-size:14px"><a href="${esc(`${base}/reservation/${r.token}/ics`)}" style="color:#57534e">Ajouter à mon agenda</a></p>`;
+<p style="font-size:13px;color:#78716c;margin:16px 0 6px">Ajouter à mon agenda :</p>
+<p style="margin:0">${link(cal.google, "Google Agenda")}${link(cal.outlook, "Outlook")}${link(cal.apple, "Apple Calendar (iPhone, Mac)")}</p>`;
 }
 
 export type ClientEmailKind = "received" | "confirmed" | "modified" | "cancelled" | "refused" | "reminder";
@@ -67,16 +72,16 @@ export async function emailClient(kind: ClientEmailKind, r: R, restaurant: Resta
 
   switch (kind) {
     case "received":
-      body = `${hello}<p>Nous avons bien reçu votre demande. Le restaurant va la confirmer rapidement : vous recevrez un e-mail.</p>${summary(r)}${manageLinks(r, base)}`;
+      body = `${hello}<p>Nous avons bien reçu votre demande. Le restaurant va la confirmer rapidement : vous recevrez un e-mail.</p>${summary(r)}${manageLinks(r, restaurant, base)}`;
       break;
     case "confirmed":
-      body = `${hello}<p>Votre réservation est <strong>confirmée</strong>. À bientôt !</p>${summary(r)}${manageLinks(r, base)}`;
+      body = `${hello}<p>Votre réservation est <strong>confirmée</strong>. À bientôt !</p>${summary(r)}${manageLinks(r, restaurant, base)}`;
       break;
     case "modified":
-      body = `${hello}<p>Votre réservation a bien été modifiée${r.status === "pending" ? " ; le restaurant va confirmer ce nouveau créneau" : ""}.</p>${summary(r)}${manageLinks(r, base)}`;
+      body = `${hello}<p>Votre réservation a bien été modifiée${r.status === "pending" ? " ; le restaurant va confirmer ce nouveau créneau" : ""}.</p>${summary(r)}${manageLinks(r, restaurant, base)}`;
       break;
     case "reminder":
-      body = `${hello}<p>Petit rappel : nous vous attendons bientôt.</p>${summary(r)}${manageLinks(r, base)}`;
+      body = `${hello}<p>Petit rappel : nous vous attendons bientôt.</p>${summary(r)}${manageLinks(r, restaurant, base)}`;
       break;
     case "cancelled":
       body = `${hello}<p>Votre réservation est annulée.</p>${summary(r)}<p>Au plaisir de vous accueillir une prochaine fois.</p>`;
