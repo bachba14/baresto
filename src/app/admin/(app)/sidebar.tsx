@@ -1,15 +1,11 @@
 "use client";
 
-import { useRef, useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logout } from "@/app/(auth)/actions";
-import { SIDEBAR_COOKIE } from "@/lib/sidebar-cookie";
 import { LiveIndicator } from "./live-updates";
 
-
-const RAIL = 72; // largeur repliée (icônes seules)
-const OPEN = 256; // largeur ouverte
 
 /** Icônes au trait (24 × 24). */
 const ICONS = {
@@ -56,18 +52,6 @@ const ICONS = {
   code: <path d="m8 7-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16" />,
   external: <path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />,
   logout: <path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4M10 16l4-4-4-4M14 12H4" />,
-  panelOpen: (
-    <>
-      <rect x="3.5" y="4" width="17" height="16" rx="2.5" />
-      <path d="M9 4v16M13 9.5l2.5 2.5-2.5 2.5" />
-    </>
-  ),
-  panelClose: (
-    <>
-      <rect x="3.5" y="4" width="17" height="16" rx="2.5" />
-      <path d="M9 4v16M15.5 9.5 13 12l2.5 2.5" />
-    </>
-  ),
 };
 
 type IconName = keyof typeof ICONS;
@@ -106,48 +90,19 @@ const GROUPS: { title?: string; links: { href: string; label: string; icon: Icon
   },
 ];
 
-/** Libellé qui apparaît en fondu quand la barre s'ouvre (l'icône, elle, ne bouge pas). */
-function Label({ open, children }: { open: boolean; children: ReactNode }) {
-  return (
-    <span className={`truncate whitespace-nowrap transition-opacity duration-200 ${open ? "opacity-100 delay-75" : "opacity-0"}`}>
-      {children}
-    </span>
-  );
+function Label({ children }: { children: ReactNode }) {
+  return <span className="truncate whitespace-nowrap">{children}</span>;
 }
 
 export function Sidebar({
   restaurant,
   email,
-  initialPinned,
 }: {
   restaurant: { name: string; slug: string; color: string; initials: string };
   email: string | undefined;
-  initialPinned: boolean;
 }) {
   const pathname = usePathname();
-  const [pinned, setPinned] = useState(initialPinned);
-  const [hovered, setHovered] = useState(false);
-  const closeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const open = pinned || hovered;
-
   const isActive = (href: string) => (href === "/admin" ? pathname === href : pathname.startsWith(href));
-
-  const togglePin = () => {
-    const next = !pinned;
-    setPinned(next);
-    setHovered(false);
-    document.cookie = `${SIDEBAR_COOKIE}=${next ? "pinned" : "rail"}; path=/admin; max-age=31536000; samesite=lax`;
-  };
-
-  // Ouverture immédiate au survol, fermeture avec un léger délai (évite les clignotements).
-  const enter = () => {
-    clearTimeout(closeTimer.current);
-    setHovered(true);
-  };
-  const leave = () => {
-    clearTimeout(closeTimer.current);
-    closeTimer.current = setTimeout(() => setHovered(false), 120);
-  };
 
   const linkClass = (active: boolean) =>
     `group flex h-10 items-center gap-3 rounded-xl px-[15px] text-sm transition-colors duration-200 ${
@@ -160,111 +115,77 @@ export function Sidebar({
 
   return (
     <>
-      {/* ── Ordinateur : rail d'icônes qui s'ouvre au survol ── */}
-      <div
-        className="relative hidden shrink-0 transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none md:block"
-        style={{ width: pinned ? OPEN : RAIL }}
+      {/* ── Ordinateur : barre toujours ouverte ── */}
+      <aside
+        aria-label="Navigation du back-office"
+        className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col overflow-y-auto py-5 md:flex"
       >
-        <aside
-          onMouseEnter={enter}
-          onMouseLeave={leave}
-          onFocus={enter}
-          onBlur={(e) => {
-            if (!e.currentTarget.contains(e.relatedTarget as Node | null)) leave();
-          }}
-          aria-label="Navigation du back-office"
-          className={`fixed inset-y-0 left-0 z-40 flex flex-col overflow-x-hidden overflow-y-auto py-5 transition-[width,background-color,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
-            open && !pinned ? "bg-white shadow-[0_0_0_1px_rgb(28_25_23/0.04),0_24px_48px_-12px_rgb(28_25_23/0.25)]" : "bg-[#faf9f7]"
-          }`}
-          style={{ width: open ? OPEN : RAIL }}
-        >
-          {/* Logo */}
-          <div className="flex h-10 items-center justify-between pr-3 pl-[22px]">
-            <Link href="/admin" aria-label="Tableau de bord" className="flex items-center gap-2.5">
-              <svg viewBox="0 0 32 32" className="h-7 w-7 shrink-0" aria-hidden>
-                <circle cx="16" cy="16" r="15" fill="#b45309" />
-                <circle cx="16" cy="16" r="6" fill="#fff" />
-                {[0, 90, 180, 270].map((a) => (
-                  <rect key={a} x="14" y="3.5" width="4" height="4" rx="1.2" fill="#fde68a" transform={`rotate(${a} 16 16)`} />
-                ))}
-              </svg>
-              <Label open={open}><span className="text-lg font-bold tracking-tight text-stone-900">Baresto</span></Label>
-            </Link>
-          </div>
+        {/* Logo */}
+        <div className="flex h-10 items-center pl-[22px]">
+          <Link href="/admin" aria-label="Tableau de bord" className="flex items-center gap-2.5">
+            <svg viewBox="0 0 32 32" className="h-7 w-7 shrink-0" aria-hidden>
+              <circle cx="16" cy="16" r="15" fill="#b45309" />
+              <circle cx="16" cy="16" r="6" fill="#fff" />
+              {[0, 90, 180, 270].map((a) => (
+                <rect key={a} x="14" y="3.5" width="4" height="4" rx="1.2" fill="#fde68a" transform={`rotate(${a} 16 16)`} />
+              ))}
+            </svg>
+            <span className="text-lg font-bold tracking-tight text-stone-900">Baresto</span>
+          </Link>
+        </div>
 
-          {/* Restaurant */}
-          <div className="mt-6 flex items-center gap-3 px-[18px]">
-            <span
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-semibold text-white"
-              style={{ background: restaurant.color }}
-              title={restaurant.name}
-              aria-hidden
-            >
-              {restaurant.initials}
-            </span>
-            <span className={`min-w-0 transition-opacity duration-200 ${open ? "opacity-100 delay-75" : "opacity-0"}`}>
-              <span className="block truncate text-sm font-medium whitespace-nowrap text-stone-900">{restaurant.name}</span>
-              <LiveIndicator />
-            </span>
-          </div>
+        {/* Restaurant */}
+        <div className="mt-6 flex items-center gap-3 px-[18px]">
+          <span
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-semibold text-white"
+            style={{ background: restaurant.color }}
+            aria-hidden
+          >
+            {restaurant.initials}
+          </span>
+          <span className="min-w-0">
+            <span className="block truncate text-sm font-medium text-stone-900">{restaurant.name}</span>
+            <LiveIndicator />
+          </span>
+        </div>
 
-          {/* Liens */}
-          <nav className="mt-6 space-y-4 px-3">
-            {GROUPS.map((group, g) => (
-              <div key={g} className="space-y-0.5">
-                {group.title && (
-                  <div className="relative flex h-6 items-center px-[15px]">
-                    {/* Replié : un trait ; ouvert : le titre de la section. */}
-                    <span className={`absolute inset-x-[15px] h-px bg-stone-900/[0.08] transition-opacity duration-200 ${open ? "opacity-0" : "opacity-100"}`} />
-                    <Label open={open}>
-                      <span className="text-[11px] font-medium tracking-wider text-stone-400 uppercase">{group.title}</span>
-                    </Label>
-                  </div>
-                )}
-                {group.links.map((l) => {
-                  const active = isActive(l.href);
-                  return (
-                    <Link key={l.href} href={l.href} aria-current={active ? "page" : undefined} aria-label={l.label} className={linkClass(active)}>
-                      <span className={iconClass(active)}><Icon name={l.icon} /></span>
-                      <Label open={open}>{l.label}</Label>
-                    </Link>
-                  );
-                })}
-              </div>
-            ))}
-          </nav>
+        {/* Liens */}
+        <nav className="mt-6 space-y-4 px-3">
+          {GROUPS.map((group, g) => (
+            <div key={g} className="space-y-0.5">
+              {group.title && (
+                <p className="px-[15px] pb-1 text-[11px] font-medium tracking-wider text-stone-400 uppercase">{group.title}</p>
+              )}
+              {group.links.map((l) => {
+                const active = isActive(l.href);
+                return (
+                  <Link key={l.href} href={l.href} aria-current={active ? "page" : undefined} className={linkClass(active)}>
+                    <span className={iconClass(active)}><Icon name={l.icon} /></span>
+                    <Label>{l.label}</Label>
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
+        </nav>
 
-          {/* Bas : ouvrir / replier, page publique, compte */}
-          <div className="mt-auto space-y-0.5 px-3 pt-6">
-            <button
-              type="button"
-              onClick={togglePin}
-              aria-pressed={pinned}
-              aria-label={pinned ? "Replier la barre" : "Garder la barre ouverte"}
-              title={pinned ? "Replier la barre" : "Garder la barre ouverte"}
-              className={`${linkClass(false)} w-full`}
-            >
-              <span className={pinned ? "text-amber-600" : iconClass(false)}>
-                <Icon name={pinned ? "panelClose" : "panelOpen"} />
-              </span>
-              <Label open={open}>{pinned ? "Replier la barre" : "Garder ouverte"}</Label>
+        {/* Bas : page publique, compte */}
+        <div className="mt-auto space-y-0.5 px-3 pt-6">
+          <a href={`/r/${restaurant.slug}`} target="_blank" className={linkClass(false)}>
+            <span className={iconClass(false)}><Icon name="external" /></span>
+            <Label>Ma page publique</Label>
+          </a>
+          <form action={logout}>
+            <button type="submit" title={email} className={`${linkClass(false)} w-full`}>
+              <span className={iconClass(false)}><Icon name="logout" /></span>
+              <Label>
+                <span className="block text-left">Se déconnecter</span>
+                <span className="block truncate text-left text-[11px] text-stone-400">{email}</span>
+              </Label>
             </button>
-            <a href={`/r/${restaurant.slug}`} target="_blank" aria-label="Ma page publique" className={linkClass(false)}>
-              <span className={iconClass(false)}><Icon name="external" /></span>
-              <Label open={open}>Ma page publique</Label>
-            </a>
-            <form action={logout}>
-              <button type="submit" aria-label="Se déconnecter" title={email} className={`${linkClass(false)} w-full`}>
-                <span className={iconClass(false)}><Icon name="logout" /></span>
-                <Label open={open}>
-                  <span className="block text-left">Se déconnecter</span>
-                  <span className="block truncate text-left text-[11px] text-stone-400">{email}</span>
-                </Label>
-              </button>
-            </form>
-          </div>
-        </aside>
-      </div>
+          </form>
+        </div>
+      </aside>
 
       {/* ── Mobile : barre du haut + liens qui défilent ── */}
       <div className="sticky top-0 z-30 bg-[#faf9f7]/85 backdrop-blur md:hidden">

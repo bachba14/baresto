@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
 import { requireRestaurant } from "@/lib/data";
 import { LiveUpdates } from "./live-updates";
-import { SIDEBAR_COOKIE } from "@/lib/sidebar-cookie";
 import { Sidebar } from "./sidebar";
 
 export const metadata: Metadata = { title: "Back-office", robots: { index: false } };
@@ -17,14 +15,13 @@ const initials = (name: string) =>
     .join("");
 
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
-  const [{ email, restaurant }, cookieStore] = await Promise.all([requireRestaurant(), cookies()]);
+  const { email, restaurant } = await requireRestaurant();
 
   return (
     <div className="min-h-screen bg-[#faf9f7] md:flex">
       <Sidebar
         restaurant={{ name: restaurant.name, slug: restaurant.slug, color: restaurant.primary_color, initials: initials(restaurant.name) }}
         email={email}
-        initialPinned={cookieStore.get(SIDEBAR_COOKIE)?.value === "pinned"}
       />
 
       {/* Connexion temps réel : une seule pour toute la page. */}
