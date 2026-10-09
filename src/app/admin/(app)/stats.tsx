@@ -2,6 +2,8 @@ import Link from "next/link";
 import { addDays, DAY_ORDER, DAYS, todayIn } from "@/lib/format";
 import { cardClass } from "@/components/admin-styles";
 import { BarChart } from "@/components/bar-chart";
+import { CountUp } from "@/components/count-up";
+import { Segmented } from "@/components/segmented";
 import { fetchReservationRows } from "@/lib/reservation-rows";
 import type { createClient } from "@/lib/supabase/server";
 import type { Restaurant } from "@/lib/types";
@@ -10,7 +12,6 @@ type Supabase = Awaited<ReturnType<typeof createClient>>;
 
 export const PERIODS = [7, 30, 90] as const;
 
-const pct = (n: number, d: number) => (d ? `${Math.round((n / d) * 100)} %` : "—");
 const shortDate = (d: string) => `${Number(d.slice(8, 10))}/${d.slice(5, 7)}`;
 
 /** Statistiques du tableau de bord sur les N derniers jours (aujourd'hui compris). */
@@ -53,78 +54,76 @@ export async function Stats({ supabase, restaurant, period }: { supabase: Supaba
     return { key: String(dow), label: DAYS[dow].slice(0, 3), value: avg, tooltip: `${DAYS[dow]} : ${avg} couverts en moyenne` };
   });
 
-  const tiles: [string, string | number, string?][] = [
-    ["Réservations", kept.length, `${(kept.length / period).toFixed(1).replace(".", ",")} par jour`],
-    ["Couverts", covers, kept.length ? `${(covers / kept.length).toFixed(1).replace(".", ",")} pers. par table` : undefined],
-    ["Taux de no-show", pct(noShows, kept.length + noShows), `${noShows} client${noShows > 1 ? "s" : ""} non venu${noShows > 1 ? "s" : ""}`],
-    ["Annulations", pct(cancelled, rows.length), `${cancelled} annulée${cancelled > 1 ? "s" : ""}`],
-    ["Réservé en ligne", pct(online, kept.length), `${kept.length - online} par téléphone / sur place`],
+  const rate = (n: number, d: number) => (d ? Math.round((n / d) * 100) : null);
+  const tiles: { label: string; value: number | null; suffix?: string; hint?: string }[] = [
+    { label: "Réservations", value: kept.length, hint: `${(kept.length / period).toFixed(1).replace(".", ",")} par jour` },
+    { label: "Couverts", value: covers, hint: kept.length ? `${(covers / kept.length).toFixed(1).replace(".", ",")} pers. par table` : undefined },
+    { label: "No-show", value: rate(noShows, kept.length + noShows), suffix: " %", hint: `${noShows} client${noShows > 1 ? "s" : ""} non venu${noShows > 1 ? "s" : ""}` },
+    { label: "Annulations", value: rate(cancelled, rows.length), suffix: " %", hint: `${cancelled} annulée${cancelled > 1 ? "s" : ""}` },
+    { label: "En ligne", value: rate(online, kept.length), suffix: " %", hint: `${kept.length - online} par téléphone / sur place` },
   ];
 
   return (
     <section className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-baseline gap-3">
-          <h2 className="text-lg font-semibold">Statistiques</h2>
-          <Link href="/admin/stats" className="text-sm text-stone-600 underline">Statistiques détaillées →</Link>
+          <h2 className="text-xl">Statistiques</h2>
+          <Link href="/admin/stats" className="text-sm text-stone-500 transition hover:text-stone-900">Tout voir →</Link>
         </div>
-        <div className="flex gap-1">
-          {PERIODS.map((p) => (
-            <Link
-              key={p}
-              href={`?p=${p}`}
-              scroll={false}
-              className={`rounded-lg px-3 py-1.5 text-sm ${p === period ? "bg-stone-900 text-white" : "border border-stone-300 bg-white"}`}
-            >
-              {p} jours
-            </Link>
-          ))}
-        </div>
+        <Segmented items={PERIODS.map((p) => ({ href: `?p=${p}`, label: `${p} jours` }))} active={PERIODS.indexOf(period as 7)} />
       </div>
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
-        {tiles.map(([label, value, hint]) => (
-          <div key={label} className={cardClass}>
-            <p className="text-sm text-stone-500">{label}</p>
-            <p className="text-2xl font-semibold">{value}</p>
-            {hint && <p className="text-xs text-stone-500">{hint}</p>}
+      {/* Indicateurs regroupés dans une seule carte, séparés par de fines lignes. */}
+      <div className={`${cardClass} grid grid-cols-2 gap-y-5 p-0 py-5 sm:grid-cols-3 lg:grid-cols-5 lg:divide-x lg:divide-stone-100`}>
+        {tiles.map((t) => (
+          <div key={t.label} className="px-5">
+            <p className="text-sm text-stone-500">{t.label}</p>
+            <p className="mt-1 text-2xl font-semibold tracking-tight">
+              {t.value == null ? "—" : <CountUp key={`${t.label}-${period}`} value={t.value} suffix={t.suffix} />}
+            </p>
+            {t.hint && <p className="text-xs text-stone-400">{t.hint}</p>}
           </div>
         ))}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
+      {/* La clé relance l'animation des barres à chaque changement de période. */}
+      <div key={period} className="grid gap-4 lg:grid-cols-[2fr_1fr]">
         <div className={cardClass}>
           <h3 className="font-medium">Réservations par jour</h3>
-          <p className="mb-4 text-xs text-stone-500">Hors annulations et non-venues · survolez une barre pour le détail</p>
+          <p className="mb-4 text-xs text-stone-400">Hors annulations et non-venues · survolez une barre pour le détail</p>
           <BarChart bars={dayBars} unit="réservations" labelEvery={period <= 7 ? 1 : period <= 30 ? 5 : 15} />
         </div>
         <div className={cardClass}>
-          <h3 className="font-medium">Couverts moyens par jour de la semaine</h3>
-          <p className="mb-4 text-xs text-stone-500">Sur les {period} derniers jours</p>
+          <h3 className="font-medium">Couverts moyens par jour</h3>
+          <p className="mb-4 text-xs text-stone-400">Sur les {period} derniers jours</p>
           <BarChart bars={weekday} unit="couverts" />
         </div>
       </div>
 
-      <details className={`${cardClass} text-sm`}>
-        <summary className="cursor-pointer font-medium">Voir le détail jour par jour</summary>
-        <table className="mt-3 w-full text-left tabular-nums">
-          <thead>
-            <tr className="border-b border-stone-200 text-stone-500">
-              <th className="py-1 font-medium">Date</th>
-              <th className="py-1 font-medium">Réservations</th>
-              <th className="py-1 font-medium">Couverts</th>
-            </tr>
-          </thead>
-          <tbody>
-            {[...days].reverse().map((d) => (
-              <tr key={d} className="border-b border-stone-100">
-                <td className="py-1">{DAYS[new Date(`${d}T00:00:00Z`).getUTCDay()]} {shortDate(d)}</td>
-                <td className="py-1">{byDay.get(d)!.count}</td>
-                <td className="py-1">{byDay.get(d)!.covers}</td>
+      <details className="group text-sm">
+        <summary className="cursor-pointer list-none text-stone-500 transition hover:text-stone-900">
+          <span className="inline-block transition-transform duration-200 group-open:rotate-90">›</span> Détail jour par jour
+        </summary>
+        <div className={`${cardClass} mt-2`}>
+          <table className="w-full text-left tabular-nums">
+            <thead>
+              <tr className="border-b border-stone-100 text-stone-500">
+                <th className="py-1.5 font-medium">Date</th>
+                <th className="py-1.5 font-medium">Réservations</th>
+                <th className="py-1.5 font-medium">Couverts</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {[...days].reverse().map((d) => (
+                <tr key={d} className="border-b border-stone-50">
+                  <td className="py-1.5">{DAYS[new Date(`${d}T00:00:00Z`).getUTCDay()]} {shortDate(d)}</td>
+                  <td className="py-1.5">{byDay.get(d)!.count}</td>
+                  <td className="py-1.5">{byDay.get(d)!.covers}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </details>
     </section>
   );

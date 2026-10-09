@@ -81,9 +81,55 @@ body {
   }
 }
 
+/* ── Animations du back-office ─────────────────────────── */
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes grow-up {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   html {
     scroll-behavior: smooth;
+  }
+
+  /* Apparition en douceur, en cascade avec style="--delay: 80ms". */
+  .animate-rise {
+    animation: rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--delay, 0ms);
+  }
+  /* Barres de graphiques qui poussent depuis l'axe. */
+  .animate-grow {
+    transform-origin: bottom;
+    animation: grow-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--delay, 0ms);
+  }
+  /* Cartes cliquables : léger soulèvement au survol. */
+  .lift {
+    transition:
+      transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .lift:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 1px 2px rgb(28 25 23 / 0.04),
+      0 12px 24px -12px rgb(28 25 23 / 0.18);
   }
 
   .animate-fade-up {

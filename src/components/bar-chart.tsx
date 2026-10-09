@@ -29,10 +29,10 @@ export function BarChart({ bars, height = 180, labelEvery = 1, unit }: { bars: B
       <div className="min-w-0 flex-1">
         <div className="relative" style={{ height }}>
           {ticks.map((t) => (
-            <div key={t} className="absolute inset-x-0 border-t border-stone-100" style={{ bottom: `${(t / top) * 100}%` }} />
+            <div key={t} className="absolute inset-x-0 border-t border-dashed border-stone-200/70" style={{ bottom: `${(t / top) * 100}%` }} />
           ))}
           <div className="absolute inset-0 flex items-end gap-[2px]">
-            {bars.map((b) => (
+            {bars.map((b, i) => (
               <div
                 key={b.key}
                 tabIndex={0}
@@ -40,10 +40,15 @@ export function BarChart({ bars, height = 180, labelEvery = 1, unit }: { bars: B
                 className="group relative flex h-full flex-1 items-end justify-center outline-none"
               >
                 <div
-                  className={`w-full max-w-8 rounded-t-[4px] transition-colors ${
-                    b.muted ? "bg-amber-600/35" : "bg-amber-600"
-                  } group-hover:bg-amber-800 group-focus-visible:bg-amber-800`}
-                  style={{ height: `${(b.value / top) * 100}%`, minHeight: b.value > 0 ? 2 : 0 }}
+                  className={`animate-grow w-full max-w-8 rounded-t-[4px] transition-colors duration-200 ${
+                    b.muted ? "bg-amber-600/30" : "bg-amber-600/85"
+                  } group-hover:bg-amber-700 group-focus-visible:bg-amber-700`}
+                  style={{
+                    height: `${(b.value / top) * 100}%`,
+                    minHeight: b.value > 0 ? 2 : 0,
+                    // Les barres poussent l'une après l'autre (cascade plafonnée à 0,4 s).
+                    "--delay": `${Math.min(i * 18, 400)}ms`,
+                  } as React.CSSProperties}
                 />
                 <div className="pointer-events-none absolute bottom-full z-10 mb-1 hidden rounded-md bg-stone-900 px-2 py-1 text-xs whitespace-nowrap text-white shadow group-hover:block group-focus-visible:block">
                   {b.tooltip}

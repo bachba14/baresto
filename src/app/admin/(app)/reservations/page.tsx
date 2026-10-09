@@ -116,7 +116,7 @@ export default async function ReservationsPage({ searchParams }: PageProps<"/adm
         </section>
       )}
 
-      <details className={cardClass}>
+      <details id="nouvelle" open={params.new === "1"} className={`${cardClass} scroll-mt-6`}>
         <summary className="cursor-pointer font-semibold">+ Ajouter une réservation (téléphone, sur place)</summary>
         <form action={createReservation} className="mt-4 grid gap-3 sm:grid-cols-4">
           <div>

@@ -12,8 +12,8 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const { email, restaurant } = await requireRestaurant();
 
   return (
-    <div className="min-h-screen bg-stone-50 md:flex">
-      <aside className="border-b border-stone-200 bg-white md:sticky md:top-0 md:flex md:h-screen md:w-60 md:shrink-0 md:flex-col md:border-r md:border-b-0">
+    <div className="min-h-screen bg-[#faf9f7] md:flex">
+      <aside className="border-b border-stone-900/[0.06] bg-white/80 backdrop-blur md:sticky md:top-0 md:flex md:h-screen md:w-60 md:shrink-0 md:flex-col md:border-r md:border-b-0 md:border-stone-900/[0.06]">
         <div className="flex items-center justify-between p-4 md:block">
           <Link href="/admin"><Logo /></Link>
           <p className="mt-1 hidden truncate text-sm font-medium text-stone-600 md:block">{restaurant.name}</p>
