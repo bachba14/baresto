@@ -56,8 +56,18 @@ const ICONS = {
   code: <path d="m8 7-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16" />,
   external: <path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />,
   logout: <path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4M10 16l4-4-4-4M14 12H4" />,
-  pin: <path d="M9 4h6l-1 6 3 3v2H7v-2l3-3zM12 15v6" />,
-  unpin: <path d="M9 4h6l-1 6 3 3v2H7v-2l3-3zM12 15v6M3 3l18 18" />,
+  panelOpen: (
+    <>
+      <rect x="3.5" y="4" width="17" height="16" rx="2.5" />
+      <path d="M9 4v16M13 9.5l2.5 2.5-2.5 2.5" />
+    </>
+  ),
+  panelClose: (
+    <>
+      <rect x="3.5" y="4" width="17" height="16" rx="2.5" />
+      <path d="M9 4v16M15.5 9.5 13 12l2.5 2.5" />
+    </>
+  ),
 };
 
 type IconName = keyof typeof ICONS;
@@ -168,7 +178,7 @@ export function Sidebar({
           }`}
           style={{ width: open ? OPEN : RAIL }}
         >
-          {/* Logo + épingle */}
+          {/* Logo */}
           <div className="flex h-10 items-center justify-between pr-3 pl-[22px]">
             <Link href="/admin" aria-label="Tableau de bord" className="flex items-center gap-2.5">
               <svg viewBox="0 0 32 32" className="h-7 w-7 shrink-0" aria-hidden>
@@ -180,18 +190,6 @@ export function Sidebar({
               </svg>
               <Label open={open}><span className="text-lg font-bold tracking-tight text-stone-900">Baresto</span></Label>
             </Link>
-            <button
-              type="button"
-              onClick={togglePin}
-              aria-pressed={pinned}
-              aria-label={pinned ? "Replier la barre" : "Garder la barre ouverte"}
-              title={pinned ? "Replier la barre" : "Garder la barre ouverte"}
-              className={`rounded-lg p-1.5 text-stone-400 transition-all duration-200 hover:bg-stone-900/5 hover:text-stone-900 ${
-                open ? "opacity-100" : "pointer-events-none opacity-0"
-              } ${pinned ? "text-amber-600" : ""}`}
-            >
-              <Icon name={pinned ? "unpin" : "pin"} className="h-4 w-4" />
-            </button>
           </div>
 
           {/* Restaurant */}
@@ -236,8 +234,21 @@ export function Sidebar({
             ))}
           </nav>
 
-          {/* Bas : page publique, compte */}
+          {/* Bas : ouvrir / replier, page publique, compte */}
           <div className="mt-auto space-y-0.5 px-3 pt-6">
+            <button
+              type="button"
+              onClick={togglePin}
+              aria-pressed={pinned}
+              aria-label={pinned ? "Replier la barre" : "Garder la barre ouverte"}
+              title={pinned ? "Replier la barre" : "Garder la barre ouverte"}
+              className={`${linkClass(false)} w-full`}
+            >
+              <span className={pinned ? "text-amber-600" : iconClass(false)}>
+                <Icon name={pinned ? "panelClose" : "panelOpen"} />
+              </span>
+              <Label open={open}>{pinned ? "Replier la barre" : "Garder ouverte"}</Label>
+            </button>
             <a href={`/r/${restaurant.slug}`} target="_blank" aria-label="Ma page publique" className={linkClass(false)}>
               <span className={iconClass(false)}><Icon name="external" /></span>
               <Label open={open}>Ma page publique</Label>
