@@ -1,11 +1,37 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { formatTime } from "@/lib/format";
 import type { Reservation } from "@/lib/types";
+
+// État de la connexion, partagé entre la connexion (une seule) et ses indicateurs (plusieurs).
+let connectedNow = false;
+const listeners = new Set<() => void>();
+function setConnectedNow(value: boolean) {
+  connectedNow = value;
+  listeners.forEach((l) => l());
+}
+const subscribe = (l: () => void) => {
+  listeners.add(l);
+  return () => listeners.delete(l);
+};
+
+/** Pastille « En direct » / « Hors ligne ». */
+export function LiveIndicator() {
+  const connected = useSyncExternalStore(subscribe, () => connectedNow, () => false);
+  return (
+    <span className="flex items-center gap-1.5 text-xs text-stone-500" title={connected ? "Mises à jour en direct" : "Connexion au direct…"}>
+      <span className="relative flex h-2 w-2">
+        {connected && <span className="absolute inset-0 animate-ping rounded-full bg-emerald-400 opacity-60 motion-reduce:hidden" />}
+        <span className={`relative h-2 w-2 rounded-full ${connected ? "bg-emerald-500" : "bg-stone-300"}`} />
+      </span>
+      {connected ? "En direct" : "Hors ligne"}
+    </span>
+  );
+}
 
 /** Petit « ding » quand une réservation arrive (ignoré si le navigateur bloque le son). */
 function ding() {
@@ -30,7 +56,6 @@ function ding() {
  */
 export function LiveUpdates({ restaurantId }: { restaurantId: string }) {
   const router = useRouter();
-  const [connected, setConnected] = useState(false);
   const [toasts, setToasts] = useState<{ id: number; text: string }[]>([]);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
@@ -71,7 +96,7 @@ export function LiveUpdates({ restaurantId }: { restaurantId: string }) {
         .on("postgres_changes", { event: "INSERT", schema: "public", table: "reservation_tables", filter }, refresh)
         .on("postgres_changes", { event: "*", schema: "public", table: "waitlist", filter }, refresh)
         .subscribe((status, err) => {
-          setConnected(status === "SUBSCRIBED");
+          setConnectedNow(status === "SUBSCRIBED");
           if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") console.warn("[direct]", status, err?.message ?? "");
         });
     })();
@@ -86,19 +111,16 @@ export function LiveUpdates({ restaurantId }: { restaurantId: string }) {
       stopped = true;
       clearTimeout(timer.current);
       document.removeEventListener("visibilitychange", onVisible);
+      setConnectedNow(false);
       if (channel) supabase.removeChannel(channel);
     };
   }, [restaurantId, router]);
 
   return (
     <>
-      <p className="flex items-center gap-1.5 text-xs text-stone-500" title={connected ? "Mises à jour en direct" : "Connexion au direct…"}>
-        <span className={`h-2 w-2 rounded-full ${connected ? "bg-emerald-500" : "bg-stone-300"}`} />
-        {connected ? "En direct" : "Hors ligne"}
-      </p>
       <div className="fixed right-4 bottom-4 z-50 flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-2" aria-live="polite">
         {toasts.map((t) => (
-          <div key={t.id} className="rounded-xl border border-emerald-200 bg-white p-3 text-sm shadow-lg">
+          <div key={t.id} className="animate-rise rounded-2xl bg-white p-3 text-sm shadow-lg ring-1 ring-stone-900/5">
             🔔 {t.text}
           </div>
         ))}
