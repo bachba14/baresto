@@ -1,3 +1,4 @@
+import { createHash, timingSafeEqual } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { emailEnabled } from "@/lib/email";
@@ -10,10 +11,16 @@ import type { Reservation, Restaurant } from "@/lib/types";
 // rappels avant le repas, demandes d'avis le lendemain, liste d'attente.
 // Protégée par CRON_SECRET : en-tête « Authorization: Bearer … » ou paramètre ?key=…
 
+/** Comparaison en temps constant (les empreintes ont toujours la même longueur). */
+function sameSecret(a: string, b: string) {
+  const hash = (s: string) => createHash("sha256").update(s).digest();
+  return timingSafeEqual(hash(a), hash(b));
+}
+
 async function run(request: NextRequest) {
   const secret = process.env.CRON_SECRET;
   const given = request.headers.get("authorization")?.replace(/^Bearer /, "") ?? request.nextUrl.searchParams.get("key");
-  if (!secret || given !== secret) return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
+  if (!secret || !given || !sameSecret(given, secret)) return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
 
   const supabase = createServiceClient();
   if (!supabase) return NextResponse.json({ error: "SUPABASE_SECRET_KEY manquante." }, { status: 500 });

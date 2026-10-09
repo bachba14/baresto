@@ -9,8 +9,10 @@ type Row = Reservation & {
 };
 
 // Point-virgule + BOM UTF-8 : ouverture directe dans Excel en français.
+// Une valeur commençant par =, +, -, @ serait exécutée comme formule par Excel : on la préfixe.
 const cell = (v: unknown) => {
-  const s = v == null ? "" : String(v);
+  let s = v == null ? "" : String(v);
+  if (typeof v === "string" && /^[=+\-@\t\r]/.test(s)) s = `'${s}`;
   return /[";\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 };
 

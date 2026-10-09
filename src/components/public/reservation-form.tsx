@@ -22,6 +22,8 @@ export function ReservationForm(props: {
   frameId: string;
   /** Base de l'API du restaurant, ex. "/api/r/le-comptoir". */
   apiBase: string;
+  /** Délai de modification / annulation en ligne, en heures. */
+  cancelHours: number;
   /** Valeurs pré-remplies (ex. lien de l'e-mail de liste d'attente). */
   initialDate?: string;
   initialParty?: number;
@@ -109,7 +111,7 @@ export function ReservationForm(props: {
             <a href={done.manageUrl} target="_blank" rel="noreferrer" className="text-[var(--brand)] underline">
               Modifier ou annuler
             </a>
-            <span className="text-stone-500"> (jusqu&apos;à 24 h avant, lien aussi envoyé par e-mail)</span>
+            <span className="text-stone-500"> (jusqu&apos;à {props.cancelHours} h avant, lien aussi envoyé par e-mail)</span>
           </p>
         )}
         <button

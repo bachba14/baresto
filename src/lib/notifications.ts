@@ -1,6 +1,6 @@
 import { calendarLinks } from "./calendar";
 import { sendEmail } from "./email";
-import { addDays, formatDate, formatTime } from "./format";
+import { formatDate, formatTime } from "./format";
 import type { Reservation, Restaurant, WaitlistEntry } from "./types";
 
 type R = Pick<Reservation, "date" | "time" | "party_size" | "name" | "email" | "phone" | "notes" | "token" | "status">;
@@ -10,9 +10,14 @@ const esc = (s: string) =>
 
 const people = (n: number) => `${n} ${n > 1 ? "personnes" : "personne"}`;
 
-/** Les clients peuvent modifier ou annuler en ligne jusqu'à 24 h avant. */
-export function deadlineText(r: Pick<Reservation, "date" | "time">) {
-  return `${formatDate(addDays(r.date, -1))} à ${formatTime(r.time)}`;
+/** Limite de modification / annulation en ligne (délai réglé par le restaurant, 24 h par défaut). */
+export function deadlineText(r: Pick<Reservation, "date" | "time">, hours: number) {
+  const [y, m, d] = r.date.split("-").map(Number);
+  const [h, mi] = r.time.split(":").map(Number);
+  const at = new Date(Date.UTC(y, m - 1, d, h, mi) - hours * 3_600_000);
+  const date = at.toISOString().slice(0, 10);
+  const time = at.toISOString().slice(11, 16);
+  return `${formatDate(date)} à ${formatTime(time)}`;
 }
 
 function layout(restaurant: Restaurant, body: string, button?: { href: string; label: string }) {
@@ -46,7 +51,7 @@ function manageLinks(r: R, restaurant: Restaurant, base: string) {
   const link = (href: string, label: string) =>
     `<a href="${esc(href)}" style="display:inline-block;margin:0 6px 6px 0;padding:6px 10px;border:1px solid #d6d3d1;border-radius:6px;color:#44403c;text-decoration:none;font-size:13px">${label}</a>`;
   return `<p style="font-size:14px;color:#57534e">Un empêchement ? Vous pouvez modifier ou annuler votre réservation en ligne jusqu'au
-${esc(deadlineText(r))}. Au-delà, merci d'appeler le restaurant.</p>
+${esc(deadlineText(r, restaurant.cancel_deadline_hours))}. Au-delà, merci d'appeler le restaurant.</p>
 <p style="font-size:13px;color:#78716c;margin:16px 0 6px">Ajouter à mon agenda :</p>
 <p style="margin:0">${link(cal.google, "Google Agenda")}${link(cal.outlook, "Outlook")}${link(cal.apple, "Apple Calendar (iPhone, Mac)")}</p>`;
 }

@@ -70,10 +70,21 @@ export function SettingsForm({ restaurant: settings, tableCount }: { restaurant:
         <div>
           <h2 className="font-semibold">E-mails aux clients</h2>
           <p className="text-sm text-stone-500">
-            Chaque client qui laisse son e-mail reçoit une confirmation avec un lien pour modifier ou annuler (jusqu&apos;à 24 h
-            avant). Les nouvelles réservations vous sont signalées à l&apos;adresse e-mail de l&apos;établissement ci-dessus.
+            Chaque client qui laisse son e-mail reçoit une confirmation avec un lien pour modifier ou annuler en ligne, jusqu&apos;au délai choisi ci-dessous. Les nouvelles réservations vous sont signalées à l&apos;adresse e-mail de l&apos;établissement ci-dessus.
           </p>
         </div>
+        <label className="max-w-xs">
+          <span className={labelClass}>Modification / annulation en ligne jusqu&apos;à (heures avant le repas)</span>
+          <input
+            name="cancel_deadline_hours"
+            type="number"
+            min={0}
+            max={168}
+            defaultValue={settings.cancel_deadline_hours}
+            className={inputClass}
+          />
+          <span className="mt-1 block text-xs text-stone-500">24 h par défaut. 0 = jusqu&apos;à l&apos;heure du repas.</span>
+        </label>
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" name="send_reminders" defaultChecked={settings.send_reminders} />
           Envoyer un rappel avant le repas (dans les 48 h qui précèdent)

@@ -31,6 +31,18 @@ export type Restaurant = {
   dinner_from: string;
   review_url: string | null;
   send_reminders: boolean;
+  /** Délai (heures avant le repas) jusqu'auquel le client peut modifier ou annuler en ligne. */
+  cancel_deadline_hours: number;
+};
+
+/** Fermeture exceptionnelle : journée entière si start_time et end_time sont vides. */
+export type Closure = {
+  id: string;
+  restaurant_id: string;
+  date: string;
+  start_time: string | null;
+  end_time: string | null;
+  reason: string | null;
 };
 
 export type MenuCategory = {

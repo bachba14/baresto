@@ -3,6 +3,7 @@ import { createPublicClient } from "@/lib/supabase/server";
 import { getRestaurantBySlug } from "@/lib/data";
 import { isValidDate } from "@/lib/format";
 import { CORS_HEADERS } from "@/lib/cors";
+import { clientIp, rateLimited, TOO_MANY } from "@/lib/rate-limit";
 
 export function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
@@ -13,6 +14,8 @@ const str = (v: unknown, max: number) => (typeof v === "string" ? v.slice(0, max
 /** Inscription sur la liste d'attente d'une date complète. */
 export async function POST(request: NextRequest, ctx: RouteContext<"/api/r/[slug]/waitlist">) {
   const fail = (error: string, status = 400) => NextResponse.json({ error }, { status, headers: CORS_HEADERS });
+
+  if (rateLimited(`attente:${clientIp(request.headers)}`, [[5, 10 * 60_000], [15, 86_400_000]])) return fail(TOO_MANY, 429);
 
   const restaurant = await getRestaurantBySlug((await ctx.params).slug);
   if (!restaurant) return fail("Restaurant introuvable.", 404);

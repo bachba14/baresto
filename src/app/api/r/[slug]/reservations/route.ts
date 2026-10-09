@@ -6,6 +6,7 @@ import { CORS_HEADERS } from "@/lib/cors";
 import { emailClient, emailRestaurant } from "@/lib/notifications";
 import { siteUrl } from "@/lib/site";
 import { calendarLinks } from "@/lib/calendar";
+import { clientIp, rateLimited, TOO_MANY } from "@/lib/rate-limit";
 import type { ReservationStatus } from "@/lib/types";
 
 export function OPTIONS() {
@@ -17,6 +18,9 @@ const str = (v: unknown, max: number) => (typeof v === "string" ? v.slice(0, max
 export async function POST(request: NextRequest, ctx: RouteContext<"/api/r/[slug]/reservations">) {
   const fail = (error: string, status = 400) =>
     NextResponse.json({ error }, { status, headers: CORS_HEADERS });
+
+  // Anti-spam : 5 réservations par 10 minutes et 15 par jour depuis une même connexion.
+  if (rateLimited(`resa:${clientIp(request.headers)}`, [[5, 10 * 60_000], [15, 86_400_000]])) return fail(TOO_MANY, 429);
 
   const restaurant = await getRestaurantBySlug((await ctx.params).slug);
   if (!restaurant) return fail("Restaurant introuvable.", 404);

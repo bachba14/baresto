@@ -11,6 +11,21 @@ const nextConfig = {
   async headers() {
     return [
       {
+        // En-têtes de sécurité sur tout le site.
+        source: "/:path*",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
+          { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains" },
+        ],
+      },
+      {
+        // Seuls les widgets peuvent être affichés dans le site d'un autre (anti-clickjacking).
+        source: "/:path((?!widget/|embed\\.js|demo\\.html).*)",
+        headers: [{ key: "Content-Security-Policy", value: "frame-ancestors 'self'" }],
+      },
+      {
         source: "/widget/:path*",
         headers: [{ key: "Content-Security-Policy", value: `frame-ancestors ${widgetAncestors}` }],
       },

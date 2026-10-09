@@ -58,6 +58,7 @@ export default async function RestaurantPage({ params, searchParams }: PageProps
               message={restaurant.reservation_message}
               phone={restaurant.phone}
               frameId=""
+              cancelHours={restaurant.cancel_deadline_hours}
               initialDate={typeof query.date === "string" ? query.date : undefined}
               initialParty={Number(query.party) || undefined}
             />

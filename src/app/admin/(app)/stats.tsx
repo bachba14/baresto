@@ -2,33 +2,13 @@ import Link from "next/link";
 import { addDays, DAY_ORDER, DAYS, todayIn } from "@/lib/format";
 import { cardClass } from "@/components/admin-styles";
 import { BarChart } from "@/components/bar-chart";
+import { fetchReservationRows } from "@/lib/reservation-rows";
 import type { createClient } from "@/lib/supabase/server";
-import type { Reservation, Restaurant } from "@/lib/types";
+import type { Restaurant } from "@/lib/types";
 
 type Supabase = Awaited<ReturnType<typeof createClient>>;
-type Row = Pick<Reservation, "date" | "party_size" | "status" | "source">;
 
 export const PERIODS = [7, 30, 90] as const;
-
-/** Toutes les lignes de la période (l'API renvoie au plus 1 000 lignes par requête). */
-async function fetchRows(supabase: Supabase, restaurantId: string, from: string, to: string) {
-  const rows: Row[] = [];
-  for (let offset = 0; offset < 50_000; offset += 1000) {
-    const { data, error } = await supabase
-      .from("reservations")
-      .select("date, party_size, status, source")
-      .eq("restaurant_id", restaurantId)
-      .gte("date", from)
-      .lte("date", to)
-      .order("date")
-      .order("id")
-      .range(offset, offset + 999);
-    if (error) throw new Error(error.message);
-    rows.push(...(data as Row[]));
-    if (data.length < 1000) break;
-  }
-  return rows;
-}
 
 const pct = (n: number, d: number) => (d ? `${Math.round((n / d) * 100)} %` : "—");
 const shortDate = (d: string) => `${Number(d.slice(8, 10))}/${d.slice(5, 7)}`;
@@ -37,7 +17,7 @@ const shortDate = (d: string) => `${Number(d.slice(8, 10))}/${d.slice(5, 7)}`;
 export async function Stats({ supabase, restaurant, period }: { supabase: Supabase; restaurant: Restaurant; period: number }) {
   const today = todayIn(restaurant.timezone);
   const from = addDays(today, -(period - 1));
-  const rows = await fetchRows(supabase, restaurant.id, from, today);
+  const rows = await fetchReservationRows(supabase, restaurant.id, from, today);
 
   const kept = rows.filter((r) => r.status !== "cancelled" && r.status !== "no_show");
   const covers = kept.reduce((n, r) => n + r.party_size, 0);
@@ -84,7 +64,10 @@ export async function Stats({ supabase, restaurant, period }: { supabase: Supaba
   return (
     <section className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-lg font-semibold">Statistiques</h2>
+        <div className="flex items-baseline gap-3">
+          <h2 className="text-lg font-semibold">Statistiques</h2>
+          <Link href="/admin/stats" className="text-sm text-stone-600 underline">Statistiques détaillées →</Link>
+        </div>
         <div className="flex gap-1">
           {PERIODS.map((p) => (
             <Link

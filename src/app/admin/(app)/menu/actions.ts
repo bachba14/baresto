@@ -56,10 +56,19 @@ export async function deleteCategory(id: string) {
 
 // ── Plats ──────────────────────────────────────────────────
 
+// Formats autorisés et extension enregistrée (le SVG est exclu : il peut contenir du script).
+const IMAGE_TYPES: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/gif": "gif",
+  "image/avif": "avif",
+};
+
 async function uploadImage(supabase: Supabase, restaurantId: string, file: File) {
-  if (!file.type.startsWith("image/")) throw new Error("Le fichier doit être une image.");
+  const ext = IMAGE_TYPES[file.type];
+  if (!ext) throw new Error("Format accepté : JPG, PNG, WebP, GIF ou AVIF.");
   if (file.size > 4 * 1024 * 1024) throw new Error("Image trop lourde (4 Mo max).");
-  const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
   // Un dossier par restaurant (vérifié par les règles du stockage).
   const path = `${restaurantId}/${crypto.randomUUID()}.${ext}`;
   check((await supabase.storage.from("menu").upload(path, file, { contentType: file.type })).error);

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireRestaurantAction } from "@/lib/data";
-import { isValidDate } from "@/lib/format";
+import { addDays, isValidDate } from "@/lib/format";
 import type { OpeningHours } from "@/lib/types";
 
 const TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
@@ -54,6 +54,7 @@ export async function saveSettings(_: string | null, formData: FormData): Promis
         dinner_from: TIME.test(String(formData.get("dinner_from")).slice(0, 5)) ? String(formData.get("dinner_from")).slice(0, 5) : "16:00",
         auto_confirm: formData.get("auto_confirm") === "on",
         send_reminders: formData.get("send_reminders") === "on",
+        cancel_deadline_hours: Math.min(int("cancel_deadline_hours"), 168),
         review_url: reviewUrl,
         opening_hours: parseHours(String(formData.get("opening_hours"))),
       })
@@ -66,19 +67,62 @@ export async function saveSettings(_: string | null, formData: FormData): Promis
   return "ok";
 }
 
-export async function addClosure(formData: FormData) {
+export type ClosureState = { error?: string; ok?: string } | null;
+
+/**
+ * Ajoute une fermeture sur un jour ou une période (un enregistrement par jour) :
+ * journée entière, midi, soir, ou plage horaire personnalisée.
+ */
+export async function addClosure(_: ClosureState, formData: FormData): Promise<ClosureState> {
   const { supabase, restaurant } = await requireRestaurantAction();
-  const date = String(formData.get("date"));
+  const from = String(formData.get("date"));
+  const toRaw = String(formData.get("date_to") ?? "");
+  if (!isValidDate(from)) return { error: "Date invalide." };
+  const to = isValidDate(toRaw) && toRaw >= from ? toRaw : from;
+
+  const days: string[] = [];
+  for (let d = from; d <= to; d = addDays(d, 1)) {
+    days.push(d);
+    if (days.length > 92) return { error: "Période trop longue (3 mois maximum)." };
+  }
+
+  const dinner = restaurant.dinner_from.slice(0, 5);
+  const mode = String(formData.get("mode"));
+  let start: string | null = null;
+  let end: string | null = null;
+  if (mode === "lunch") end = dinner;
+  else if (mode === "dinner") start = dinner;
+  else if (mode === "custom") {
+    start = String(formData.get("start_time") ?? "").slice(0, 5) || null;
+    end = String(formData.get("end_time") ?? "").slice(0, 5) || null;
+    if ((start && !TIME.test(start)) || (end && !TIME.test(end))) return { error: "Horaire invalide." };
+    if (!start && !end) return { error: "Indiquez au moins une heure de début ou de fin." };
+    if (start && end && start >= end) return { error: "L'heure de fin doit être après l'heure de début." };
+  }
+
+  const reason = String(formData.get("reason") ?? "").trim().slice(0, 200) || null;
+  const { error } = await supabase
+    .from("closures")
+    .insert(days.map((date) => ({ restaurant_id: restaurant.id, date, start_time: start, end_time: end, reason })));
+  if (error) return { error: error.message };
+  revalidatePath("/admin", "layout");
+  return { ok: days.length > 1 ? `${days.length} jours fermés ✓` : "Fermeture ajoutée ✓" };
+}
+
+/** Fermeture d'un jour férié en un clic (journée entière). */
+export async function closeHoliday(date: string, name: string) {
   if (!isValidDate(date)) throw new Error("Date invalide.");
-  const reason = String(formData.get("reason") ?? "").trim() || null;
-  const { error } = await supabase.from("closures").upsert({ restaurant_id: restaurant.id, date, reason });
+  const { supabase, restaurant } = await requireRestaurantAction();
+  const { error } = await supabase
+    .from("closures")
+    .insert({ restaurant_id: restaurant.id, date, reason: name.slice(0, 200) });
   if (error) throw new Error(error.message);
   revalidatePath("/admin", "layout");
 }
 
-export async function removeClosure(date: string) {
+export async function removeClosure(id: string) {
   const { supabase, restaurant } = await requireRestaurantAction();
-  const { error } = await supabase.from("closures").delete().eq("restaurant_id", restaurant.id).eq("date", date);
+  const { error } = await supabase.from("closures").delete().eq("restaurant_id", restaurant.id).eq("id", id);
   if (error) throw new Error(error.message);
   revalidatePath("/admin", "layout");
 }

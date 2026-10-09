@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { requireRestaurant } from "@/lib/data";
-import { addDays, formatDate, formatTime, isValidDate, todayIn } from "@/lib/format";
+import { addDays, closureLabel, formatDate, formatTime, isValidDate, todayIn } from "@/lib/format";
 import { cardClass, inputClass, labelClass } from "@/components/admin-styles";
 import { SubmitButton } from "@/components/admin-ui";
-import type { WaitlistEntry } from "@/lib/types";
+import type { Closure, WaitlistEntry } from "@/lib/types";
+import { MonthCalendar } from "./month-calendar";
 import { createReservation, deleteWaitlistEntry } from "./actions";
 import { RESERVATION_SELECT, ReservationRow, type ReservationWithTables } from "./reservation-row";
 
@@ -11,13 +12,16 @@ export default async function ReservationsPage({ searchParams }: PageProps<"/adm
   const [{ supabase, restaurant }, params] = await Promise.all([requireRestaurant(), searchParams]);
   const today = todayIn(restaurant.timezone);
   const date = isValidDate(params.date) ? params.date : today;
+  // Mois affiché dans le calendrier : celui demandé, sinon celui du jour sélectionné.
+  const month = typeof params.month === "string" && /^\d{4}-(0[1-9]|1[0-2])$/.test(params.month) ? params.month : date.slice(0, 7);
 
-  const [{ data }, { data: closure }, { data: waiting }] = await Promise.all([
+  const [{ data }, { data: closureData }, { data: waiting }] = await Promise.all([
     supabase.from("reservations").select(RESERVATION_SELECT).eq("restaurant_id", restaurant.id).eq("date", date).order("time"),
-    supabase.from("closures").select("reason").eq("restaurant_id", restaurant.id).eq("date", date).maybeSingle(),
+    supabase.from("closures").select("*").eq("restaurant_id", restaurant.id).eq("date", date).order("start_time", { nullsFirst: true }),
     supabase.from("waitlist").select("*").eq("restaurant_id", restaurant.id).eq("date", date).in("status", ["waiting", "notified"]).order("created_at"),
   ]);
   const waitlist = (waiting ?? []) as WaitlistEntry[];
+  const closures = (closureData ?? []) as Closure[];
   const reservations = (data ?? []) as ReservationWithTables[];
   const active = reservations.filter((r) => r.status !== "cancelled" && r.status !== "no_show");
   const covers = active.reduce((n, r) => n + r.party_size, 0);
@@ -31,10 +35,10 @@ export default async function ReservationsPage({ searchParams }: PageProps<"/adm
           <p className="text-stone-500 first-letter:uppercase">{formatDate(date)}</p>
         </div>
         <form className="flex items-center gap-2">
-          <Link href={`?date=${addDays(date, -1)}`} className="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm">←</Link>
+          <Link href={`?date=${addDays(date, -1)}`} scroll={false} className="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm">←</Link>
           <input type="date" name="date" defaultValue={date} className={`${inputClass} w-auto`} />
           <button className="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm">Voir</button>
-          <Link href={`?date=${addDays(date, 1)}`} className="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm">→</Link>
+          <Link href={`?date=${addDays(date, 1)}`} scroll={false} className="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm">→</Link>
           {date !== today && <Link href="?" className="text-sm text-stone-600 underline">Aujourd&apos;hui</Link>}
         </form>
       </div>
@@ -56,11 +60,14 @@ export default async function ReservationsPage({ searchParams }: PageProps<"/adm
         </details>
       </div>
 
-      {closure && (
-        <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
-          Restaurant fermé ce jour{closure.reason ? ` : ${closure.reason}` : ""}. Les réservations en ligne sont bloquées.
+      <MonthCalendar supabase={supabase} restaurant={restaurant} month={month} selected={date} />
+
+      {closures.map((c) => (
+        <p key={c.id} className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
+          Fermé ce jour — {closureLabel(c, restaurant.dinner_from).toLowerCase()}
+          {c.reason ? ` (${c.reason})` : ""}. Aucune réservation en ligne n&apos;est proposée sur cette plage.
         </p>
-      )}
+      ))}
 
       <div className="grid grid-cols-3 gap-3">
         {[

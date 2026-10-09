@@ -73,3 +73,15 @@ export function zonedToUtc(date: string, time: string, timezone: string) {
   const guess = asUtc - offset(asUtc);
   return new Date(asUtc - offset(guess));
 }
+
+/** Plage d'une fermeture : « Toute la journée », « Midi », « Soir », « À partir de 22h00 »… */
+export function closureLabel(c: { start_time: string | null; end_time: string | null }, dinnerFrom: string) {
+  const dinner = dinnerFrom.slice(0, 5);
+  const start = c.start_time?.slice(0, 5) ?? null;
+  const end = c.end_time?.slice(0, 5) ?? null;
+  if (!start && !end) return "Toute la journée";
+  if (!start && end === dinner) return "Midi";
+  if (start === dinner && !end) return "Soir";
+  if (start && end) return `${formatTime(start)} – ${formatTime(end)}`;
+  return start ? `À partir de ${formatTime(start)}` : `Jusqu'à ${formatTime(end!)}`;
+}

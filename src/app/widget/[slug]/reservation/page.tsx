@@ -26,6 +26,7 @@ export default async function ReservationWidget({ params, searchParams }: PagePr
         message={restaurant.reservation_message}
         phone={restaurant.phone}
         frameId={query.frame ?? ""}
+        cancelHours={restaurant.cancel_deadline_hours}
         initialDate={query.date}
         initialParty={Number(query.party) || undefined}
       />

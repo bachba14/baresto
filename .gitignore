@@ -40,3 +40,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Scripts SQL contenant des secrets (à coller dans Supabase, jamais publiés)
+*.local.sql

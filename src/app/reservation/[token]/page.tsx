@@ -51,7 +51,7 @@ export default async function ManageReservationPage({ params }: PageProps<"/rese
         {r.can_modify ? (
           <>
             <p className="text-sm text-stone-600">
-              Vous pouvez modifier ou annuler en ligne jusqu&apos;au {deadlineText(r)}.
+              Vous pouvez modifier ou annuler en ligne jusqu&apos;au {deadlineText(r, restaurant.cancel_deadline_hours)}.
             </p>
             <ManageForm
               token={r.token}
@@ -65,7 +65,7 @@ export default async function ManageReservationPage({ params }: PageProps<"/rese
           </>
         ) : active ? (
           <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
-            La modification en ligne n&apos;est plus possible à moins de 24 h du repas.
+            La modification en ligne n&apos;est plus possible à moins de {restaurant.cancel_deadline_hours} h du repas.
             {restaurant.phone ? <> Pour tout changement, appelez le restaurant au <a className="font-medium underline" href={`tel:${restaurant.phone.replace(/\s/g, "")}`}>{restaurant.phone}</a>.</> : " Merci de contacter directement le restaurant."}
           </p>
         ) : r.status === "cancelled" ? (

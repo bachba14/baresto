@@ -3,6 +3,7 @@ import { createPublicClient } from "@/lib/supabase/server";
 import { getRestaurantBySlug } from "@/lib/data";
 import { isValidDate } from "@/lib/format";
 import { CORS_HEADERS } from "@/lib/cors";
+import { clientIp, rateLimited, TOO_MANY } from "@/lib/rate-limit";
 import type { Slot } from "@/lib/types";
 
 export function OPTIONS() {
@@ -11,6 +12,7 @@ export function OPTIONS() {
 
 export async function GET(request: NextRequest, ctx: RouteContext<"/api/r/[slug]/availability">) {
   const fail = (error: string, status: number) => NextResponse.json({ error }, { status, headers: CORS_HEADERS });
+  if (rateLimited(`dispo:${clientIp(request.headers)}`, [[120, 60_000]])) return fail(TOO_MANY, 429);
   const restaurant = await getRestaurantBySlug((await ctx.params).slug);
   if (!restaurant) return fail("Restaurant introuvable.", 404);
 
