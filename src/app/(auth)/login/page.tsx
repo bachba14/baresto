@@ -21,7 +21,10 @@ export default function LoginPage() {
           <input name="email" type="email" required autoComplete="email" className={inputClass} />
         </label>
         <label className="block">
-          <span className={labelClass}>Mot de passe</span>
+          <span className="mb-1 flex items-baseline justify-between">
+            <span className={labelClass}>Mot de passe</span>
+            <Link href="/mot-de-passe-oublie" className="text-xs text-stone-500 hover:text-amber-700 hover:underline">Mot de passe oublié ?</Link>
+          </span>
           <input name="password" type="password" required autoComplete="current-password" className={inputClass} />
         </label>
         {state?.error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{state.error}</p>}
