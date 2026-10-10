@@ -15,6 +15,7 @@ const STATUS_DOT: Record<string, string> = {
   pending: "bg-amber-500",
   confirmed: "bg-emerald-500",
   seated: "bg-sky-500",
+  finished: "bg-stone-300",
 };
 
 /** Délai d'apparition en cascade (voir .animate-rise dans globals.css). */
@@ -33,10 +34,10 @@ export default async function Dashboard({ searchParams }: PageProps<"/admin">) {
   const dinnerFrom = restaurant.dinner_from.slice(0, 5);
 
   const [{ data: todayRes }, { data: pending }, { data: week }] = await Promise.all([
-    supabase.from("reservations").select(RESERVATION_SELECT).eq("restaurant_id", restaurant.id).eq("date", today).in("status", ["pending", "confirmed", "seated"]).order("time"),
+    supabase.from("reservations").select(RESERVATION_SELECT).eq("restaurant_id", restaurant.id).eq("date", today).in("status", ["pending", "confirmed", "seated", "finished"]).order("time"),
     supabase.from("reservations").select(RESERVATION_SELECT).eq("restaurant_id", restaurant.id).eq("status", "pending").gte("date", today).order("date").order("time").limit(50),
     supabase.from("reservations").select("date, party_size").eq("restaurant_id", restaurant.id).gte("date", today).lte("date", addDays(today, 6))
-      .in("status", ["pending", "confirmed", "seated"]),
+      .in("status", ["pending", "confirmed", "seated", "finished"]),
   ]);
 
   const todayList = (todayRes ?? []) as ReservationWithTables[];

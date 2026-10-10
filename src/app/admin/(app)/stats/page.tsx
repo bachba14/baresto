@@ -159,7 +159,7 @@ export default async function StatsPage({ searchParams }: { searchParams: Promis
   });
 
   const lunch = kept.filter((r) => service(r.time) === "midi");
-  const statuses = (["confirmed", "seated", "pending", "no_show", "cancelled"] as ReservationStatus[]).map((st) => ({
+  const statuses = (["confirmed", "seated", "finished", "pending", "no_show", "cancelled"] as ReservationStatus[]).map((st) => ({
     status: st,
     count: rows.filter((r) => r.status === st).length,
   }));

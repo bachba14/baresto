@@ -66,7 +66,8 @@ export type MenuItem = {
   position: number;
 };
 
-export type ReservationStatus = "pending" | "confirmed" | "seated" | "cancelled" | "no_show";
+/** finished = clients partis : la table est libérée. */
+export type ReservationStatus = "pending" | "confirmed" | "seated" | "finished" | "cancelled" | "no_show";
 
 export type Reservation = {
   restaurant_id: string;

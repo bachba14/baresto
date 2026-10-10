@@ -13,6 +13,8 @@ export default async function ReservationsPage({ searchParams }: PageProps<"/adm
   const today = todayIn(restaurant.timezone);
   const date = isValidDate(params.date) ? params.date : today;
   // Mois affiché dans le calendrier : celui demandé, sinon celui du jour sélectionné.
+  // Recherche sur toutes les dates (nom, e-mail ou téléphone). Caractères réservés de PostgREST retirés.
+  const q = typeof params.q === "string" ? params.q.replace(/[,()*%\\]/g, " ").trim().slice(0, 60) : "";
   const month = typeof params.month === "string" && /^\d{4}-(0[1-9]|1[0-2])$/.test(params.month) ? params.month : date.slice(0, 7);
 
   const [{ data }, { data: closureData }, { data: waiting }] = await Promise.all([
@@ -20,6 +22,19 @@ export default async function ReservationsPage({ searchParams }: PageProps<"/adm
     supabase.from("closures").select("*").eq("restaurant_id", restaurant.id).eq("date", date).order("start_time", { nullsFirst: true }),
     supabase.from("waitlist").select("*").eq("restaurant_id", restaurant.id).eq("date", date).in("status", ["waiting", "notified"]).order("created_at"),
   ]);
+  let found: { upcoming: ReservationWithTables[]; past: ReservationWithTables[] } | null = null;
+  if (q.length >= 2) {
+    // Téléphone : on ignore espaces, points et indicatif (« 0470 12 34 » trouve « 0470123456 »).
+    const digits = q.replace(/\D/g, "");
+    const phone = digits.length >= 4 ? `%${digits.slice(-9).split("").join("%")}%` : `%${q}%`;
+    const filter = `name.ilike.%${q}%,email.ilike.%${q}%,phone.ilike.${phone}`;
+    const base = () => supabase.from("reservations").select(RESERVATION_SELECT).eq("restaurant_id", restaurant.id).or(filter);
+    const [{ data: upcoming }, { data: past }] = await Promise.all([
+      base().gte("date", today).order("date").order("time").limit(30),
+      base().lt("date", today).order("date", { ascending: false }).order("time", { ascending: false }).limit(30),
+    ]);
+    found = { upcoming: (upcoming ?? []) as ReservationWithTables[], past: (past ?? []) as ReservationWithTables[] };
+  }
   const waitlist = (waiting ?? []) as WaitlistEntry[];
   const closures = (closureData ?? []) as Closure[];
   const reservations = (data ?? []) as ReservationWithTables[];
@@ -42,6 +57,49 @@ export default async function ReservationsPage({ searchParams }: PageProps<"/adm
           {date !== today && <Link href="?" className="text-sm text-stone-600 underline">Aujourd&apos;hui</Link>}
         </form>
       </div>
+
+      <form className="flex gap-2" role="search">
+        <input
+          type="search"
+          name="q"
+          defaultValue={q}
+          placeholder="Rechercher une réservation : nom, téléphone ou e-mail"
+          className={`${inputClass} flex-1`}
+          aria-label="Rechercher une réservation"
+        />
+        <button className="rounded-lg bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-700">Rechercher</button>
+      </form>
+
+      {found && (
+        <section className={`${cardClass} animate-rise`}>
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="font-semibold">
+              Résultats pour « {q} »
+              <span className="ml-2 text-sm font-normal text-stone-500">
+                {found.upcoming.length + found.past.length} réservation{found.upcoming.length + found.past.length > 1 ? "s" : ""}
+              </span>
+            </h2>
+            <Link href={`?date=${date}`} className="text-sm text-stone-500 hover:text-stone-900">Effacer ✕</Link>
+          </div>
+          {found.upcoming.length + found.past.length === 0 && <p className="mt-2 text-sm text-stone-500">Aucune réservation trouvée.</p>}
+          {found.upcoming.length > 0 && (
+            <>
+              <p className="mt-3 text-xs font-medium tracking-wide text-stone-400 uppercase">À venir</p>
+              <ul className="divide-y divide-stone-100">
+                {found.upcoming.map((r) => <ReservationRow key={r.id} r={r} showDate />)}
+              </ul>
+            </>
+          )}
+          {found.past.length > 0 && (
+            <>
+              <p className="mt-3 text-xs font-medium tracking-wide text-stone-400 uppercase">Passées</p>
+              <ul className="divide-y divide-stone-100">
+                {found.past.map((r) => <ReservationRow key={r.id} r={r} showDate />)}
+              </ul>
+            </>
+          )}
+        </section>
+      )}
 
       <div className="flex flex-wrap gap-2 text-sm">
         <a href={`/admin/print?date=${date}`} target="_blank" className="rounded-lg border border-stone-300 bg-white px-3 py-1.5 hover:bg-stone-50">

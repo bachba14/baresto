@@ -15,6 +15,7 @@ const STATUS: Record<string, { label: string; className: string }> = {
   pending: { label: "En attente de confirmation", className: "bg-amber-100 text-amber-800" },
   confirmed: { label: "Confirmée", className: "bg-emerald-100 text-emerald-800" },
   seated: { label: "Installée", className: "bg-sky-100 text-sky-800" },
+  finished: { label: "Terminée", className: "bg-stone-200 text-stone-600" },
   cancelled: { label: "Annulée", className: "bg-stone-200 text-stone-600" },
   no_show: { label: "Non honorée", className: "bg-red-100 text-red-700" },
 };

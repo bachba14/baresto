@@ -21,7 +21,7 @@ export default async function PrintPage({ searchParams }: PageProps<"/admin/prin
     .select("*, reservation_tables(dining_tables(label)), customers(notes, tags, reservation_count, no_show_count)")
     .eq("restaurant_id", restaurant.id)
     .eq("date", date)
-    .in("status", ["pending", "confirmed", "seated"])
+    .in("status", ["pending", "confirmed", "seated", "finished"])
     .order("time");
   const rows = (data ?? []) as Row[];
   const services = [

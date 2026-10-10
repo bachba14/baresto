@@ -7,9 +7,10 @@ import { isValidDate } from "@/lib/format";
 import { emailClient, type ClientEmailKind } from "@/lib/notifications";
 import { notifyWaitlist } from "@/lib/waitlist";
 import { siteUrl } from "@/lib/site";
+import { mealMinutes } from "@/lib/calendar";
 import type { Reservation, ReservationStatus } from "@/lib/types";
 
-const STATUSES: ReservationStatus[] = ["pending", "confirmed", "seated", "cancelled", "no_show"];
+const STATUSES: ReservationStatus[] = ["pending", "confirmed", "seated", "finished", "cancelled", "no_show"];
 
 function done() {
   revalidatePath("/admin", "layout");
@@ -46,7 +47,8 @@ export async function updateStatus(id: string, status: ReservationStatus) {
     after(() =>
       Promise.all([
         kind && emailClient(kind, r, restaurant, base),
-        status === "cancelled" && notifyWaitlist(base, { restaurantId: restaurant.id, date: r.date }),
+        // Table libérée (annulation ou départ des clients) : la liste d'attente peut en profiter.
+        (status === "cancelled" || status === "finished") && notifyWaitlist(base, { restaurantId: restaurant.id, date: r.date }),
       ]),
     );
   }
@@ -101,4 +103,66 @@ export async function deleteWaitlistEntry(id: string) {
   const { error } = await supabase.from("waitlist").delete().eq("id", id).eq("restaurant_id", restaurant.id);
   if (error) throw new Error(error.message);
   done();
+}
+
+export type EditState = { ok?: string; error?: string } | null;
+
+/**
+ * Modification d'une réservation par le restaurant (téléphone, sur place) : date, heure, couverts,
+ * coordonnées, remarques. Pas de contrôle de capacité, comme la saisie manuelle ; la réservation est
+ * replacée automatiquement si l'horaire ou le nombre de couverts change.
+ */
+export async function editReservation(id: string, _: EditState, formData: FormData): Promise<EditState> {
+  const { supabase, restaurant } = await requireRestaurantAction();
+  const { data: before } = await supabase.from("reservations").select("*").eq("id", id).eq("restaurant_id", restaurant.id).single();
+  if (!before) return { error: "Réservation introuvable." };
+
+  const text = (k: string, max: number) => String(formData.get(k) ?? "").trim().slice(0, max) || null;
+  const date = String(formData.get("date"));
+  const time = String(formData.get("time")).slice(0, 5);
+  const party = Number(formData.get("party_size"));
+  const name = text("name", 120);
+  const email = text("email", 200)?.toLowerCase() ?? null;
+  if (!isValidDate(date) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) return { error: "Date ou heure invalide." };
+  if (!Number.isInteger(party) || party < 1 || party > 100) return { error: "Nombre de couverts invalide." };
+  if (!name || name.length < 2) return { error: "Indiquez le nom du client." };
+  if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { error: "Adresse e-mail invalide." };
+
+  const moved = date !== before.date || time !== before.time.slice(0, 5);
+  const resized = party !== before.party_size;
+  const { error } = await supabase
+    .from("reservations")
+    .update({
+      date,
+      time,
+      party_size: party,
+      name,
+      email,
+      phone: text("phone", 40),
+      notes: text("notes", 1000),
+      // Durée du repas recalculée selon le service (midi / soir) du nouvel horaire.
+      ...(moved ? { duration_minutes: mealMinutes(restaurant, time), reminder_sent_at: null } : {}),
+    })
+    .eq("id", id);
+  if (error) return { error: error.message };
+
+  // Nouvel horaire ou nouveau nombre de couverts : on replace sur la meilleure table libre.
+  let placed = true;
+  if ((moved || resized) && !["cancelled", "no_show"].includes(before.status)) {
+    await supabase.rpc("assign_tables", { p_reservation: id, p_tables: [] });
+    const { data: tables } = await supabase.rpc("auto_assign", { p_reservation: id });
+    placed = Boolean(tables);
+  }
+
+  const base = await siteUrl();
+  const r = { ...(before as Reservation), date, time, party_size: party, name, email };
+  after(() =>
+    Promise.all([
+      (moved || resized) && email && formData.get("send_email") === "on" && emailClient("modified", r, restaurant, base),
+      // L'ancien créneau s'est libéré (ou le groupe est plus petit) : la liste d'attente peut en profiter.
+      (moved || party < before.party_size) && notifyWaitlist(base, { restaurantId: restaurant.id, date: before.date }),
+    ]),
+  );
+  done();
+  return { ok: placed ? "Réservation modifiée ✓" : "Modifiée, mais aucune table libre adaptée : placez-la depuis le plan." };
 }

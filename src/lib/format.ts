@@ -8,6 +8,7 @@ export const STATUS_LABELS: Record<ReservationStatus, string> = {
   pending: "En attente",
   confirmed: "Confirmée",
   seated: "Installée",
+  finished: "Partie",
   cancelled: "Annulée",
   no_show: "Non venue",
 };

@@ -207,6 +207,11 @@ export function ServiceBoard({
                   Confirmer
                 </button>
               )}
+              {selectedRes.status === "seated" && (
+                <button type="button" disabled={pending} onClick={() => run(async () => (await updateStatus(selectedRes.id, "finished"), null), `${selectedRes.name} est parti : table libérée.`)} className="rounded-md bg-white px-2 py-1 hover:bg-stone-50">
+                  Parti
+                </button>
+              )}
               {selectedRes.status !== "seated" && (
                 <button type="button" disabled={pending} onClick={() => run(async () => (await updateStatus(selectedRes.id, "seated"), null))} className="rounded-md bg-white px-2 py-1 hover:bg-stone-50">
                   Installer
