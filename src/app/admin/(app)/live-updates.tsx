@@ -28,7 +28,7 @@ export function LiveIndicator() {
         {connected && <span className="absolute inset-0 animate-ping rounded-full bg-emerald-400 opacity-60 motion-reduce:hidden" />}
         <span className={`relative h-2 w-2 rounded-full ${connected ? "bg-emerald-500" : "bg-stone-300"}`} />
       </span>
-      {connected ? "Mises à jour en direct" : "Mises à jour en pause"}
+      {connected ? "Mises à jour en direct" : "Connexion…"}
     </span>
   );
 }

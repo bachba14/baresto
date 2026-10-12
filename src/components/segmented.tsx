@@ -9,11 +9,13 @@ export function Segmented({ items, active }: { items: { href: string; label: str
       className="relative grid rounded-xl bg-stone-100 p-1 text-sm"
       style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}
     >
+      {active >= 0 && (
       <span
         aria-hidden
         className="absolute inset-y-1 left-1 rounded-lg bg-white shadow-sm ring-1 ring-stone-900/5 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
         style={{ width: `calc((100% - 0.5rem) / ${items.length})`, transform: `translateX(${active * 100}%)` }}
       />
+      )}
       {items.map((item, i) => (
         <Link
           key={item.href}

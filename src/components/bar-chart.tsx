@@ -20,7 +20,7 @@ export function BarChart({ bars, height = 180, labelEvery = 1, unit }: { bars: B
   const ticks = Array.from({ length: top / step + 1 }, (_, i) => i * step);
 
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-2 pt-3">
       <div className="relative w-7 shrink-0 text-right text-[11px] text-stone-500 tabular-nums" style={{ height }}>
         {ticks.map((t) => (
           <span key={t} className="absolute right-0 -translate-y-1/2" style={{ bottom: `${(t / top) * 100}%` }}>{t}</span>

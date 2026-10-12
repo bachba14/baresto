@@ -27,7 +27,7 @@ export function SubmitButton({
         if (confirm && !window.confirm(confirm)) e.preventDefault();
         props.onClick?.(e);
       }}
-      className={`rounded-lg px-3 py-2 text-sm font-medium transition disabled:opacity-50 ${variants[variant]} ${className}`}
+      className={`rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap transition disabled:opacity-50 ${variants[variant]} ${className}`}
     >
       {children}
     </button>

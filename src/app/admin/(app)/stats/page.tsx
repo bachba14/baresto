@@ -5,6 +5,7 @@ import { fetchReservationRows, isKept, type StatRow } from "@/lib/reservation-ro
 import { cardClass, inputClass } from "@/components/admin-styles";
 import { BarChart, type Bar } from "@/components/bar-chart";
 import { Heatmap } from "@/components/heatmap";
+import { Segmented } from "@/components/segmented";
 import type { Customer, ReservationStatus } from "@/lib/types";
 
 const PRESETS = [
@@ -217,15 +218,7 @@ export default async function StatsPage({ searchParams }: { searchParams: Promis
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {PRESETS.map((x) => (
-            <Link
-              key={x.key}
-              href={`?p=${x.key}`}
-              className={`rounded-lg px-3 py-1.5 text-sm ${x.key === preset ? "bg-stone-900 text-white" : "border border-stone-300 bg-white"}`}
-            >
-              {x.label}
-            </Link>
-          ))}
+          <Segmented items={PRESETS.map((x) => ({ href: `?p=${x.key}`, label: x.label }))} active={preset ? PRESETS.findIndex((x) => x.key === preset) : -1} />
           <form className="flex items-center gap-1">
             <input type="date" name="from" defaultValue={from} className={`${inputClass} w-auto py-1.5`} aria-label="Du" />
             <span className="text-stone-500">→</span>

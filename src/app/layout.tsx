@@ -31,7 +31,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         {/* Active les animations d'apparition seulement quand JavaScript tourne. */}
         <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
       </head>
-      <body>{children}</body>
+      {/* suppressHydrationWarning : certaines extensions (ColorZilla, Grammarly…) ajoutent des attributs au body. */}
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }

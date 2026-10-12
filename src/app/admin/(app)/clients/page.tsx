@@ -3,6 +3,7 @@ import { requireRestaurant } from "@/lib/data";
 import { formatDate } from "@/lib/format";
 import { cardClass, inputClass } from "@/components/admin-styles";
 import { CustomerBadges } from "@/components/customer-badges";
+import { Segmented } from "@/components/segmented";
 import type { Customer } from "@/lib/types";
 
 const SORTS = {
@@ -45,15 +46,10 @@ export default async function ClientsPage({ searchParams }: PageProps<"/admin/cl
       </form>
 
       <div className="flex flex-wrap gap-1">
-        {Object.entries(SORTS).map(([key, s]) => (
-          <Link
-            key={key}
-            href={`?sort=${key}${q ? `&q=${encodeURIComponent(q)}` : ""}`}
-            className={`rounded-lg px-3 py-1.5 text-sm ${key === sort ? "bg-stone-900 text-white" : "border border-stone-300 bg-white"}`}
-          >
-            {s.label}
-          </Link>
-        ))}
+        <Segmented
+          items={Object.entries(SORTS).map(([key, s]) => ({ href: `?sort=${key}${q ? `&q=${encodeURIComponent(q)}` : ""}`, label: s.label }))}
+          active={Object.keys(SORTS).indexOf(sort)}
+        />
         <span className="ml-auto self-center text-sm text-stone-500">{count ?? 0} client{(count ?? 0) > 1 ? "s" : ""}</span>
       </div>
 

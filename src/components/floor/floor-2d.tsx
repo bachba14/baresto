@@ -41,7 +41,7 @@ export function Floor2D({ room, tables, states, selectedIds = [], onSelectTable,
     <svg
       ref={svgRef}
       viewBox={`${-pad} ${-pad} ${room.width + pad * 2} ${room.depth + pad * 2}`}
-      className="h-auto w-full touch-none select-none"
+      className="mx-auto block h-auto max-h-[calc(100vh-15rem)] w-full touch-none select-none"
       onPointerMove={(e) => {
         if (!drag || !onMoveTable) return;
         const p = toRoom(e.clientX, e.clientY);
@@ -127,22 +127,39 @@ export function Floor2D({ room, tables, states, selectedIds = [], onSelectTable,
                 <rect x={-w / 2 - 0.08} y={-d / 2 - 0.08} width={w + 0.16} height={d + 0.16} rx={0.1} fill="none" stroke={isDrop ? "#7c3aed" : "#1c1917"} strokeWidth={0.06} />
               ))}
             <g transform={`rotate(${-t.rotation})`}>
-              {line1 ? (
-                // Table occupée : numéro, client, heure et couverts.
-                <>
-                  <text textAnchor="middle" y={-0.2} fontSize="0.18" fontWeight="700" fill="#fff" opacity={0.85}>{t.label}</text>
-                  <text textAnchor="middle" y={0.04} fontSize="0.22" fontWeight="700" fill="#fff">{line1.length > 11 ? `${line1.slice(0, 10)}…` : line1}</text>
-                  <text textAnchor="middle" y={0.27} fontSize="0.17" fill="#fff">{line2}</text>
-                </>
-              ) : (
-                <>
-                  <text textAnchor="middle" y={0.1} fontSize="0.28" fontWeight="700" fill="#fff">{t.label}</text>
-                  <text textAnchor="middle" y={0.34} fontSize="0.17" fill="#fff">{`${t.seats} pl.`}</text>
-                </>
-              )}
-              {!t.bookable_online && !states && (
-                <text textAnchor="middle" y={-0.22} fontSize="0.14" fill="#fff">hors ligne</text>
-              )}
+              {(() => {
+                // Taille du texte proportionnelle à la table, et texte raccourci pour tenir dans sa largeur.
+                const size = Math.min(w, d);
+                // Largeur visible : le texte reste horizontal même si la table est tournée.
+                const quarter = Math.round(t.rotation / 45) % 4;
+                const visibleWidth = quarter === 0 ? w : quarter === 2 ? d : size;
+                const fit = (text: string, font: number) => {
+                  const max = Math.max(3, Math.floor((visibleWidth * 0.92) / (font * 0.58)));
+                  return text.length > max ? `${text.slice(0, max - 1)}…` : text;
+                };
+                if (line1) {
+                  const big = Math.min(0.24, size * 0.26);
+                  const small = Math.min(0.17, size * 0.19);
+                  return (
+                    <>
+                      <text textAnchor="middle" y={-size * 0.2} fontSize={small} fontWeight="700" fill="#fff" opacity={0.85}>{t.label}</text>
+                      <text textAnchor="middle" y={size * 0.07} fontSize={big} fontWeight="700" fill="#fff">{fit(line1, big)}</text>
+                      <text textAnchor="middle" y={size * 0.3} fontSize={small} fill="#fff">{fit(line2 ?? "", small)}</text>
+                    </>
+                  );
+                }
+                const big = Math.min(0.3, size * 0.32);
+                const small = Math.min(0.17, size * 0.2);
+                return (
+                  <>
+                    <text textAnchor="middle" y={size * 0.02} fontSize={big} fontWeight="700" fill="#fff">{fit(t.label, big)}</text>
+                    <text textAnchor="middle" y={size * 0.28} fontSize={small} fill="#fff">{`${t.seats} pl.`}</text>
+                    {!t.bookable_online && !states && (
+                      <text textAnchor="middle" y={-size * 0.24} fontSize={small * 0.85} fill="#fff">hors ligne</text>
+                    )}
+                  </>
+                );
+              })()}
             </g>
           </g>
         );

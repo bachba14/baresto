@@ -228,7 +228,7 @@ export function NewReservationPanel({ today }: { today: string }) {
                 })}
               </div>
             )}
-            <label className="mt-2 flex items-center gap-2 text-sm text-stone-600">
+            <label className="mt-2 flex items-center gap-2 text-sm whitespace-nowrap text-stone-600">
               Autre heure
               <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className={`${inputClass} w-auto py-1.5`} />
             </label>

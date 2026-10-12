@@ -17,10 +17,10 @@ export function Heatmap({
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full border-separate border-spacing-[2px] text-[11px] tabular-nums">
+      <table className="w-full table-fixed border-separate border-spacing-[2px] text-[11px] tabular-nums">
         <thead>
           <tr>
-            <th />
+            <th className="w-12" />
             {columns.map((c) => (
               <th key={c.key} className="px-0.5 pb-1 text-center font-normal text-stone-500">{c.label}</th>
             ))}
@@ -29,7 +29,7 @@ export function Heatmap({
         <tbody>
           {rows.map((r) => (
             <tr key={r.key}>
-              <th className="pr-2 text-left font-normal text-stone-500">{r.label}</th>
+              <th className="w-12 pr-2 text-left font-normal whitespace-nowrap text-stone-500">{r.label}</th>
               {columns.map((c) => {
                 const v = value(r.key, c.key);
                 const ratio = v / max;

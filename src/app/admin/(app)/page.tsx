@@ -109,7 +109,7 @@ export default async function Dashboard({ searchParams }: PageProps<"/admin">) {
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
+      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
         {/* Service du jour */}
         <section className={`${cardClass} animate-rise p-0`} style={delay(240)}>
           <div className="flex items-center justify-between px-5 pt-5">
