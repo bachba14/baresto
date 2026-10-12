@@ -50,6 +50,7 @@ const ICONS = {
     </>
   ),
   code: <path d="m8 7-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16" />,
+  upload: <path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4" />,
   external: <path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />,
   logout: <path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4M10 16l4-4-4-4M14 12H4" />,
 };
@@ -85,6 +86,7 @@ const GROUPS: { title?: string; links: { href: string; label: string; icon: Icon
       { href: "/admin/menu", label: "Carte", icon: "menu" },
       { href: "/admin/floor", label: "Plan de salle", icon: "floor" },
       { href: "/admin/settings", label: "Réglages", icon: "settings" },
+      { href: "/admin/import", label: "Importer", icon: "upload" },
       { href: "/admin/integration", label: "Intégration", icon: "code" },
     ],
   },
