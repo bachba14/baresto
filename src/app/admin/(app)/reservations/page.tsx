@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DateNav } from "@/components/date-nav";
 import { requireRestaurant } from "@/lib/data";
 import { addDays, closureLabel, formatDate, formatTime, isValidDate, todayIn } from "@/lib/format";
 import { cardClass, inputClass, labelClass } from "@/components/admin-styles";
@@ -49,13 +50,7 @@ export default async function ReservationsPage({ searchParams }: PageProps<"/adm
           <h1 className="text-2xl font-bold">Réservations</h1>
           <p className="text-stone-500 first-letter:uppercase">{formatDate(date)}</p>
         </div>
-        <form className="flex items-center gap-2">
-          <Link href={`?date=${addDays(date, -1)}`} scroll={false} className="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm">←</Link>
-          <input type="date" name="date" defaultValue={date} className={`${inputClass} w-auto`} />
-          <button className="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm">Voir</button>
-          <Link href={`?date=${addDays(date, 1)}`} scroll={false} className="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm">→</Link>
-          {date !== today && <Link href="?" className="text-sm text-stone-600 underline">Aujourd&apos;hui</Link>}
-        </form>
+        <DateNav date={date} today={today} />
       </div>
 
       <form className="flex gap-2" role="search">

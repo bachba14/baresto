@@ -1,6 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
+import { HOLIDAY_COUNTRY_COOKIE } from "@/lib/holidays";
 import { requireRestaurantAction } from "@/lib/data";
 import { addDays, isValidDate } from "@/lib/format";
 import type { OpeningHours } from "@/lib/types";
@@ -125,4 +127,11 @@ export async function removeClosure(id: string) {
   const { error } = await supabase.from("closures").delete().eq("restaurant_id", restaurant.id).eq("id", id);
   if (error) throw new Error(error.message);
   revalidatePath("/admin", "layout");
+}
+
+/** Mémorise le pays choisi pour la liste des jours fériés. */
+export async function setHolidayCountry(country: "BE" | "FR") {
+  if (country !== "BE" && country !== "FR") return;
+  (await cookies()).set(HOLIDAY_COUNTRY_COOKIE, country, { path: "/admin", maxAge: 60 * 60 * 24 * 365, sameSite: "lax", httpOnly: true });
+  revalidatePath("/admin/settings");
 }

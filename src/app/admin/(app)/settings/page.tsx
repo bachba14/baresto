@@ -1,18 +1,20 @@
-import Link from "next/link";
+import { cookies } from "next/headers";
 import { requireRestaurant } from "@/lib/data";
 import { closureLabel, formatDate, todayIn } from "@/lib/format";
-import { countryFromTimezone, upcomingHolidays, type Country } from "@/lib/holidays";
+import { countryOf, HOLIDAY_COUNTRY_COOKIE, upcomingHolidays, type Country } from "@/lib/holidays";
 import { cardClass } from "@/components/admin-styles";
 import { SubmitButton } from "@/components/admin-ui";
 import type { Closure } from "@/lib/types";
-import { closeHoliday, removeClosure } from "./actions";
+import { closeHoliday, removeClosure, setHolidayCountry } from "./actions";
 import { ClosureForm } from "./closure-form";
 import { SettingsForm } from "./settings-form";
 
-export default async function SettingsPage({ searchParams }: PageProps<"/admin/settings">) {
-  const [{ supabase, restaurant }, params] = await Promise.all([requireRestaurant(), searchParams]);
+export default async function SettingsPage() {
+  const [{ supabase, restaurant }, cookieStore] = await Promise.all([requireRestaurant(), cookies()]);
   const today = todayIn(restaurant.timezone);
-  const country: Country = params.pays === "BE" || params.pays === "FR" ? params.pays : countryFromTimezone(restaurant.timezone);
+  // Pays des jours fériés : celui choisi (mémorisé), sinon déduit de l'adresse et du téléphone du restaurant.
+  const saved = cookieStore.get(HOLIDAY_COUNTRY_COOKIE)?.value;
+  const country: Country = saved === "BE" || saved === "FR" ? saved : countryOf(restaurant);
 
   const [{ count }, { data }] = await Promise.all([
     supabase.from("dining_tables").select("*", { count: "exact", head: true }).eq("restaurant_id", restaurant.id),
@@ -64,14 +66,14 @@ export default async function SettingsPage({ searchParams }: PageProps<"/admin/s
           </div>
           <div className="flex gap-1 text-sm">
             {(["BE", "FR"] as const).map((c) => (
-              <Link
-                key={c}
-                href={`?pays=${c}#feries`}
-                scroll={false}
-                className={`rounded-lg px-3 py-1.5 ${c === country ? "bg-stone-900 text-white" : "border border-stone-300 bg-white"}`}
-              >
-                {c === "BE" ? "Belgique" : "France"}
-              </Link>
+              <form key={c} action={setHolidayCountry.bind(null, c)}>
+                <button
+                  aria-pressed={c === country}
+                  className={`rounded-lg px-3 py-1.5 ${c === country ? "bg-stone-900 text-white" : "border border-stone-300 bg-white hover:bg-stone-50"}`}
+                >
+                  {c === "BE" ? "Belgique" : "France"}
+                </button>
+              </form>
             ))}
           </div>
         </div>

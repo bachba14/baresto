@@ -52,19 +52,23 @@ export function ReservationRow({ r, showDate = false }: { r: ReservationWithTabl
         {showDate && <p className="text-xs text-stone-500">{formatDate(r.date)}</p>}
       </div>
       <div className="min-w-0 flex-1">
-        <p className="font-medium">
+        {/* Nom, couverts et statut restent chacun d'un bloc (pas de coupure au milieu de « 7 pers. »). */}
+        <p className="flex flex-wrap items-center gap-x-2 gap-y-1 font-medium">
           {r.customers ? (
-            <Link href={`/admin/clients/${r.customers.id}`} className="hover:underline">{r.name}</Link>
+            <Link href={`/admin/clients/${r.customers.id}`} className="[overflow-wrap:anywhere] hover:underline">{r.name}</Link>
           ) : (
-            r.name
-          )}{" "}
-          · <span className="text-stone-600">{r.party_size} pers.</span>
-          <span className={`ml-2 rounded-full px-2 py-0.5 text-xs font-medium ${BADGE[r.status]}`}>
+            <span className="[overflow-wrap:anywhere]">{r.name}</span>
+          )}
+          <span className="whitespace-nowrap text-stone-600">· {r.party_size} pers.</span>
+          <span className={`rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap ${BADGE[r.status]}`}>
             {STATUS_LABELS[r.status]}
-          </span>{" "}
+          </span>
           <CustomerBadges customer={r.customers} />
         </p>
-        <p className="truncate text-sm text-stone-500">
+        <p
+          className="truncate text-sm text-stone-500"
+          title={[r.phone, r.email, r.source === "admin" ? "saisie manuelle" : null].filter(Boolean).join(" · ")}
+        >
           {[r.phone, r.email].filter(Boolean).join(" · ")}
           {r.source === "admin" && " · saisie manuelle"}
         </p>

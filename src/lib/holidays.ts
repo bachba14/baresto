@@ -57,7 +57,24 @@ export function upcomingHolidays(from: string, country: Country): Holiday[] {
     .sort((a, b) => a.date.localeCompare(b.date));
 }
 
-/** Pays par défaut d'après le fuseau horaire du restaurant. */
-export function countryFromTimezone(timezone: string): Country {
-  return timezone === "Europe/Brussels" ? "BE" : "FR";
+/**
+ * Pays du restaurant, déduit de ses coordonnées : pays écrit dans l'adresse, indicatif téléphonique,
+ * code postal (4 chiffres en Belgique, 5 en France), puis fuseau horaire. France par défaut.
+ */
+export function countryOf(r: { address: string | null; city: string | null; phone: string | null; timezone: string }): Country {
+  const place = `${r.address ?? ""} ${r.city ?? ""}`.toLowerCase();
+  if (/belgi(que|um|ë)/.test(place)) return "BE";
+  if (/\bfrance\b/.test(place)) return "FR";
+  const phone = (r.phone ?? "").replace(/[\s.\-()]/g, "");
+  if (/^(\+32|0032)/.test(phone)) return "BE";
+  if (/^(\+33|0033)/.test(phone)) return "FR";
+  if (/(^|\D)\d{4}(\D|$)/.test(place) && !/(^|\D)\d{5}(\D|$)/.test(place)) return "BE";
+  if (/(^|\D)\d{5}(\D|$)/.test(place)) return "FR";
+  // Numéro national : mobiles belges en 04xx (10 chiffres), français en 06 / 07.
+  if (/^04\d{8}$/.test(phone)) return "BE";
+  if (/^0[67]\d{8}$/.test(phone)) return "FR";
+  return r.timezone === "Europe/Brussels" ? "BE" : "FR";
 }
+
+/** Cookie qui mémorise le pays choisi pour la liste des jours fériés. */
+export const HOLIDAY_COUNTRY_COOKIE = "monkomi_pays_feries";

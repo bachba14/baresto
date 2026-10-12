@@ -60,7 +60,7 @@ export async function Stats({ supabase, restaurant, period }: { supabase: Supaba
     { label: "Couverts", value: covers, hint: kept.length ? `${(covers / kept.length).toFixed(1).replace(".", ",")} pers. par table` : undefined },
     { label: "No-show", value: rate(noShows, kept.length + noShows), suffix: " %", hint: `${noShows} client${noShows > 1 ? "s" : ""} non venu${noShows > 1 ? "s" : ""}` },
     { label: "Annulations", value: rate(cancelled, rows.length), suffix: " %", hint: `${cancelled} annulée${cancelled > 1 ? "s" : ""}` },
-    { label: "En ligne", value: rate(online, kept.length), suffix: " %", hint: `${kept.length - online} par téléphone / sur place` },
+    { label: "En ligne", value: rate(online, kept.length), suffix: " %", hint: `${online} en ligne · ${kept.length - online} par téléphone / sur place` },
   ];
 
   return (

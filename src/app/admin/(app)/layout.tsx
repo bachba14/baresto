@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { requireRestaurant } from "@/lib/data";
 import { LiveUpdates } from "./live-updates";
 import { Sidebar } from "./sidebar";
+import { ScrollReset } from "./scroll-reset";
 
 export const metadata: Metadata = { title: "Back-office", robots: { index: false } };
 
@@ -26,6 +27,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
 
       {/* Connexion temps réel : une seule pour toute la page. */}
       <LiveUpdates restaurantId={restaurant.id} />
+      <ScrollReset />
 
       <main className="min-w-0 flex-1 p-4 md:p-8">{children}</main>
     </div>

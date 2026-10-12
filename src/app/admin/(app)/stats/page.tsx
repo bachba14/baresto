@@ -82,21 +82,29 @@ export default async function StatsPage({ searchParams }: { searchParams: Promis
   }
   const newCustomers = customerIds.filter((id) => (customers.get(id)?.first_date ?? from) >= from).length;
 
-  // Remplissage : couverts d'un service / places assises (une rotation), services passés uniquement.
+  // Remplissage = couverts servis / places offertes (places assises × services ouverts), services passés
+  // uniquement (aujourd'hui exclu : le service n'est pas fini). Un service où des clients sont venus compte
+  // aussi s'il n'était pas dans les horaires habituels.
   const seats = (tables ?? []).reduce((n, t) => n + t.seats, 0);
   const dinnerFrom = restaurant.dinner_from.slice(0, 5);
   const service = (time: string) => (time.slice(0, 5) >= dinnerFrom ? "soir" : "midi");
-  const fill: number[] = [];
+  let offered = 0;
+  let seated = 0;
   if (seats) {
     for (let d = from; d <= to && d < today; d = addDays(d, 1)) {
-      for (const range of restaurant.opening_hours[dow(d)] ?? []) {
-        const sv = service(range.start);
-        const covers = sum(kept.filter((r) => r.date === d && service(r.time) === sv));
-        fill.push(Math.min(1, covers / seats));
+      const dayRows = kept.filter((r) => r.date === d);
+      const services = new Set([
+        ...(restaurant.opening_hours[dow(d)] ?? []).map((range) => service(range.start)),
+        ...dayRows.map((r) => service(r.time)),
+      ]);
+      for (const sv of services) {
+        offered += seats;
+        seated += Math.min(seats, sum(dayRows.filter((r) => service(r.time) === sv)));
       }
     }
   }
-  const fillRate = fill.length ? Math.round((fill.reduce((a, b) => a + b, 0) / fill.length) * 100) : null;
+  const fillRate = offered ? (seated / offered) * 100 : null;
+  const fmtPct = (n: number) => (n > 0 && n < 10 ? n.toFixed(1).replace(".", ",") : String(Math.round(n)));
 
   // ── Séries des graphiques ──
   const weekly = days > 92;
@@ -169,16 +177,33 @@ export default async function StatsPage({ searchParams }: { searchParams: Promis
     .sort((a, b) => b.list.length - a.list.length || sum(b.list) - sum(a.list))
     .slice(0, 10);
 
-  const kpis: { label: string; value: string; d: number | null; hint?: string; lowerIsBetter?: boolean }[] = [
-    { label: "Réservations", value: String(s.reservations), d: delta(s.reservations, p.reservations) },
-    { label: "Couverts", value: String(s.covers), d: delta(s.covers, p.covers), hint: `${fmt1(s.coversPerDay)} par jour` },
-    { label: "Taille moyenne des tables", value: `${fmt1(s.avgParty)} pers.`, d: delta(s.avgParty, p.avgParty) },
-    { label: "Taux de no-show", value: s.noShowRate == null ? "—" : `${s.noShowRate} %`, d: s.noShowRate != null && p.noShowRate != null ? s.noShowRate - p.noShowRate : null, hint: `${s.noShows} client${s.noShows > 1 ? "s" : ""} non venu${s.noShows > 1 ? "s" : ""}`, lowerIsBetter: true },
-    { label: "Taux d'annulation", value: s.cancelRate == null ? "—" : `${s.cancelRate} %`, d: s.cancelRate != null && p.cancelRate != null ? s.cancelRate - p.cancelRate : null, hint: `${s.cancelled} annulation${s.cancelled > 1 ? "s" : ""}`, lowerIsBetter: true },
-    { label: "Réservé en ligne", value: s.onlineRate == null ? "—" : `${s.onlineRate} %`, d: null, hint: `${kept.length - online.length} par téléphone / sur place` },
-    { label: "Réservé en moyenne", value: s.avgLead == null ? "—" : `${fmt1(s.avgLead)} j avant`, d: null, hint: "réservations en ligne" },
-    { label: "Nouveaux clients", value: customerIds.length ? `${pct(newCustomers, customerIds.length)} %` : "—", d: null, hint: `${newCustomers} nouveaux · ${customerIds.length - newCustomers} déjà venus` },
-    ...(fillRate != null ? [{ label: "Remplissage moyen", value: `${fillRate} %`, d: null, hint: `par service, sur ${seats} places` }] : []),
+  // Comparaison avec la période précédente : seulement si elle contient des réservations.
+  const hasPrevious = prevRows.length > 0;
+  const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n > 1 ? many : one}`;
+
+  type Kpi = { label: string; info: string; value: string; d?: number | null; unit?: "%" | "pt"; hint?: string; lowerIsBetter?: boolean };
+  const primary: Kpi[] = [
+    { label: "Réservations", info: "Réservations maintenues, hors annulations et non-venues", value: String(s.reservations), d: delta(s.reservations, p.reservations), unit: "%" },
+    { label: "Couverts", info: "Nombre de personnes attendues ou venues", value: String(s.covers), d: delta(s.covers, p.covers), unit: "%", hint: `${fmt1(s.coversPerDay)} par jour` },
+    {
+      label: "Remplissage",
+      info: "Couverts servis ÷ places offertes (places assises × services ouverts), sur les services passés",
+      value: fillRate == null ? "—" : `${fmtPct(fillRate)} %`,
+      hint: fillRate == null ? (seats ? "aucun service passé sur la période" : "ajoutez vos tables dans Plan de salle") : `${seated} couverts sur ${offered} places offertes`,
+    },
+    { label: "No-show", info: "Part des réservations dont les clients ne sont pas venus", value: s.noShowRate == null ? "—" : `${s.noShowRate} %`, d: s.noShowRate != null && p.noShowRate != null ? s.noShowRate - p.noShowRate : null, unit: "pt", hint: plural(s.noShows, "client non venu", "clients non venus"), lowerIsBetter: true },
+    { label: "Annulations", info: "Part des réservations annulées (par vous ou par le client)", value: s.cancelRate == null ? "—" : `${s.cancelRate} %`, d: s.cancelRate != null && p.cancelRate != null ? s.cancelRate - p.cancelRate : null, unit: "pt", hint: plural(s.cancelled, "annulation"), lowerIsBetter: true },
+  ];
+  const secondary: Kpi[] = [
+    { label: "Pers. par table", info: "Nombre moyen de personnes par réservation", value: s.reservations ? fmt1(s.avgParty) : "—" },
+    { label: "En ligne", info: "Part des réservations faites par vos clients en ligne", value: s.onlineRate == null ? "—" : `${s.onlineRate} %`, hint: `${online.length} en ligne · ${kept.length - online.length} par téléphone / sur place` },
+    {
+      label: "Délai moyen",
+      info: "Combien de temps à l'avance vos clients réservent en ligne",
+      value: s.avgLead == null ? "—" : s.avgLead < 0.5 ? "Le jour même" : `${fmt1(s.avgLead)} j avant`,
+      hint: "réservations en ligne",
+    },
+    { label: "Nouveaux clients", info: "Clients dont c'est la première réservation", value: customerIds.length ? `${pct(newCustomers, customerIds.length)} %` : "—", hint: `${newCustomers} nouveaux · ${customerIds.length - newCustomers} déjà venus` },
   ];
 
   return (
@@ -187,7 +212,8 @@ export default async function StatsPage({ searchParams }: { searchParams: Promis
         <div>
           <h1 className="text-2xl font-bold">Statistiques</h1>
           <p className="text-stone-500">
-            Du {formatDate(from)} au {formatDate(to)} · comparé aux {days} jours précédents
+            Du {formatDate(from)} au {formatDate(to)} ·{" "}
+            {hasPrevious ? `comparé aux ${days} jours précédents` : `pas de réservation sur les ${days} jours précédents pour comparer`}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -209,22 +235,41 @@ export default async function StatsPage({ searchParams }: { searchParams: Promis
         </div>
       </div>
 
+      {/* Indicateurs clés */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
-        {kpis.map((k) => {
+        {primary.map((k) => {
           const good = k.d != null && k.d !== 0 && (k.lowerIsBetter ? k.d < 0 : k.d > 0);
           return (
-            <div key={k.label} className={cardClass}>
-              <p className="text-sm text-stone-500">{k.label}</p>
-              <p className="text-2xl font-semibold">{k.value}</p>
-              {k.d != null && k.d !== 0 && (
-                <p className={`text-xs font-medium ${good ? "text-emerald-700" : "text-red-700"}`}>
-                  {k.d > 0 ? "▲" : "▼"} {Math.abs(k.d)}{k.lowerIsBetter ? " pt" : " %"} vs période précédente
+            <div key={k.label} className={`${cardClass} min-w-0`}>
+              <p className="flex items-center gap-1 text-sm whitespace-nowrap text-stone-500">
+                {k.label}
+                <span title={k.info} aria-label={k.info} className="cursor-help text-xs text-stone-500">ⓘ</span>
+              </p>
+              <p className="text-2xl font-semibold tabular-nums">{k.value}</p>
+              {k.unit && hasPrevious && (
+                <p className={`text-xs font-medium ${k.d == null || k.d === 0 ? "text-stone-500" : good ? "text-emerald-700" : "text-red-700"}`}>
+                  {k.d == null ? "pas de comparaison" : k.d === 0 ? "= stable" : `${k.d > 0 ? "▲" : "▼"} ${Math.abs(k.d)}${k.unit === "pt" ? " pt" : " %"}`}
+                  <span className="font-normal text-stone-500"> vs période préc.</span>
                 </p>
               )}
               {k.hint && <p className="text-xs text-stone-500">{k.hint}</p>}
             </div>
           );
         })}
+      </div>
+
+      {/* Indicateurs secondaires, plus discrets */}
+      <div className="grid grid-cols-2 gap-x-6 gap-y-3 rounded-2xl bg-white/60 px-5 py-4 ring-1 ring-stone-900/[0.04] md:grid-cols-4">
+        {secondary.map((k) => (
+          <div key={k.label} className="min-w-0">
+            <p className="flex items-center gap-1 text-xs whitespace-nowrap text-stone-500">
+              {k.label}
+              <span title={k.info} aria-label={k.info} className="cursor-help">ⓘ</span>
+            </p>
+            <p className="text-lg font-semibold tabular-nums">{k.value}</p>
+            {k.hint && <p className="truncate text-xs text-stone-500" title={k.hint}>{k.hint}</p>}
+          </div>
+        ))}
       </div>
 
       <section className={cardClass}>
@@ -277,10 +322,12 @@ export default async function StatsPage({ searchParams }: { searchParams: Promis
             <h2 className="font-medium">Midi / soir</h2>
             <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
               {[["Midi", lunch], ["Soir", kept.filter((r) => service(r.time) === "soir")]].map(([label, list]) => (
-                <div key={label as string} className="rounded-lg bg-stone-50 p-3">
+                <div key={label as string} className="min-w-0 rounded-lg bg-stone-50 p-3">
                   <p className="text-stone-500">{label as string}</p>
-                  <p className="text-xl font-semibold">{sum(list as StatRow[])} couverts</p>
-                  <p className="text-xs text-stone-500">{pct(sum(list as StatRow[]), s.covers) ?? 0} % · {(list as StatRow[]).length} résa</p>
+                  <p className="text-xl font-semibold tabular-nums">{sum(list as StatRow[])}</p>
+                  <p className="text-xs [overflow-wrap:anywhere] text-stone-500">
+                    couverts · {pct(sum(list as StatRow[]), s.covers) ?? 0} % · {(list as StatRow[]).length} résa
+                  </p>
                 </div>
               ))}
             </div>

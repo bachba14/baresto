@@ -1,7 +1,7 @@
 import Link from "next/link";
+import { DateNav } from "@/components/date-nav";
 import { getFloor, getPlacedReservations, requireRestaurant } from "@/lib/data";
-import { addDays, formatDate, isValidDate, todayIn } from "@/lib/format";
-import { inputClass } from "@/components/admin-styles";
+import { formatDate, isValidDate, todayIn } from "@/lib/format";
 import { ServiceBoard } from "./service-board";
 
 function nowIn(timezone: string) {
@@ -30,13 +30,7 @@ export default async function ServicePage({ searchParams }: PageProps<"/admin/se
           <h1 className="text-2xl font-bold">Service</h1>
           <p className="text-stone-500 first-letter:uppercase">{formatDate(date)}</p>
         </div>
-        <form className="flex items-center gap-2">
-          <Link href={`?date=${addDays(date, -1)}`} className="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm">←</Link>
-          <input type="date" name="date" defaultValue={date} className={`${inputClass} w-auto`} />
-          <button className="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm">Voir</button>
-          <Link href={`?date=${addDays(date, 1)}`} className="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm">→</Link>
-          {date !== today && <Link href="?" className="text-sm text-stone-600 underline">Aujourd&apos;hui</Link>}
-        </form>
+        <DateNav date={date} today={today} />
       </div>
 
       {tables.length === 0 ? (
