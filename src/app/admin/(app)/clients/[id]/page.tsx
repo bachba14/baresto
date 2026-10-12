@@ -29,7 +29,7 @@ export default async function CustomerPage({ params }: PageProps<"/admin/clients
   ];
 
   return (
-    <div className="max-w-5xl space-y-6">
+    <div className="space-y-6">
       <div>
         <Link href="/admin/clients" className="text-sm text-stone-500 hover:underline">← Clients</Link>
         <h1 className="text-2xl font-bold">{c.name}</h1>

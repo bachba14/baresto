@@ -3,7 +3,7 @@ import { ImportForm } from "./import-form";
 
 export default function ImportPage() {
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Importer réservations et clients</h1>
         <p className="text-stone-500">

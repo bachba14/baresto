@@ -60,7 +60,7 @@ export default async function IntegrationPage() {
   ];
 
   return (
-    <div className="max-w-5xl space-y-6">
+    <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Intégration à votre site</h1>
         <p className="text-stone-500">

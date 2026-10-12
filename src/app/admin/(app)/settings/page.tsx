@@ -34,7 +34,7 @@ export default async function SettingsPage() {
   const holidays = upcomingHolidays(today, country);
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="space-y-6">
       <h1 className="text-2xl font-bold">Réglages</h1>
       {/* Navigation entre les sections de la page */}
       <nav aria-label="Sections des réglages" className="z-20 -mx-4 flex gap-1 overflow-x-auto bg-[#faf9f7]/90 px-4 py-2 backdrop-blur md:sticky md:top-0">

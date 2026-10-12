@@ -15,7 +15,7 @@ export default async function FloorPage({ searchParams }: PageProps<"/admin/floo
   const seats = tables.reduce((n, t) => n + t.seats, 0);
 
   return (
-    <div className="max-w-6xl space-y-6">
+    <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Plan de salle</h1>
         <p className="text-stone-500">

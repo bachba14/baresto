@@ -24,7 +24,7 @@ export default async function ServicePage({ searchParams }: PageProps<"/admin/se
     date === today ? nowIn(restaurant.timezone) : firstActive ? Number(firstActive.time.slice(0, 2)) * 60 + Number(firstActive.time.slice(3, 5)) : 12 * 60;
 
   return (
-    <div className="max-w-7xl space-y-4">
+    <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Service</h1>

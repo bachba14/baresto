@@ -75,7 +75,7 @@ export default async function Dashboard({ searchParams }: PageProps<"/admin">) {
   });
 
   return (
-    <div className="max-w-6xl space-y-8">
+    <div className="space-y-8">
       <header className="animate-rise flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-sm text-stone-500 first-letter:uppercase">{formatDate(today)}</p>

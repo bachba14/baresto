@@ -175,7 +175,7 @@ export function SettingsForm({ restaurant: settings, tableCount }: { restaurant:
         className={`fixed inset-x-0 bottom-0 z-30 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] md:left-64 ${dirty || pending ? "translate-y-0" : "translate-y-full"}`}
         aria-hidden={!dirty && !pending}
       >
-        <div className="mx-auto flex max-w-4xl items-center gap-3 border-t border-stone-200 bg-white/95 px-4 py-3 shadow-[0_-8px_24px_-12px_rgb(0_0_0/0.2)] backdrop-blur md:rounded-t-2xl md:border-x">
+        <div className="flex items-center gap-3 border-t border-stone-200 bg-white/95 px-4 py-3 shadow-[0_-8px_24px_-12px_rgb(0_0_0/0.2)] backdrop-blur md:rounded-t-2xl md:border-x">
           <span className="flex-1 text-sm text-amber-800">● Modifications non enregistrées</span>
           <button type="button" onClick={discard} disabled={pending} className="rounded-lg px-3 py-2 text-sm text-stone-600 hover:bg-stone-100">
             Annuler

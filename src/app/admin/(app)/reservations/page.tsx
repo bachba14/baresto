@@ -46,7 +46,7 @@ export default async function ReservationsPage({ searchParams }: PageProps<"/adm
   const toolLink = "rounded-lg border border-stone-200 bg-white px-3 py-2 transition hover:bg-stone-50";
 
   return (
-    <div className="max-w-6xl space-y-5">
+    <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Réservations</h1>
