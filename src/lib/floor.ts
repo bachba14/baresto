@@ -63,11 +63,12 @@ export function chairPositions(t: Pick<DiningTable, "shape" | "seats">) {
 
 export type TableState = "free" | "soon" | "reserved" | "seated";
 
+// Teintes foncées : le texte blanc des tables reste lisible (contraste WCAG AA).
 export const STATE_COLORS: Record<TableState, string> = {
-  free: "#10b981",
-  soon: "#f59e0b",
-  reserved: "#3b82f6",
-  seated: "#ef4444",
+  free: "#047857",
+  soon: "#b45309",
+  reserved: "#1d4ed8",
+  seated: "#b91c1c",
 };
 
 export const STATE_LABELS: Record<TableState, string> = {

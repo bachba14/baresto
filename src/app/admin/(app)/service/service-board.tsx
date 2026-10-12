@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { cardClass } from "@/components/admin-styles";
 import { CustomerBadges } from "@/components/customer-badges";
@@ -35,6 +35,30 @@ export function ServiceBoard({
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [pending, startTransition] = useTransition();
 
+  // Plein écran (tablette en salle) : API du navigateur, sinon affichage fixe sur toute la fenêtre.
+  const boardRef = useRef<HTMLDivElement>(null);
+  const [fullscreen, setFullscreen] = useState(false);
+  useEffect(() => {
+    const sync = () => setFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener("fullscreenchange", sync);
+    return () => document.removeEventListener("fullscreenchange", sync);
+  }, []);
+  const toggleFullscreen = async () => {
+    const el = boardRef.current;
+    if (!el) return;
+    if (document.fullscreenElement) return void (await document.exitFullscreen());
+    if (fullscreen) return setFullscreen(false);
+    if (el.requestFullscreen) {
+      try {
+        await el.requestFullscreen();
+        return;
+      } catch {
+        // Refusé (iPhone…) : on bascule sur l'affichage fixe.
+      }
+    }
+    setFullscreen(true);
+  };
+
   const room = rooms.find((r) => r.id === roomId) ?? rooms[0];
   const roomTables = tables.filter((t) => t.room_id === room.id);
   const tableLabel = useMemo(() => new Map(tables.map((t) => [t.id, t.label])), [tables]);
@@ -47,7 +71,8 @@ export function ServiceBoard({
     return new Map(
       [...occupancy].map(([id, s]) => [
         id,
-        { state: s.state, label: `${s.reservation.name.split(" ")[0]} · ${s.reservation.party_size}p${s.state === "soon" ? " " + formatTime(s.reservation.time) : ""}` },
+        // Deux lignes sur la table : le client, puis l'heure et les couverts.
+        { state: s.state, label: `${s.reservation.name.split(" ")[0]}\n${formatTime(s.reservation.time)} · ${s.reservation.party_size} p.` },
       ]),
     );
   }, [occupancy]);
@@ -74,7 +99,10 @@ export function ServiceBoard({
   };
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
+    <div
+      ref={boardRef}
+      className={`grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)] ${fullscreen ? "fixed inset-0 z-40 overflow-auto bg-[#faf9f7] p-4" : ""}`}
+    >
       {/* Liste des réservations */}
       <aside className={`${cardClass} h-fit space-y-3 lg:sticky lg:top-4`}>
         <div className="flex items-center justify-between">
@@ -152,6 +180,13 @@ export function ServiceBoard({
       {/* Plan */}
       <section className={`${cardClass} space-y-3`}>
         <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={toggleFullscreen}
+            className="order-last flex min-h-11 items-center gap-2 rounded-lg border border-stone-200 bg-white px-3 text-sm font-medium transition hover:bg-stone-50"
+          >
+            {fullscreen ? "✕ Quitter le plein écran" : "⛶ Plein écran"}
+          </button>
           {rooms.length > 1 && (
             <div className="flex gap-1">
               {rooms.map((r) => (
@@ -159,7 +194,7 @@ export function ServiceBoard({
                   key={r.id}
                   type="button"
                   onClick={() => setRoomId(r.id)}
-                  className={`rounded-lg px-3 py-1.5 text-sm ${r.id === room.id ? "bg-stone-900 text-white" : "border border-stone-300"}`}
+                  className={`min-h-11 rounded-lg px-4 text-sm ${r.id === room.id ? "bg-stone-900 text-white" : "border border-stone-300 bg-white"}`}
                 >
                   {r.name}
                 </button>

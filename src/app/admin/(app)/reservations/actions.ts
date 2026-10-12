@@ -66,38 +66,6 @@ export async function deleteReservation(id: string) {
   done();
 }
 
-/** Saisie manuelle (téléphone, sur place) : pas de contrôle de capacité. */
-export async function createReservation(formData: FormData) {
-  const { supabase, restaurant } = await requireRestaurantAction();
-  const date = String(formData.get("date"));
-  const time = String(formData.get("time"));
-  if (!isValidDate(date) || !/^\d{2}:\d{2}$/.test(time)) throw new Error("Date ou heure invalide.");
-
-  const text = (k: string) => String(formData.get(k) ?? "").trim() || null;
-  const { data, error } = await supabase.from("reservations").insert({
-    restaurant_id: restaurant.id,
-    date,
-    time,
-    party_size: Number(formData.get("party_size")) || 1,
-    name: text("name") ?? "Sans nom",
-    email: text("email"),
-    phone: text("phone"),
-    notes: text("notes"),
-    status: "confirmed",
-    source: "admin",
-  }).select("*").single();
-  if (error) throw new Error(error.message);
-  // Placement sur la meilleure table libre ; sinon elle apparaît « sans table » dans le service.
-  await supabase.rpc("auto_assign", { p_reservation: data.id });
-
-  // Le client reçoit sa confirmation avec le lien pour modifier ou annuler.
-  if (data.email && formData.get("send_email") === "on") {
-    const base = await siteUrl();
-    after(() => emailClient("confirmed", data as Reservation, restaurant, base));
-  }
-  done();
-}
-
 export async function deleteWaitlistEntry(id: string) {
   const { supabase, restaurant } = await requireRestaurantAction();
   const { error } = await supabase.from("waitlist").delete().eq("id", id).eq("restaurant_id", restaurant.id);

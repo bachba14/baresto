@@ -81,14 +81,16 @@
 
 ## P1 : flux du service (le cœur de l'usage)
 
-### [ ] 7. « + Réservation » doit ouvrir une fenêtre ou un panneau, sans quitter la page
+### [x] 7. « + Réservation » doit ouvrir une fenêtre ou un panneau, sans quitter la page
 - **Constat** : le bouton du tableau de bord renvoie vers le bas de la page Réservations, sur un formulaire en accordéon. On perd le contexte, ce qui est gênant pendant un appel téléphonique.
 - **Attendu** :
   - Un panneau latéral (ou une fenêtre modale) réutilisable, accessible depuis toutes les pages via un bouton global dans le header.
   - Un raccourci clavier optionnel : `N`.
   - Après l'enregistrement : un toast de confirmation, et on reste sur la page en cours.
 
-### [ ] 8. Améliorer le formulaire de réservation manuelle
+> **Fait.** Panneau latéral `src/app/admin/(app)/new-reservation.tsx`, monté une fois dans le layout : bouton « + Réservation » en haut du menu (et « + Résa » sur mobile), bouton du tableau de bord et de la page Réservations, raccourci **N** (ignoré pendant la saisie dans un champ), fermeture par Échap. Après l'enregistrement : notification (`src/components/toaster.tsx`) et on reste sur la page. L'ancien formulaire en accordéon est supprimé.
+
+### [x] 8. Améliorer le formulaire de réservation manuelle
 - **Constat** : l'heure se saisit librement (`--:--`), sans voir les créneaux disponibles, et on ne peut pas choisir de table. L'ordre des champs n'est pas adapté au téléphone.
 - **Attendu** :
   - Ordre des champs : Date → Couverts → Créneaux cliquables (avec capacité restante ou grisés si complet) → Nom → Téléphone → E-mail → Remarques.
@@ -96,7 +98,9 @@
   - Autocomplétion sur le nom et le téléphone à partir des clients existants (afficher le badge « Habitué »).
   - Validation inline (téléphone requis si pas d'e-mail, etc.).
 
-### [ ] 9. Réduire le nombre d'actions par ligne de réservation
+> **Fait.** Ordre Date → Couverts (− / +) → Créneaux cliquables (places restantes, « complet », grisés si passés ou fermés ; « Autre heure » reste possible) → Table (suggestion automatique de la plus petite table libre, modifiable, tables occupées désactivées) → Nom → Téléphone → E-mail → Remarques. Autocomplétion sur le nom et le téléphone depuis les fiches clients, avec badges « Habitué » et no-show. Validation : téléphone ou e-mail obligatoire, message sous les champs. Actions serveur dans `new-reservation-actions.ts`.
+
+### [x] 9. Réduire le nombre d'actions par ligne de réservation
 - **Constat** : chaque ligne propose 5 actions (Modifier, Installer, Non venue, Annuler, ×). La différence entre « Annuler » et « × » n'est pas claire.
 - **Attendu** :
   - Un bouton principal qui dépend du statut : Confirmée → **Installer** ; Installée → **Partie** ; En attente → **Confirmer**.
@@ -104,21 +108,29 @@
   - Une confirmation (avec annulation possible via un toast « Annuler ») pour Annuler, Supprimer et Non venue.
   - Clarifier dans le libellé la différence entre « Annuler la réservation » (le client prévenu) et « Supprimer » (effacement).
 
-### [ ] 10. Rapprocher le détail du jour du calendrier
+> **Fait.** `RowActions` (`reservations/reservation-editor.tsx`) : un seul bouton principal selon le statut (En attente → Confirmer, Confirmée → Installer, Installée → Partie, Partie → Réinstaller, Annulée / Non venue → Réactiver) et un menu « ⋯ » : Modifier, Non venue, « Annuler la réservation » (sous-titre : le client est prévenu par e-mail), « Supprimer définitivement » (effacée, sans e-mail). Confirmation pour Annuler et Supprimer ; les changements de statut affichent une notification avec « Annuler » pour revenir en arrière (pas pour l'annulation, dont l'e-mail est déjà parti).
+
+### [x] 10. Rapprocher le détail du jour du calendrier
 - **Constat** : il faut faire défiler toute la page sous le calendrier pour voir les réservations du jour sélectionné.
 - **Attendu** : sur desktop, une disposition en 2 colonnes (calendrier compact à gauche, liste du jour à droite). Ou alors une bascule « Calendrier / Liste » avec la liste par défaut.
 
-### [ ] 11. Simplifier la navigation par date
+> **Fait.** Page Réservations en 2 colonnes sur ordinateur : calendrier compact à gauche (reste visible au défilement), réservations du jour à droite avec le résumé (résa, couverts, ☀ midi / ☾ soir), puis la liste d'attente. Recherche et outils (Imprimer, Exporter) regroupés sur une ligne.
+
+### [x] 11. Simplifier la navigation par date
 - **Constat** : flèches + sélecteur + bouton « Voir » en haut, plus des flèches de mois dans le calendrier. Le bouton « Voir » est inutile.
 - **Attendu** : supprimer « Voir » (la date s'applique au changement) et toujours afficher le bouton « Aujourd'hui ».
 
-### [ ] 12. Rendre la vue Service exploitable en salle
+> **Fait** avec le point 1 : plus de bouton « Voir » (la date s'applique dès qu'on la change), « Aujourd'hui » toujours affiché (désactivé quand on y est déjà).
+
+### [x] 12. Rendre la vue Service exploitable en salle
 - **Constat** : le plan occupe environ la moitié de la largeur, et les numéros et capacités des tables sont minuscules.
 - **Attendu** :
   - Le plan prend tout l'espace disponible, avec un bouton « Plein écran » pensé pour tablette.
   - Les tables occupées affichent directement le nom du client, l'heure et le nombre de couverts.
   - Les cibles tactiles font au moins 44 px.
   - La légende des couleurs reste visible.
+
+> **Fait.** Liste réduite à 280 px, le plan prend le reste ; bouton « ⛶ Plein écran » (API du navigateur, ou affichage sur toute la fenêtre si elle est refusée, ex. iPhone). Les tables occupées affichent numéro, prénom du client, heure et couverts sur deux lignes. Couleurs des états assombries pour un texte blanc lisible (WCAG AA). Onglets de salle et boutons à 44 px. La légende reste au-dessus du plan.
 
 ---
 

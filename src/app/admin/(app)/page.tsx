@@ -10,6 +10,7 @@ import { CustomerBadges } from "@/components/customer-badges";
 import { updateStatus } from "./reservations/actions";
 import { RESERVATION_SELECT, type ReservationWithTables } from "./reservations/reservation-row";
 import { PERIODS, Stats } from "./stats";
+import { NewReservationButton } from "./new-reservation";
 
 const STATUS_DOT: Record<string, string> = {
   pending: "bg-amber-500",
@@ -61,14 +62,7 @@ export default async function Dashboard({ searchParams }: PageProps<"/admin">) {
           <p className="text-sm text-stone-500 first-letter:uppercase">{formatDate(today)}</p>
           <h1 className="mt-1 text-3xl tracking-tight">{greeting(restaurant.timezone)} 👋</h1>
         </div>
-        <div className="flex gap-2 text-sm">
-          <a href={`/r/${restaurant.slug}`} target="_blank" className="rounded-xl px-3 py-2 text-stone-600 transition hover:bg-stone-900/5 hover:text-stone-900">
-            Page publique ↗
-          </a>
-          <Link href="/admin/reservations?new=1#nouvelle" className="rounded-xl bg-stone-900 px-4 py-2 font-medium text-white transition hover:bg-stone-700">
-            + Réservation
-          </Link>
-        </div>
+        <NewReservationButton className="rounded-xl bg-stone-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-700" />
       </header>
 
       {/* Chiffres clés */}

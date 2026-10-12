@@ -1,10 +1,8 @@
 import Link from "next/link";
-import { SubmitButton } from "@/components/admin-ui";
 import { CUSTOMER_BRIEF, CustomerBadges, type CustomerBrief } from "@/components/customer-badges";
 import { formatDate, formatTime, STATUS_LABELS } from "@/lib/format";
 import type { Reservation, ReservationStatus } from "@/lib/types";
-import { deleteReservation, updateStatus } from "./actions";
-import { ReservationEditor } from "./reservation-editor";
+import { RowActions } from "./reservation-editor";
 
 const BADGE: Record<ReservationStatus, string> = {
   pending: "bg-amber-100 text-amber-800",
@@ -13,25 +11,6 @@ const BADGE: Record<ReservationStatus, string> = {
   finished: "bg-stone-100 text-stone-600",
   cancelled: "bg-stone-200 text-stone-600 line-through",
   no_show: "bg-red-100 text-red-700",
-};
-
-/** Actions proposées selon le statut courant. */
-const NEXT: Record<ReservationStatus, ReservationStatus[]> = {
-  pending: ["confirmed", "cancelled"],
-  confirmed: ["seated", "no_show", "cancelled"],
-  seated: ["finished", "confirmed"],
-  finished: ["seated"],
-  cancelled: ["confirmed"],
-  no_show: ["confirmed"],
-};
-
-const ACTION_LABELS: Record<ReservationStatus, string> = {
-  pending: "En attente",
-  confirmed: "Confirmer",
-  seated: "Installer",
-  finished: "Parti",
-  cancelled: "Annuler",
-  no_show: "Non venue",
 };
 
 export type ReservationWithTables = Reservation & {
@@ -84,20 +63,7 @@ export function ReservationRow({ r, showDate = false }: { r: ReservationWithTabl
         {r.notes && <p className="mt-1 text-sm text-stone-700 italic">« {r.notes} »</p>}
         {r.customers?.notes && <p className="mt-1 text-sm text-violet-800">📝 {r.customers.notes}</p>}
       </div>
-      <ReservationEditor r={r}>
-        {NEXT[r.status].map((s) => (
-          <form key={s} action={updateStatus.bind(null, r.id, s)}>
-            <SubmitButton variant={s === "cancelled" || s === "no_show" ? "ghost" : "secondary"}>
-              {ACTION_LABELS[s]}
-            </SubmitButton>
-          </form>
-        ))}
-        <form action={deleteReservation.bind(null, r.id)}>
-          <SubmitButton variant="danger" confirm="Supprimer définitivement cette réservation ?" aria-label="Supprimer">
-            ✕
-          </SubmitButton>
-        </form>
-      </ReservationEditor>
+      <RowActions r={r} />
     </li>
   );
 }

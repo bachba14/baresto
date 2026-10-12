@@ -76,21 +76,25 @@ export async function MonthCalendar({
   const link = (date: string, monthParam = month) => `?date=${date}&month=${monthParam}`;
 
   return (
-    <section className="rounded-xl border border-stone-200 bg-white p-4 sm:p-5">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-1">
-          <Link href={link(selected, shiftMonth(month, -1))} scroll={false} className="rounded-lg border border-stone-300 px-2.5 py-1 text-sm" aria-label="Mois précédent">←</Link>
-          <h2 className="w-40 text-center font-semibold capitalize">{MONTHS[m - 1]} {y}</h2>
-          <Link href={link(selected, shiftMonth(month, 1))} scroll={false} className="rounded-lg border border-stone-300 px-2.5 py-1 text-sm" aria-label="Mois suivant">→</Link>
-        </div>
-        <p className="text-sm text-stone-500">
-          {monthCount} réservations · <span className="font-medium text-stone-700">{monthCovers} couverts</span> ce mois-ci
-        </p>
+    <section className="rounded-2xl bg-white p-4 shadow-[0_1px_2px_rgb(28_25_23/0.04),0_1px_12px_-4px_rgb(28_25_23/0.06)] ring-1 ring-stone-900/[0.04]">
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <Link href={link(selected, shiftMonth(month, -1))} scroll={false} className="flex h-9 w-9 items-center justify-center rounded-lg border border-stone-200 text-sm hover:bg-stone-50" aria-label="Mois précédent">←</Link>
+        <h2 className="text-center font-semibold capitalize">{MONTHS[m - 1]} {y}</h2>
+        <Link href={link(selected, shiftMonth(month, 1))} scroll={false} className="flex h-9 w-9 items-center justify-center rounded-lg border border-stone-200 text-sm hover:bg-stone-50" aria-label="Mois suivant">→</Link>
       </div>
+      <p className="mb-3 text-center text-xs text-stone-500">
+        {monthCount} réservations · <span className="font-medium text-stone-700">{monthCovers} couverts</span> ce mois-ci
+      </p>
+      {/* Légende au-dessus du calendrier */}
+      <p className="mb-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] text-stone-500">
+        <span>Chiffre = couverts du jour</span>
+        <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-amber-500" /> à confirmer</span>
+        <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-sky-500" /> liste d&apos;attente</span>
+      </p>
 
       <div className="grid grid-cols-7 gap-1 text-xs">
         {WEEKDAYS.map((d) => (
-          <div key={d} className="pb-1 text-center font-medium text-stone-500">{d}</div>
+          <div key={d} className="pb-1 text-center font-medium text-stone-500">{d.slice(0, 1)}</div>
         ))}
         {cells.map((date, i) => {
           if (!date) return <div key={`vide-${i}`} />;
@@ -100,10 +104,13 @@ export async function MonthCalendar({
           const ratio = s ? s.covers / max : 0;
           const dark = ratio > 0.6;
           const isSelected = date === selected;
+          const waiting = waitCount.get(date) ?? 0;
           const label = [
             `${Number(date.slice(8))} ${MONTHS[m - 1]}`,
-            s ? `${s.count} réservation${s.count > 1 ? "s" : ""}, ${s.covers} couverts (midi ${s.lunch}, soir ${s.dinner})` : "aucune réservation",
-            ...dayClosures.map((c) => `fermé : ${closureLabel(c, restaurant.dinner_from)}`),
+            s ? `${s.count} réservation${s.count > 1 ? "s" : ""} · ${s.covers} couverts (☀ midi : ${s.lunch} · ☾ soir : ${s.dinner})` : "aucune réservation",
+            ...(s?.pending ? [`${s.pending} à confirmer`] : []),
+            ...(waiting ? [`${waiting} en liste d'attente`] : []),
+            ...dayClosures.map((c) => `fermé : ${closureLabel(c, restaurant.dinner_from).toLowerCase()}`),
           ].join(" — ");
           return (
             <Link
@@ -113,36 +120,31 @@ export async function MonthCalendar({
               title={label}
               aria-label={label}
               aria-current={isSelected ? "date" : undefined}
-              className={`flex min-h-[4.5rem] flex-col rounded-lg border p-1.5 transition hover:border-stone-500 sm:min-h-20 ${
-                isSelected ? "border-stone-900 ring-2 ring-stone-900" : "border-stone-200"
-              } ${date < today ? "opacity-60" : ""} ${fullClosed ? "bg-stone-100" : ""}`}
+              className={`relative flex min-h-12 flex-col items-center justify-center rounded-lg border transition hover:border-stone-500 ${
+                isSelected ? "border-stone-900 ring-2 ring-stone-900" : "border-transparent"
+              } ${date < today ? "opacity-60" : ""} ${fullClosed ? "bg-stone-100 [background-image:repeating-linear-gradient(135deg,transparent_0_4px,rgb(0_0_0/0.05)_4px_6px)]" : ""}`}
               style={s && !fullClosed ? { background: `rgb(217 119 6 / ${0.08 + ratio * 0.72})` } : undefined}
             >
-              <span className={`font-semibold ${date === today ? "inline-flex h-5 w-5 items-center justify-center rounded-full bg-stone-900 text-white" : dark ? "text-white" : ""}`}>
+              <span className={`text-[11px] leading-none ${date === today ? "rounded-full bg-stone-900 px-1.5 py-0.5 font-semibold text-white" : dark ? "text-white/90" : "text-stone-500"}`}>
                 {Number(date.slice(8))}
               </span>
               {fullClosed ? (
-                <span className="mt-auto text-[11px] text-stone-500">Fermé</span>
+                <span className="mt-0.5 text-[10px] text-stone-500">fermé</span>
               ) : (
-                s && (
-                  <span className={`mt-auto leading-tight ${dark ? "text-white" : "text-stone-800"}`}>
-                    <span className="block text-sm font-semibold tabular-nums">{s.covers} <span className="text-[11px] font-normal">couv.</span></span>
-                    <span className="hidden text-[11px] tabular-nums sm:block">M {s.lunch} · S {s.dinner}</span>
-                  </span>
-                )
+                <span className={`mt-0.5 text-sm leading-none font-semibold tabular-nums ${dark ? "text-white" : "text-stone-800"} ${s ? "" : "opacity-0"}`}>
+                  {s?.covers ?? 0}
+                </span>
               )}
-              <span className="flex flex-wrap gap-0.5">
-                {!fullClosed && dayClosures.length > 0 && <span className="rounded bg-stone-800 px-1 text-[10px] text-white">fermé {closureLabel(dayClosures[0], restaurant.dinner_from).toLowerCase()}</span>}
-                {!!s?.pending && <span className="rounded bg-white/90 px-1 text-[10px] text-amber-800">{s.pending} à confirmer</span>}
-                {!!waitCount.get(date) && <span className="rounded bg-white/90 px-1 text-[10px] text-sky-800">{waitCount.get(date)} en attente</span>}
+              {/* Repères : à confirmer, liste d'attente, fermeture partielle */}
+              <span className="absolute top-1 right-1 flex gap-0.5">
+                {!!s?.pending && <span className="h-1.5 w-1.5 rounded-full bg-amber-500 ring-1 ring-white" />}
+                {!!waiting && <span className="h-1.5 w-1.5 rounded-full bg-sky-500 ring-1 ring-white" />}
               </span>
+              {!fullClosed && dayClosures.length > 0 && <span className="absolute inset-x-1 bottom-0.5 h-0.5 rounded-full bg-stone-700" />}
             </Link>
           );
         })}
       </div>
-      <p className="mt-2 text-xs text-stone-500">
-        Plus la case est foncée, plus la journée est chargée. M = couverts du midi, S = du soir. Cliquez sur un jour pour voir ses réservations.
-      </p>
     </section>
   );
 }

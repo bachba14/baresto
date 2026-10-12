@@ -68,7 +68,9 @@ export function Floor2D({ room, tables, states, selectedIds = [], onSelectTable,
       {tables.map((t) => {
         const { w, d } = tableSize(t);
         const st = states?.get(t.id);
-        const fill = st ? STATE_COLORS[st.state] : states ? STATE_COLORS.free : "#d6d3d1";
+        // Éditeur (sans états) : gris foncé, pour un texte blanc lisible.
+        const fill = st ? STATE_COLORS[st.state] : states ? STATE_COLORS.free : "#57534e";
+        const [line1, line2] = (st?.label ?? "").split("\n");
         const selected = selectedIds.includes(t.id);
         const isDrop = dropTarget === t.id;
 
@@ -125,12 +127,19 @@ export function Floor2D({ room, tables, states, selectedIds = [], onSelectTable,
                 <rect x={-w / 2 - 0.08} y={-d / 2 - 0.08} width={w + 0.16} height={d + 0.16} rx={0.1} fill="none" stroke={isDrop ? "#7c3aed" : "#1c1917"} strokeWidth={0.06} />
               ))}
             <g transform={`rotate(${-t.rotation})`}>
-              <text textAnchor="middle" y={st?.label ? -0.02 : 0.1} fontSize="0.26" fontWeight="700" fill="#fff">
-                {t.label}
-              </text>
-              <text textAnchor="middle" y={st?.label ? 0.22 : 0.34} fontSize="0.15" fill="#fff">
-                {st?.label ? (st.label.length > 10 ? `${st.label.slice(0, 9)}…` : st.label) : `${t.seats} pl.`}
-              </text>
+              {line1 ? (
+                // Table occupée : numéro, client, heure et couverts.
+                <>
+                  <text textAnchor="middle" y={-0.2} fontSize="0.18" fontWeight="700" fill="#fff" opacity={0.85}>{t.label}</text>
+                  <text textAnchor="middle" y={0.04} fontSize="0.22" fontWeight="700" fill="#fff">{line1.length > 11 ? `${line1.slice(0, 10)}…` : line1}</text>
+                  <text textAnchor="middle" y={0.27} fontSize="0.17" fill="#fff">{line2}</text>
+                </>
+              ) : (
+                <>
+                  <text textAnchor="middle" y={0.1} fontSize="0.28" fontWeight="700" fill="#fff">{t.label}</text>
+                  <text textAnchor="middle" y={0.34} fontSize="0.17" fill="#fff">{`${t.seats} pl.`}</text>
+                </>
+              )}
               {!t.bookable_online && !states && (
                 <text textAnchor="middle" y={-0.22} fontSize="0.14" fill="#fff">hors ligne</text>
               )}

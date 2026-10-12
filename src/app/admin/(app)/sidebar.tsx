@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logout } from "@/app/(auth)/actions";
 import { LiveIndicator } from "./live-updates";
+import { openNewReservation } from "./new-reservation";
 
 
 /** Icônes au trait (24 × 24). */
@@ -151,6 +152,18 @@ export function Sidebar({
           </span>
         </div>
 
+        {/* Nouvelle réservation, accessible de partout (raccourci : N) */}
+        <div className="mt-5 px-3">
+          <button
+            type="button"
+            onClick={() => openNewReservation()}
+            title="Nouvelle réservation (raccourci : N)"
+            className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-stone-900 text-sm font-medium text-white transition hover:bg-stone-700"
+          >
+            <span className="text-base leading-none">+</span> Réservation
+          </button>
+        </div>
+
         {/* Liens */}
         <nav className="mt-6 space-y-4 px-3">
           {GROUPS.map((group, g) => (
@@ -199,6 +212,7 @@ export function Sidebar({
             <span className="text-sm font-medium">{restaurant.name}</span>
           </Link>
           <div className="flex items-center gap-2">
+            <button type="button" onClick={() => openNewReservation()} className="flex h-10 items-center rounded-lg bg-stone-900 px-3 text-sm font-medium text-white" aria-label="Nouvelle réservation">+ Résa</button>
             <LiveIndicator />
             <form action={logout}>
               <button aria-label="Se déconnecter" className="rounded-lg p-1.5 text-stone-500 hover:bg-stone-900/5 hover:text-stone-900">
