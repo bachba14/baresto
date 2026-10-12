@@ -72,11 +72,11 @@ export default async function StatsPage({ searchParams }: { searchParams: Promis
 
   // Clients nouveaux / fidèles : première réservation pendant la période ou avant.
   const customerIds = [...new Set(kept.map((r) => r.customer_id).filter(Boolean))] as string[];
-  const customers = new Map<string, Pick<Customer, "id" | "name" | "first_date" | "reservation_count">>();
+  const customers = new Map<string, Pick<Customer, "id" | "name" | "first_date" | "reservation_count" | "phone" | "email">>();
   for (let i = 0; i < customerIds.length; i += 200) {
     const { data } = await supabase
       .from("customers")
-      .select("id, name, first_date, reservation_count")
+      .select("id, name, first_date, reservation_count, phone, email")
       .in("id", customerIds.slice(i, i + 200));
     for (const c of data ?? []) customers.set(c.id, c);
   }
@@ -365,7 +365,8 @@ export default async function StatsPage({ searchParams }: { searchParams: Promis
               {top.map(({ id, list }) => (
                 <tr key={id} className="border-b border-stone-100">
                   <td className="py-1.5">
-                    <Link href={`/admin/clients/${id}`} className="hover:underline">{customers.get(id)?.name ?? list[0].name}</Link>
+                    <Link href={`/admin/clients/${id}`} className="font-medium hover:underline">{customers.get(id)?.name ?? list[0].name}</Link>
+                    <span className="block text-xs text-stone-500">{[customers.get(id)?.phone, customers.get(id)?.email].filter(Boolean).join(" · ") || "—"}</span>
                   </td>
                   <td className="py-1.5">{list.length}</td>
                   <td className="py-1.5">{sum(list)}</td>

@@ -57,10 +57,14 @@ export function BarChart({ bars, height = 180, labelEvery = 1, unit }: { bars: B
             ))}
           </div>
         </div>
-        <div className="mt-1 flex gap-[2px] text-[11px] text-stone-500">
+        {/* Libellés d'axe : centrés sous leur barre, jamais tronqués (ils peuvent déborder sur les barres voisines,
+            d'où un libellé sur `labelEvery`). Le détail complet reste dans l'infobulle de chaque barre. */}
+        <div className="mt-1 flex h-4 gap-[2px] text-[11px] text-stone-500">
           {bars.map((b, i) => (
-            <span key={b.key} className="flex-1 truncate text-center">
-              {i % labelEvery === 0 ? b.label : ""}
+            <span key={b.key} className="relative flex-1">
+              {i % labelEvery === 0 && (
+                <span className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap tabular-nums">{b.label}</span>
+              )}
             </span>
           ))}
         </div>

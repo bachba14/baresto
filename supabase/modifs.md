@@ -136,26 +136,36 @@
 
 ## P2 : lisibilité et données
 
-### [ ] 13. Distinguer les clients et ouvrir une fiche
+### [x] 13. Distinguer les clients et ouvrir une fiche
 - **Constat** : dans Clients et dans « Meilleurs clients », tous les noms s'affichent comme « test ». On ne les distingue pas, et aucune fiche ne s'ouvre au clic.
 - **Attendu** : afficher le téléphone ou l'e-mail en deuxième ligne partout. Ajouter une fiche client au clic : historique, nombre de visites, no-shows, notes, allergies et préférences.
 
-### [ ] 14. Axes des graphiques tronqués
+> **Fait.** La fiche client existait déjà (`/admin/clients/[id]` : historique, réservations, couverts, no-shows, annulations, notes, étiquettes) ; chaque ligne de la liste Clients l'ouvre, avec maintenant un chevron « › » pour le signaler. Le téléphone / l'e-mail s'affichent en 2e ligne dans la liste Clients (déjà le cas) et dans « Meilleurs clients » (ajouté). Allergies et préférences : champ Notes et étiquettes de la fiche. Remarque : les clients de test s'appellent tous « test », d'où la confusion.
+
+### [x] 14. Axes des graphiques tronqués
 - **Constat** : libellés « 1.. », « 2.. », « Jo… », « S… ».
 - **Attendu** : format court (`12/10`, `L M M J V S D`), moins de graduations quand la place manque, et une infobulle au survol avec la valeur complète.
 
-### [ ] 15. Calendrier : notation « M 0 · S 8 » trop cryptique
+> **Fait.** `src/components/bar-chart.tsx` : les libellés d'axe ne sont plus coupés (centrés sous leur barre, sur une ligne) ; un libellé sur N quand la place manque ; dates au format `12/10` ; la valeur complète reste dans l'infobulle de chaque barre.
+
+### [x] 15. Calendrier : notation « M 0 · S 8 » trop cryptique
 - **Attendu** : déplacer la légende au-dessus du calendrier ou la remplacer par une infobulle (« Midi : 0 couvert · Soir : 8 couverts »). Utiliser des icônes ☀︎ / ☾ ou des libellés clairs.
 
-### [ ] 16. Le tableau de bord n'affiche que des zéros
+> **Fait** avec le point 10 : légende au-dessus du calendrier (chiffre = couverts du jour, pastilles « à confirmer » et « liste d'attente »), détail « ☀ midi : 0 · ☾ soir : 8 couverts » dans l'infobulle de chaque jour et dans l'en-tête de la journée.
+
+### [x] 16. Le tableau de bord n'affiche que des zéros
 - **Attendu** :
   - Si rien n'est prévu aujourd'hui, afficher la **prochaine réservation à venir**.
   - Pour un nouveau compte, ajouter une **checklist d'onboarding** (horaires, plan de salle, carte, intégration du widget, lien d'avis Google), avec une progression.
 - La carte « À confirmer » apparaît deux fois (une carte indicateur et un bloc). Les fusionner quand la confirmation automatique est active.
 
-### [ ] 17. Rééquilibrer la grille des statistiques
+> **Fait.** Sans réservation aujourd'hui : carte « Prochaine réservation » (cliquable). Checklist « Bien démarrer » avec barre de progression (horaires, coordonnées, plan de salle, carte, lien d'avis Google, 1re réservation en ligne), masquée quand tout est fait. Le bloc « À confirmer » disparaît quand la confirmation automatique est active et qu'aucune demande n'attend ; la carte indique alors « confirmation automatique active ».
+
+### [x] 17. Rééquilibrer la grille des statistiques
 - **Constat** : 5 cartes puis 4 cartes avec un vide, et des libellés sur 3 lignes (« Taille moyenne des tables »).
 - **Attendu** : une rangée de 4 à 5 indicateurs clés (Réservations, Couverts, Remplissage, No-show, Annulations), puis les indicateurs secondaires dans une rangée plus discrète. Des libellés courts sur une ligne, avec une infobulle « ⓘ » pour la définition.
+
+> **Fait** avec le point 4 : 5 indicateurs clés (Réservations, Couverts, Remplissage, No-show, Annulations) avec évolution, puis une rangée secondaire plus discrète (Pers. par table, En ligne, Délai moyen, Nouveaux clients). Libellés courts sur une ligne, définition dans une infobulle « ⓘ ».
 
 ---
 

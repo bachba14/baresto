@@ -34,15 +34,34 @@ export default async function Dashboard({ searchParams }: PageProps<"/admin">) {
   const today = todayIn(restaurant.timezone);
   const dinnerFrom = restaurant.dinner_from.slice(0, 5);
 
-  const [{ data: todayRes }, { data: pending }, { data: week }] = await Promise.all([
+  const [{ data: todayRes }, { data: pending }, { data: week }, { data: nextRes }, { count: tableCount }, { count: dishCount }, { count: onlineCount }] = await Promise.all([
     supabase.from("reservations").select(RESERVATION_SELECT).eq("restaurant_id", restaurant.id).eq("date", today).in("status", ["pending", "confirmed", "seated", "finished"]).order("time"),
     supabase.from("reservations").select(RESERVATION_SELECT).eq("restaurant_id", restaurant.id).eq("status", "pending").gte("date", today).order("date").order("time").limit(50),
     supabase.from("reservations").select("date, party_size").eq("restaurant_id", restaurant.id).gte("date", today).lte("date", addDays(today, 6))
       .in("status", ["pending", "confirmed", "seated", "finished"]),
+    supabase.from("reservations").select("date, time, name, party_size").eq("restaurant_id", restaurant.id).gt("date", today)
+      .in("status", ["pending", "confirmed"]).order("date").order("time").limit(1).maybeSingle(),
+    supabase.from("dining_tables").select("*", { count: "exact", head: true }).eq("restaurant_id", restaurant.id),
+    supabase.from("menu_items").select("*", { count: "exact", head: true }).eq("restaurant_id", restaurant.id),
+    supabase.from("reservations").select("*", { count: "exact", head: true }).eq("restaurant_id", restaurant.id).eq("source", "widget"),
   ]);
+
+  // Checklist de démarrage : affichée tant qu'une étape reste à faire.
+  const steps = [
+    { done: Object.values(restaurant.opening_hours ?? {}).some((r) => r.length > 0), label: "Renseigner vos horaires de service", href: "/admin/settings" },
+    { done: Boolean(restaurant.phone && restaurant.address && restaurant.email), label: "Compléter adresse, téléphone et e-mail", href: "/admin/settings" },
+    { done: (tableCount ?? 0) > 0, label: "Créer votre plan de salle", href: "/admin/floor" },
+    { done: (dishCount ?? 0) > 0, label: "Mettre votre carte en ligne", href: "/admin/menu" },
+    { done: Boolean(restaurant.review_url), label: "Ajouter votre lien d'avis Google", href: "/admin/settings" },
+    { done: (onlineCount ?? 0) > 0, label: "Partager votre page ou intégrer le widget (1re réservation en ligne)", href: "/admin/integration" },
+  ];
+  const stepsDone = steps.filter((st) => st.done).length;
+
 
   const todayList = (todayRes ?? []) as ReservationWithTables[];
   const pendingList = (pending ?? []) as ReservationWithTables[];
+  // Confirmation automatique sans demande en attente : le bloc « À confirmer » n'apporte rien.
+  const showPending = pendingList.length > 0 || !restaurant.auto_confirm;
   const covers = (list: { party_size: number }[]) => list.reduce((n, r) => n + r.party_size, 0);
   const lunch = todayList.filter((r) => r.time.slice(0, 5) < dinnerFrom);
   const dinner = todayList.filter((r) => r.time.slice(0, 5) >= dinnerFrom);
@@ -81,7 +100,7 @@ export default async function Dashboard({ searchParams }: PageProps<"/admin">) {
         >
           <p className={`text-sm ${pendingList.length ? "text-amber-800" : "text-stone-500"}`}>À confirmer</p>
           <p className="mt-2 text-4xl font-semibold tracking-tight"><CountUp value={pendingList.length} /></p>
-          <p className="mt-1 text-sm text-stone-500">{pendingList.length ? "demandes en attente" : "tout est à jour ✓"}</p>
+          <p className="mt-1 text-sm text-stone-500">{pendingList.length ? "demandes en attente" : restaurant.auto_confirm ? "confirmation automatique active" : "tout est à jour ✓"}</p>
         </Link>
         <div className={`${cardClass} animate-rise`} style={delay(180)}>
           <p className="text-sm text-stone-500">Couverts sur 7 jours</p>
@@ -98,9 +117,18 @@ export default async function Dashboard({ searchParams }: PageProps<"/admin">) {
             <Link href="/admin/reservations" className="text-sm text-stone-500 transition hover:text-stone-900">Tout voir →</Link>
           </div>
           {todayList.length === 0 ? (
-            <div className="px-5 py-12 text-center">
+            <div className="px-5 py-10 text-center">
               <p className="text-3xl">🍽️</p>
               <p className="mt-2 text-stone-500">Aucune réservation aujourd&apos;hui.</p>
+              {nextRes ? (
+                <Link href={`/admin/reservations?date=${nextRes.date}`} className="mx-auto mt-4 block max-w-sm rounded-xl bg-stone-50 px-4 py-3 text-sm transition hover:bg-stone-100">
+                  <span className="block text-xs tracking-wide text-stone-500 uppercase">Prochaine réservation</span>
+                  <span className="font-medium">{nextRes.name}</span> · {nextRes.party_size} pers.
+                  <span className="block text-stone-500 first-letter:uppercase">{formatDate(nextRes.date)} à {formatTime(nextRes.time)}</span>
+                </Link>
+              ) : (
+                <p className="mt-1 text-sm text-stone-500">Aucune réservation à venir pour l&apos;instant.</p>
+              )}
             </div>
           ) : (
             <div className="pb-2">
@@ -121,7 +149,33 @@ export default async function Dashboard({ searchParams }: PageProps<"/admin">) {
         </section>
 
         <div className="space-y-4">
+          {stepsDone < steps.length && (
+            <section className={`${cardClass} animate-rise`} style={delay(280)}>
+              <div className="flex items-baseline justify-between gap-2">
+                <h2 className="text-lg">Bien démarrer</h2>
+                <span className="text-sm text-stone-500 tabular-nums">{stepsDone} / {steps.length}</span>
+              </div>
+              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-stone-100" role="progressbar" aria-valuemin={0} aria-valuemax={steps.length} aria-valuenow={stepsDone} aria-label="Progression de la configuration">
+                <div className="h-full rounded-full bg-amber-600 transition-[width] duration-700" style={{ width: `${(stepsDone / steps.length) * 100}%` }} />
+              </div>
+              <ul className="mt-3 space-y-1 text-sm">
+                {steps.map((st) => (
+                  <li key={st.label}>
+                    <Link href={st.href} className={`flex items-center gap-2 rounded-lg px-2 py-1.5 transition hover:bg-stone-50 ${st.done ? "text-stone-500 line-through" : ""}`}>
+                      <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs ${st.done ? "bg-emerald-600 text-white" : "ring-1 ring-stone-300"}`} aria-hidden>
+                        {st.done ? "✓" : ""}
+                      </span>
+                      <span className="sr-only">{st.done ? "Fait : " : "À faire : "}</span>
+                      {st.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
           {/* Demandes à confirmer */}
+          {showPending && (
           <section id="a-confirmer" className={`${cardClass} animate-rise scroll-mt-6`} style={delay(300)}>
             <h2 className="text-lg">À confirmer</h2>
             {pendingList.length === 0 ? (
@@ -156,6 +210,7 @@ export default async function Dashboard({ searchParams }: PageProps<"/admin">) {
               </ul>
             )}
           </section>
+          )}
 
           {/* Semaine à venir */}
           <section className={`${cardClass} animate-rise`} style={delay(360)}>
