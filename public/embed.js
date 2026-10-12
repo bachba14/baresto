@@ -128,8 +128,11 @@
 
   // ── Messages venant des iframes ─────────────────────────────
   window.addEventListener("message", function (e) {
-    if (e.origin !== BASE || !e.data || typeof e.data !== "object") return;
+    if (!e.data || typeof e.data !== "object") return;
     var frame = frames[e.data.frameId];
+    // Le message doit venir de notre propre iframe (fonctionne aussi après une redirection
+    // de l'ancienne adresse vers la nouvelle, où l'origine change).
+    if (!frame || e.source !== frame.contentWindow) return;
     var type = String(e.data.type || "").replace(/^baresto:/, "monkomi:");
     if (type === "monkomi:resize" && frame) {
       frame.style.minHeight = "0";
