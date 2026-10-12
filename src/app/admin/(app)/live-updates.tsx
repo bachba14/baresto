@@ -23,12 +23,12 @@ const subscribe = (l: () => void) => {
 export function LiveIndicator() {
   const connected = useSyncExternalStore(subscribe, () => connectedNow, () => false);
   return (
-    <span className="flex items-center gap-1.5 text-xs text-stone-500" title={connected ? "Mises à jour en direct" : "Connexion au direct…"}>
+    <span className="flex items-center gap-1.5 text-xs text-stone-500" title={connected ? "Le back-office se met à jour tout seul : nouvelles réservations, modifications et annulations apparaissent sans recharger la page." : "Connexion en cours : rechargez la page si cela dure."}>
       <span className="relative flex h-2 w-2">
         {connected && <span className="absolute inset-0 animate-ping rounded-full bg-emerald-400 opacity-60 motion-reduce:hidden" />}
         <span className={`relative h-2 w-2 rounded-full ${connected ? "bg-emerald-500" : "bg-stone-300"}`} />
       </span>
-      {connected ? "En direct" : "Hors ligne"}
+      {connected ? "Mises à jour en direct" : "Mises à jour en pause"}
     </span>
   );
 }

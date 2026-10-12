@@ -61,7 +61,7 @@ export function Floor2D({ room, tables, states, selectedIds = [], onSelectTable,
       </defs>
       <rect x={0} y={0} width={room.width} height={room.depth} fill="#fafaf9" />
       <rect x={0} y={0} width={room.width} height={room.depth} fill="url(#grid)" stroke="#78716c" strokeWidth="0.08" />
-      <text x={room.width / 2} y={-0.2} textAnchor="middle" fontSize="0.28" fill="#a8a29e">
+      <text x={room.width / 2} y={-0.2} textAnchor="middle" fontSize="0.28" fill="#57534e">
         {room.name} · {room.width} × {room.depth} m
       </text>
 

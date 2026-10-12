@@ -80,7 +80,7 @@ export function QuickSetup({
             <button
               type="button"
               onClick={() => setGroups((gs) => gs.filter((_, j) => j !== i))}
-              className="px-2 text-stone-400 hover:text-red-600"
+              className="px-2 text-stone-500 hover:text-red-600"
               aria-label="Retirer"
             >
               ✕

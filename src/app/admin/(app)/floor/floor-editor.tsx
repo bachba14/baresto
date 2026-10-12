@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { cardClass, inputClass, labelClass } from "@/components/admin-styles";
 import { FloorView } from "@/components/floor/floor-view";
@@ -27,6 +27,16 @@ export function FloorEditor({
   const [pending, startTransition] = useTransition();
 
   const selected = tables.find((t) => t.id === selectedId);
+
+  useEffect(() => {
+    if (!dirty) return;
+    const warn = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [dirty]);
 
   const change = (id: string, patch: Partial<DiningTable>) => {
     setTables((ts) => ts.map((t) => (t.id === id ? { ...t, ...patch } : t)));
@@ -74,7 +84,7 @@ export function FloorEditor({
     });
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
+    <div className={`grid items-start gap-4 ${selected ? "lg:grid-cols-[minmax(0,1fr)_300px]" : ""}`}>
       <section className={`${cardClass} space-y-3`}>
         <div className="flex flex-wrap items-end gap-2">
           <label className="flex-1">
@@ -107,8 +117,8 @@ export function FloorEditor({
           ))}
         </div>
 
-        <div className="flex flex-wrap gap-1 text-sm">
-          <span className="self-center text-stone-500">Ajouter :</span>
+        <div className="sticky top-0 z-10 -mx-5 flex flex-wrap items-center gap-2 border-y border-stone-100 bg-white/95 px-5 py-2 text-sm backdrop-blur">
+          <span className="text-stone-500">Ajouter une table :</span>
           {[
             [2, "square"],
             [4, "square"],
@@ -120,11 +130,23 @@ export function FloorEditor({
               key={`${seats}${shape}`}
               type="button"
               onClick={() => addTable(seats as number, shape as TableShape)}
-              className="rounded-lg border border-stone-300 bg-white px-2 py-1 hover:bg-stone-50"
+              className="min-h-9 rounded-lg border border-stone-200 bg-white px-2.5 hover:bg-stone-50"
             >
               + {seats} pl. {shape === "round" ? "ronde" : shape === "rect" ? "rect." : "carrée"}
             </button>
           ))}
+          <div className="ml-auto flex items-center gap-3">
+            {dirty && !pending && <span className="text-amber-700">● Modifications non enregistrées</span>}
+            {message && !dirty && <span className={message.ok ? "text-emerald-700" : "text-red-700"}>{message.text}</span>}
+            <button
+              type="button"
+              onClick={save}
+              disabled={pending || !dirty}
+              className="min-h-9 rounded-lg bg-stone-900 px-4 font-medium text-white hover:bg-stone-700 disabled:opacity-40"
+            >
+              {pending ? "Enregistrement…" : "Enregistrer le plan"}
+            </button>
+          </div>
         </div>
 
         <FloorView
@@ -134,19 +156,10 @@ export function FloorEditor({
           onSelectTable={(id) => setSelectedId(id)}
           onMoveTable={(id, x, y) => change(id, { x, y })}
         />
-        <p className="text-xs text-stone-500">Faites glisser les tables sur le plan 2D. Grille : 1 m.</p>
+        <p className="text-xs text-stone-500">Faites glisser les tables sur le plan 2D, cliquez sur une table pour la modifier. Grille : 1 m.</p>
 
         <div className="flex flex-wrap items-center gap-3 border-t border-stone-100 pt-3">
-          <button
-            type="button"
-            onClick={save}
-            disabled={pending || !dirty}
-            className="rounded-lg bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-700 disabled:opacity-40"
-          >
-            {pending ? "Enregistrement…" : "Enregistrer le plan"}
-          </button>
-          {dirty && !pending && <span className="text-sm text-amber-700">Modifications non enregistrées</span>}
-          {message && <span className={`text-sm ${message.ok ? "text-emerald-700" : "text-red-700"}`}>{message.text}</span>}
+          {message && !message.ok && <span className="text-sm text-red-700">{message.text}</span>}
           {canDelete && (
             <button
               type="button"
@@ -165,12 +178,14 @@ export function FloorEditor({
         </div>
       </section>
 
-      <aside className={`${cardClass} h-fit space-y-3`}>
-        {!selected ? (
-          <p className="text-sm text-stone-500">Cliquez sur une table pour la modifier.</p>
-        ) : (
+      {selected && (
+      <aside className={`${cardClass} animate-rise h-fit space-y-3 lg:sticky lg:top-6`}>
+        {(
           <>
-            <h2 className="font-semibold">Table {selected.label}</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="font-semibold">Table {selected.label}</h2>
+              <button type="button" onClick={() => setSelectedId(null)} aria-label="Fermer le panneau de la table" className="flex h-9 w-9 items-center justify-center rounded-lg text-stone-500 hover:bg-stone-100">✕</button>
+            </div>
             <label className="block">
               <span className={labelClass}>Nom</span>
               <input value={selected.label} onChange={(e) => change(selected.id, { label: e.target.value })} className={inputClass} />
@@ -276,6 +291,7 @@ export function FloorEditor({
           </>
         )}
       </aside>
+      )}
     </div>
   );
 }

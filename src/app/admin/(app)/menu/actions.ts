@@ -152,3 +152,27 @@ export async function move(table: "menu_categories" | "menu_items", id: string, 
   await Promise.all(ids.map((rowId, position) => supabase.from(table).update({ position }).eq("id", rowId)));
   done();
 }
+
+// ── Démarrage rapide (carte vide) ──────────────────────────
+
+/** Crée d'un coup les catégories d'un modèle (ex. Entrées, Plats, Desserts, Vins). */
+export async function createCategories(names: string[]) {
+  const { supabase, restaurant } = await requireRestaurantAction();
+  const clean = names.map((n) => n.trim().slice(0, 80)).filter(Boolean).slice(0, 12);
+  if (!clean.length) return;
+  const { count } = await supabase
+    .from("menu_categories")
+    .select("*", { count: "exact", head: true })
+    .eq("restaurant_id", restaurant.id);
+  check(
+    (await supabase.from("menu_categories").insert(clean.map((name, i) => ({ restaurant_id: restaurant.id, name, position: (count ?? 0) + i })))).error,
+  );
+  done();
+}
+
+/** Carte d'exemple complète (catégories et plats), à adapter. */
+export async function seedExampleMenu() {
+  const { supabase, restaurant } = await requireRestaurantAction();
+  check((await supabase.rpc("seed_example_menu", { p_restaurant: restaurant.id })).error);
+  done();
+}

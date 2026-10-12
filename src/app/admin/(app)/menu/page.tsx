@@ -5,6 +5,8 @@ import { SubmitButton } from "@/components/admin-ui";
 import type { MenuCategory, MenuItem } from "@/lib/types";
 import {
   createCategory,
+  createCategories,
+  seedExampleMenu,
   createItem,
   deleteCategory,
   deleteItem,
@@ -27,8 +29,34 @@ export default async function MenuPage() {
     <div className="max-w-4xl space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Carte</h1>
-        <p className="text-stone-500">Les modifications apparaissent immédiatement sur votre site.</p>
+        <p className="text-stone-500">
+          Les modifications apparaissent immédiatement sur votre site.{" "}
+          <a href={`/r/${restaurant.slug}`} target="_blank" className="font-medium text-amber-700 hover:underline">Voir le rendu public ↗</a>
+        </p>
       </div>
+
+      {categories.length === 0 && (
+        <section className={`${cardClass} animate-rise py-10 text-center`}>
+          <p className="text-4xl" aria-hidden>📋</p>
+          <h2 className="mt-3 text-lg">Votre carte est vide</h2>
+          <p className="mx-auto mt-1 max-w-md text-sm text-stone-500">
+            Organisez-la en catégories (Entrées, Plats…), puis ajoutez vos plats avec photo, prix et allergènes. Elle
+            s&apos;affiche sur votre page de réservation et dans le widget de votre site.
+          </p>
+          <div className="mt-5 flex flex-wrap justify-center gap-2">
+            <form action={createCategories.bind(null, ["Entrées", "Plats", "Desserts", "Vins"])}>
+              <SubmitButton>Créer Entrées, Plats, Desserts, Vins</SubmitButton>
+            </form>
+            <form action={createCategories.bind(null, ["Formules", "Entrées", "Plats", "Desserts", "Boissons"])}>
+              <SubmitButton variant="secondary">Formules, Entrées, Plats, Desserts, Boissons</SubmitButton>
+            </form>
+            <form action={seedExampleMenu}>
+              <SubmitButton variant="secondary">Carte d&apos;exemple avec des plats</SubmitButton>
+            </form>
+          </div>
+          <p className="mt-4 text-xs text-stone-500">Ou créez votre première catégorie ci-dessous.</p>
+        </section>
+      )}
 
       {categories.map((cat, ci) => {
         const catItems = allItems.filter((i) => i.category_id === cat.id);
@@ -69,11 +97,11 @@ export default async function MenuPage() {
                       ) : (
                         <div className="h-10 w-10 rounded bg-stone-100" />
                       )}
-                      <span className={`flex-1 ${item.is_available ? "" : "text-stone-400 line-through"}`}>
+                      <span className={`flex-1 ${item.is_available ? "" : "text-stone-500 line-through"}`}>
                         {item.name}
                       </span>
                       <span className="text-sm font-medium">{formatPrice(item.price, restaurant.currency)}</span>
-                      <span className="text-xs text-stone-400">Modifier ▾</span>
+                      <span className="text-xs text-stone-500">Modifier ▾</span>
                     </summary>
                     <div className="mt-3 rounded-lg bg-stone-50 p-4">
                       <ItemForm
@@ -115,8 +143,8 @@ export default async function MenuPage() {
       })}
 
       <form action={createCategory} className={`${cardClass} flex gap-2`}>
-        <input name="name" placeholder="Nouvelle catégorie (ex. Vins, Formules…)" required className={inputClass} />
-        <SubmitButton>Ajouter</SubmitButton>
+        <input name="name" placeholder="Nouvelle catégorie (ex. Vins, Formules…)" aria-label="Nom de la nouvelle catégorie" required className={inputClass} />
+        <SubmitButton>{categories.length ? "Ajouter" : "Créer ma première catégorie"}</SubmitButton>
       </form>
     </div>
   );

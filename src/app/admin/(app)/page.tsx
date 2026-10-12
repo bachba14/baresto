@@ -135,7 +135,7 @@ export default async function Dashboard({ searchParams }: PageProps<"/admin">) {
               {[["Midi", lunch], ["Soir", dinner]].map(([label, list]) =>
                 (list as ReservationWithTables[]).length ? (
                   <div key={label as string}>
-                    <p className="px-5 pt-4 pb-1 text-xs font-medium tracking-wide text-stone-400 uppercase">
+                    <p className="px-5 pt-4 pb-1 text-xs font-medium tracking-wide text-stone-500 uppercase">
                       {label as string} · {covers(list as ReservationWithTables[])} couverts
                     </p>
                     <ul>

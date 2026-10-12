@@ -75,7 +75,7 @@ export default async function ClientsPage({ searchParams }: PageProps<"/admin/cl
                   <p className="shrink-0 text-sm text-stone-500 first-letter:uppercase">
                     {c.last_date ? `Dernière résa : ${formatDate(c.last_date)}` : "Aucune réservation active"}
                   </p>
-                  <span aria-hidden className="hidden text-xl text-stone-400 sm:block">›</span>
+                  <span aria-hidden className="hidden text-xl text-stone-500 sm:block">›</span>
                 </Link>
               </li>
             ))}

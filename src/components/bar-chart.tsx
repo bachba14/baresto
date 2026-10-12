@@ -21,7 +21,7 @@ export function BarChart({ bars, height = 180, labelEvery = 1, unit }: { bars: B
 
   return (
     <div className="flex gap-2">
-      <div className="relative w-7 shrink-0 text-right text-[11px] text-stone-400 tabular-nums" style={{ height }}>
+      <div className="relative w-7 shrink-0 text-right text-[11px] text-stone-500 tabular-nums" style={{ height }}>
         {ticks.map((t) => (
           <span key={t} className="absolute right-0 -translate-y-1/2" style={{ bottom: `${(t / top) * 100}%` }}>{t}</span>
         ))}

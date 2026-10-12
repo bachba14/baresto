@@ -81,7 +81,7 @@ export async function Stats({ supabase, restaurant, period }: { supabase: Supaba
             <p className="mt-1 text-2xl font-semibold tracking-tight">
               {t.value == null ? "—" : <CountUp key={`${t.label}-${period}`} value={t.value} suffix={t.suffix} />}
             </p>
-            {t.hint && <p className="text-xs text-stone-400">{t.hint}</p>}
+            {t.hint && <p className="text-xs text-stone-500">{t.hint}</p>}
           </div>
         ))}
       </div>
@@ -90,12 +90,12 @@ export async function Stats({ supabase, restaurant, period }: { supabase: Supaba
       <div key={period} className="grid gap-4 lg:grid-cols-[2fr_1fr]">
         <div className={cardClass}>
           <h3 className="font-medium">Réservations par jour</h3>
-          <p className="mb-4 text-xs text-stone-400">Hors annulations et non-venues · survolez une barre pour le détail</p>
+          <p className="mb-4 text-xs text-stone-500">Hors annulations et non-venues · survolez une barre pour le détail</p>
           <BarChart bars={dayBars} unit="réservations" labelEvery={period <= 7 ? 1 : period <= 30 ? 5 : 15} />
         </div>
         <div className={cardClass}>
           <h3 className="font-medium">Couverts moyens par jour</h3>
-          <p className="mb-4 text-xs text-stone-400">Sur les {period} derniers jours</p>
+          <p className="mb-4 text-xs text-stone-500">Sur les {period} derniers jours</p>
           <BarChart bars={weekday} unit="couverts" />
         </div>
       </div>

@@ -228,7 +228,7 @@ export default async function StatsPage({ searchParams }: { searchParams: Promis
           ))}
           <form className="flex items-center gap-1">
             <input type="date" name="from" defaultValue={from} className={`${inputClass} w-auto py-1.5`} aria-label="Du" />
-            <span className="text-stone-400">→</span>
+            <span className="text-stone-500">→</span>
             <input type="date" name="to" defaultValue={to} className={`${inputClass} w-auto py-1.5`} aria-label="Au" />
             <button className="rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-sm">OK</button>
           </form>

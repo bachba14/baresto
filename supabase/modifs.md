@@ -171,11 +171,14 @@
 
 ## P3 : pages de configuration et finitions
 
-### [ ] 18. Page Carte : état vide guidé
+### [x] 18. Page Carte : état vide guidé
 - **Constat** : la page ne contient qu'un champ « Nouvelle catégorie ».
 - **Attendu** : un état vide avec une illustration, une explication, un bouton « Créer ma première catégorie » et des modèles (Entrées / Plats / Desserts / Vins). Si possible, prévoir un import depuis un PDF ou une photo de la carte. Ajouter aussi un aperçu du rendu public.
 
-### [ ] 19. Éditeur de plan de salle : contraste et espace
+> **Fait en partie.** Carte vide : explication, et trois démarrages en un clic (Entrées / Plats / Desserts / Vins ; Formules / Entrées / Plats / Desserts / Boissons ; carte d'exemple avec des plats). Le bouton du bas devient « Créer ma première catégorie ». Lien « Voir le rendu public ↗ » en haut de la page.
+> ⚠️ **À valider** : l'import depuis un PDF ou une photo de la carte demande une reconnaissance de texte (service payant ou IA) ; non fait.
+
+### [x] 19. Éditeur de plan de salle : contraste et espace
 - **Constat** : les tables sont gris clair avec du texte blanc (illisible), le plan est petit, et le panneau de droite « Cliquez sur une table » reste vide la plupart du temps.
 - **Attendu** :
   - Contraste conforme WCAG AA pour les tables et leurs libellés.
@@ -183,7 +186,9 @@
   - Boutons d'ajout de tables regroupés dans une barre d'outils au-dessus du plan.
   - Bouton « Enregistrer le plan » actif seulement s'il y a des modifications (avec l'indicateur « Modifications non enregistrées ») et avertissement si on quitte la page.
 
-### [ ] 20. Réglages : enregistrement et navigation
+> **Fait.** Tables en gris foncé avec texte blanc dans l'éditeur, et couleurs d'état assombries dans le service (contraste AA). Le plan prend toute la largeur ; le panneau de propriétés n'apparaît qu'à la sélection d'une table (bouton ✕ pour le fermer). Barre d'outils au-dessus du plan, qui reste visible au défilement : boutons d'ajout de tables, « ● Modifications non enregistrées » et « Enregistrer le plan » (actif seulement s'il y a des changements). Avertissement si l'on ferme ou recharge la page avec des changements non enregistrés.
+
+### [x] 20. Réglages : enregistrement et navigation
 - **Constat** : la page est longue. Le bouton « Enregistrer les réglages » est au milieu, et certaines sections (Fermetures) s'enregistrent séparément.
 - **Attendu** :
   - Une barre d'enregistrement fixe en bas (« Modifications non enregistrées · Annuler · Enregistrer »), qui apparaît dès qu'un champ change.
@@ -191,19 +196,30 @@
   - Une navigation par ancres ou onglets : Établissement · Réservations en ligne · E-mails · Horaires · Fermetures.
   - Des unités visibles dans les champs (min, h, jours) plutôt que seulement dans les libellés.
 
-### [ ] 21. Champ « Accroche » sans exemple
+> **Fait.** Barre fixe en bas « ● Modifications non enregistrées · Annuler · Enregistrer », qui apparaît dès qu'un champ change (horaires compris), avec notification après l'enregistrement. Avertissement `beforeunload` si des changements ne sont pas enregistrés. Navigation par ancres en haut de page : Établissement · Réservations en ligne · E-mails · Horaires · Fermetures · Jours fériés. Unités affichées dans les champs (couv., pers., min, jours, h avant). Les fermetures et jours fériés gardent leurs propres boutons (enregistrement immédiat).
+
+### [x] 21. Champ « Accroche » sans exemple
 - **Attendu** : un placeholder (ex. « Cuisine de saison au cœur de Beauraing »), un compteur de caractères et un aperçu du rendu sur la page publique.
+
+> **Fait.** Placeholder « Ex. Cuisine de saison au cœur de <votre ville> », compteur « n / 120 » et aperçu de l'en-tête de la page publique qui se met à jour pendant la saisie.
 
 ### [ ] 22. Badge « En direct » ambigu
 - **Constat** : le badge sous le nom du restaurant n'explique pas ce qu'il signifie.
 - **Attendu** : afficher « Réservations en ligne actives », et transformer le badge en interrupteur « Mettre en pause les réservations en ligne », avec une confirmation.
 
-### [ ] 23. Lien « Page publique » en double
+> **Fait en partie.** Le badge indique en réalité que le back-office se met à jour tout seul (connexion temps réel), pas que les réservations en ligne sont ouvertes : libellé « Mises à jour en direct » / « Mises à jour en pause », avec une infobulle explicative.
+> ⚠️ **À valider** : l'interrupteur « Mettre en pause les réservations en ligne » est une nouvelle fonctionnalité (champ en base, pages publiques et widget qui affichent « réservations fermées »). À décider avant de le développer.
+
+### [x] 23. Lien « Page publique » en double
 - Il apparaît dans le header du tableau de bord **et** en bas du menu. N'en garder qu'un (le menu), ou le placer dans le header global.
 
-### [ ] 24. Accessibilité générale
+> **Fait.** Retiré du tableau de bord ; il reste dans le menu (« Ma page publique ») et sur la page Carte (« Voir le rendu public »).
+
+### [x] 24. Accessibilité générale
 - Plusieurs textes gris clair sont sous le ratio de contraste 4.5:1 : sous-titres, légendes de graphiques, texte d'aide, grille du plan.
 - Vérifier : focus clavier visible, `aria-label` sur les boutons-icônes (×, ←, →), ordre de tabulation, champs associés à leur `label`.
+
+> **Fait.** Textes gris clair (`stone-400`, ratio ≈ 2,5:1) passés en `stone-500` (≈ 4,8:1) dans le back-office : titres de sections, légendes, axes des graphiques, aide, e-mail du menu. Titre du plan assombri. Focus clavier visible partout (contour orange, `focus-visible`). Boutons-icônes vérifiés : ←/→, ✕, ⋯, ↑/↓ ont un `aria-label` ; champs associés à leur libellé.
 
 ### [ ] 25. Responsive mobile et tablette (à auditer)
 - Non testé pendant l'audit. Vérifier à 390 px et 768 px de large :
@@ -212,6 +228,8 @@
   - fenêtre de réservation en plein écran ;
   - plan de salle zoomable ;
   - pas de défilement horizontal.
+
+> ⚠️ **À valider / à auditer sur appareil.** Déjà en place : menu en barre du haut avec liens qui défilent (pas de burger), panneau « Nouvelle réservation » en plein écran sur téléphone, calendrier compact qui tient en 390 px, plan en SVG qui s'adapte à la largeur et bouton plein écran pour tablette. Non fait : menu burger, zoom au pincement sur le plan. À vérifier sur un vrai téléphone et une tablette.
 
 ---
 

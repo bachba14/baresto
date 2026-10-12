@@ -14,7 +14,7 @@ export function HoursEditor({ value, onChange }: { value: OpeningHours; onChange
         return (
           <div key={d} className="flex flex-wrap items-center gap-2 py-2">
             <span className="w-24 text-sm font-medium">{DAYS[d]}</span>
-            {ranges.length === 0 && <span className="text-sm text-stone-400">Fermé</span>}
+            {ranges.length === 0 && <span className="text-sm text-stone-500">Fermé</span>}
             {ranges.map((r, i) => (
               <span key={i} className="flex items-center gap-1 rounded-lg bg-stone-100 px-2 py-1">
                 <input
@@ -35,7 +35,7 @@ export function HoursEditor({ value, onChange }: { value: OpeningHours; onChange
                 <button
                   type="button"
                   onClick={() => set(d, ranges.filter((_, j) => j !== i))}
-                  className="px-1 text-stone-400 hover:text-red-600"
+                  className="px-1 text-stone-500 hover:text-red-600"
                   aria-label="Retirer"
                 >
                   ✕
@@ -50,7 +50,7 @@ export function HoursEditor({ value, onChange }: { value: OpeningHours; onChange
               + service
             </button>
             {d !== 1 && ranges.length === 0 && (value[1] ?? []).length > 0 && (
-              <button type="button" onClick={() => set(d, value[1])} className="text-xs text-stone-400 hover:text-stone-700">
+              <button type="button" onClick={() => set(d, value[1])} className="text-xs text-stone-500 hover:text-stone-700">
                 comme lundi
               </button>
             )}

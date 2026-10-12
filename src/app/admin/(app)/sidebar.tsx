@@ -114,7 +114,7 @@ export function Sidebar({
         : "text-stone-500 hover:bg-stone-900/[0.04] hover:text-stone-900"
     }`;
   const iconClass = (active: boolean) =>
-    `transition-colors duration-200 ${active ? "text-amber-600" : "text-stone-400 group-hover:text-stone-600"}`;
+    `transition-colors duration-200 ${active ? "text-amber-600" : "text-stone-500 group-hover:text-stone-600"}`;
 
   return (
     <>
@@ -169,7 +169,7 @@ export function Sidebar({
           {GROUPS.map((group, g) => (
             <div key={g} className="space-y-0.5">
               {group.title && (
-                <p className="px-[15px] pb-1 text-[11px] font-medium tracking-wider text-stone-400 uppercase">{group.title}</p>
+                <p className="px-[15px] pb-1 text-[11px] font-medium tracking-wider text-stone-500 uppercase">{group.title}</p>
               )}
               {group.links.map((l) => {
                 const active = isActive(l.href);
@@ -195,7 +195,7 @@ export function Sidebar({
               <span className={iconClass(false)}><Icon name="logout" /></span>
               <Label>
                 <span className="block text-left">Se déconnecter</span>
-                <span className="block truncate text-left text-[11px] text-stone-400">{email}</span>
+                <span className="block truncate text-left text-[11px] text-stone-500">{email}</span>
               </Label>
             </button>
           </form>

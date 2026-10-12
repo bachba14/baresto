@@ -179,3 +179,10 @@ body {
     height: auto;
   }
 }
+
+/* Focus clavier toujours visible (accessibilité), sans contour au clic de souris. */
+:where(a, button, summary, select, [tabindex], input[type="checkbox"], input[type="radio"]):focus-visible {
+  outline: 2px solid #b45309;
+  outline-offset: 2px;
+  border-radius: 6px;
+}

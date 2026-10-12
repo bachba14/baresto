@@ -9,6 +9,15 @@ import { closeHoliday, removeClosure, setHolidayCountry } from "./actions";
 import { ClosureForm } from "./closure-form";
 import { SettingsForm } from "./settings-form";
 
+const SECTIONS = [
+  ["etablissement", "Établissement"],
+  ["reservations-en-ligne", "Réservations en ligne"],
+  ["e-mails", "E-mails"],
+  ["horaires", "Horaires"],
+  ["fermetures", "Fermetures"],
+  ["jours-feries", "Jours fériés"],
+] as const;
+
 export default async function SettingsPage() {
   const [{ supabase, restaurant }, cookieStore] = await Promise.all([requireRestaurant(), cookies()]);
   const today = todayIn(restaurant.timezone);
@@ -27,9 +36,17 @@ export default async function SettingsPage() {
   return (
     <div className="max-w-4xl space-y-6">
       <h1 className="text-2xl font-bold">Réglages</h1>
+      {/* Navigation entre les sections de la page */}
+      <nav aria-label="Sections des réglages" className="z-20 -mx-4 flex gap-1 overflow-x-auto bg-[#faf9f7]/90 px-4 py-2 backdrop-blur md:sticky md:top-0">
+        {SECTIONS.map(([id, label]) => (
+          <a key={id} href={`#${id}`} className="shrink-0 rounded-lg px-3 py-1.5 text-sm text-stone-600 transition hover:bg-stone-900/5 hover:text-stone-900">
+            {label}
+          </a>
+        ))}
+      </nav>
       <SettingsForm restaurant={restaurant} tableCount={count ?? 0} />
 
-      <section id="fermetures" className={`${cardClass} space-y-4`}>
+      <section id="fermetures" className={`${cardClass} scroll-mt-20 space-y-4`}>
         <div>
           <h2 className="font-semibold">Fermetures exceptionnelles</h2>
           <p className="text-sm text-stone-500">
@@ -58,7 +75,7 @@ export default async function SettingsPage() {
         )}
       </section>
 
-      <section className={`${cardClass} space-y-3`}>
+      <section id="jours-feries" className={`${cardClass} scroll-mt-20 space-y-3`}>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
             <h2 className="font-semibold">Jours fériés à venir</h2>
