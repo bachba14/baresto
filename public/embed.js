@@ -1,28 +1,40 @@
 /*!
- * Baresto — script d'intégration
+ * Monkomi — script d'intégration
  *
  * Widget en ligne :
- *   <div data-baresto="reservation"></div>   (ou "menu")
- *   <script src="https://VOTRE-DOMAINE/embed.js" data-restaurant="votre-restaurant" async></script>
+ *   <div data-monkomi="reservation"></div>   (ou "menu")
+ *   <script src="https://monkomi.be/embed.js" data-restaurant="votre-restaurant" async></script>
  *
  * Bouton qui ouvre une fenêtre :
- *   <button data-baresto-open="reservation">Réserver</button>
+ *   <button data-monkomi-open="reservation">Réserver</button>
  *
  * Options (attributs) : data-theme="light|dark", data-color="#b45309"
- * Événement : window.addEventListener("baresto:reservation", e => e.detail)
+ * Événement : window.addEventListener("monkomi:reservation", e => e.detail)
+ *
+ * Les anciens codes (data-baresto, data-baresto-open, « baresto:reservation ») restent compris.
  */
 (function () {
-  if (window.Baresto) return;
+  if (window.Monkomi) return;
 
   var script =
     document.currentScript ||
     document.querySelector('script[src*="embed.js"]');
   var BASE = new URL(script.src).origin;
   var WIDGETS = { menu: "menu", reservation: "reservation" };
+  // Préfixes d'attributs acceptés : le nouveau, puis l'ancien nom du produit.
+  var PREFIXES = ["data-monkomi", "data-baresto"];
   // Restaurant : attribut data-restaurant du widget, sinon celui du script.
   var DEFAULT_RESTAURANT = script.getAttribute("data-restaurant");
   var frames = {};
   var counter = 0;
+
+  function attr(el, suffix) {
+    for (var i = 0; i < PREFIXES.length; i++) {
+      var value = el.getAttribute(PREFIXES[i] + suffix);
+      if (value !== null) return value;
+    }
+    return null;
+  }
 
   function widgetUrl(type, el, frameId) {
     var params = new URLSearchParams({ frame: frameId });
@@ -31,12 +43,12 @@
     if (theme) params.set("theme", theme);
     if (color) params.set("color", color.replace("#", ""));
     var slug = (el && el.getAttribute("data-restaurant")) || DEFAULT_RESTAURANT;
-    if (!slug) console.error("[Baresto] Attribut data-restaurant manquant sur le script.");
+    if (!slug) console.error("[Monkomi] Attribut data-restaurant manquant sur le script.");
     return BASE + "/widget/" + encodeURIComponent(slug || "") + "/" + WIDGETS[type] + "?" + params.toString();
   }
 
   function createFrame(type, el) {
-    var frameId = "baresto-" + ++counter;
+    var frameId = "monkomi-" + ++counter;
     var iframe = document.createElement("iframe");
     iframe.src = widgetUrl(type, el, frameId);
     iframe.title = type === "menu" ? "Notre carte" : "Réserver une table";
@@ -49,12 +61,14 @@
   }
 
   function mount(root) {
-    var nodes = (root || document).querySelectorAll("[data-baresto]:not([data-baresto-ready])");
+    var nodes = (root || document).querySelectorAll(
+      "[data-monkomi]:not([data-monkomi-ready]), [data-baresto]:not([data-monkomi-ready])"
+    );
     for (var i = 0; i < nodes.length; i++) {
       var el = nodes[i];
-      var type = el.getAttribute("data-baresto");
+      var type = attr(el, "");
       if (!WIDGETS[type]) continue;
-      el.setAttribute("data-baresto-ready", "");
+      el.setAttribute("data-monkomi-ready", "");
       el.appendChild(createFrame(type, el));
     }
   }
@@ -106,26 +120,30 @@
   });
 
   document.addEventListener("click", function (e) {
-    var trigger = e.target.closest && e.target.closest("[data-baresto-open]");
+    var trigger = e.target.closest && e.target.closest("[data-monkomi-open], [data-baresto-open]");
     if (!trigger) return;
     e.preventDefault();
-    open(trigger.getAttribute("data-baresto-open"), trigger);
+    open(attr(trigger, "-open"), trigger);
   });
 
   // ── Messages venant des iframes ─────────────────────────────
   window.addEventListener("message", function (e) {
     if (e.origin !== BASE || !e.data || typeof e.data !== "object") return;
     var frame = frames[e.data.frameId];
-    if (e.data.type === "baresto:resize" && frame) {
+    var type = String(e.data.type || "").replace(/^baresto:/, "monkomi:");
+    if (type === "monkomi:resize" && frame) {
       frame.style.minHeight = "0";
       frame.style.height = e.data.height + "px";
     }
-    if (e.data.type === "baresto:reservation") {
+    if (type === "monkomi:reservation") {
+      window.dispatchEvent(new CustomEvent("monkomi:reservation", { detail: e.data }));
+      // Ancien nom de l'événement, pour les sites déjà intégrés.
       window.dispatchEvent(new CustomEvent("baresto:reservation", { detail: e.data }));
     }
   });
 
-  window.Baresto = { open: open, close: close, mount: mount };
+  window.Monkomi = { open: open, close: close, mount: mount };
+  window.Baresto = window.Monkomi;
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", function () { mount(); });

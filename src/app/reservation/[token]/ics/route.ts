@@ -15,10 +15,10 @@ export async function GET(_: NextRequest, ctx: RouteContext<"/reservation/[token
   const ics = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Baresto//Reservation//FR",
+    "PRODID:-//Monkomi//Reservation//FR",
     "METHOD:PUBLISH",
     "BEGIN:VEVENT",
-    `UID:${r.id}@baresto`,
+    `UID:${r.id}@monkomi`,
     `DTSTAMP:${stamp(new Date())}`,
     `DTSTART:${stamp(start)}`,
     `DTEND:${stamp(end)}`,

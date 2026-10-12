@@ -22,14 +22,14 @@ export function WidgetShell({
 
   return (
     <div
-      id="baresto-widget"
+      id="monkomi-widget"
       className={`${dark ? "dark" : ""} font-sans`}
       style={{ "--brand": color } as CSSProperties}
     >
       <div className="bg-white p-4 text-stone-800 sm:p-6 dark:bg-stone-900 dark:text-stone-100">
         {children}
         <p className="mt-6 text-center text-[11px] text-stone-400">
-          Propulsé par Baresto
+          Propulsé par Monkomi
         </p>
       </div>
       <AutoHeight frameId={params.frame ?? ""} />

@@ -130,7 +130,7 @@ function RestaurantStep({ restaurant, email }: { restaurant: Restaurant | null; 
       <label className="block">
         <span className={labelClass}>Adresse de votre page</span>
         <div className="flex items-center rounded-lg border border-stone-300 bg-white focus-within:border-stone-500 focus-within:ring-2 focus-within:ring-stone-200">
-          <span className="pl-3 text-sm text-stone-400">baresto…/r/</span>
+          <span className="pl-3 text-sm text-stone-400">monkomi.be/r/</span>
           <input
             name="slug"
             required
@@ -237,7 +237,7 @@ function TablesStep({ restaurant, tableCount }: { restaurant: Restaurant; tableC
       <div className={`${cardClass} p-6 sm:p-8`}>
         <StepHeader
           title="Vos tables"
-          text="Baresto place chaque réservation sur une vraie table libre : vous n'avez plus rien à vérifier, même en confirmation automatique."
+          text="Monkomi place chaque réservation sur une vraie table libre : vous n'avez plus rien à vérifier, même en confirmation automatique."
         />
         {tableCount > 0 ? (
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-emerald-50 p-4 text-emerald-900">

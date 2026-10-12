@@ -7,12 +7,12 @@ import { BrowserFrame, CodeMock, MenuMock, PhoneWidget } from "@/components/land
 import { Reveal } from "@/components/landing/reveal";
 
 export const metadata: Metadata = {
-  title: { absolute: "Baresto — Réservations en ligne et plan de salle pour restaurants" },
+  title: { absolute: "Monkomi — Réservations en ligne et plan de salle pour restaurants" },
   description:
     "Recevez des réservations 24h/24, placées automatiquement sur la bonne table. Plan de salle 2D/3D, carte en ligne, widget pour votre site. Gratuit pendant la bêta.",
 };
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "https://baresto.example";
+const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "https://monkomi.be";
 
 const FEATURES = [
   { icon: "📅", title: "Réservation en ligne 24h/24", text: "Vos clients réservent en 30 secondes, depuis votre site, Google ou Instagram. Même quand vous êtes en plein service." },
@@ -20,7 +20,7 @@ const FEATURES = [
   { icon: "🧊", title: "Plan de salle 2D & 3D", text: "Dessinez votre salle en quelques clics ou générez-la à partir de votre nombre de tables. Visualisez le service en 3D." },
   { icon: "🛡️", title: "Zéro surbooking", text: "Une table ne peut jamais être réservée deux fois au même moment. C'est garanti par la base de données, pas par un tableur." },
   { icon: "📖", title: "Carte en ligne", text: "Plats, prix, photos, allergènes : modifiez votre carte et elle se met à jour partout, instantanément." },
-  { icon: "🔌", title: "S'intègre à votre site", text: "Un copier-coller suffit : WordPress, Wix, Squarespace, site sur mesure… Ou utilisez votre page Baresto." },
+  { icon: "🔌", title: "S'intègre à votre site", text: "Un copier-coller suffit : WordPress, Wix, Squarespace, site sur mesure… Ou utilisez votre page Monkomi." },
 ];
 
 const STEPS = [
@@ -32,7 +32,7 @@ const STEPS = [
 const FAQ = [
   {
     q: "Est-ce vraiment gratuit ?",
-    a: "Oui. Baresto est en bêta : toutes les fonctionnalités sont gratuites, sans engagement et sans carte bancaire.",
+    a: "Oui. Monkomi est en bêta : toutes les fonctionnalités sont gratuites, sans engagement et sans carte bancaire.",
   },
   {
     q: "Je n'ai pas de site web, est-ce que ça marche ?",
@@ -40,7 +40,7 @@ const FAQ = [
   },
   {
     q: "Dois-je valider chaque réservation ?",
-    a: "Non, si vous activez la confirmation automatique : Baresto ne propose que les créneaux où une table adaptée est réellement libre, et la réserve aussitôt. Vous pouvez aussi choisir de valider chaque demande.",
+    a: "Non, si vous activez la confirmation automatique : Monkomi ne propose que les créneaux où une table adaptée est réellement libre, et la réserve aussitôt. Vous pouvez aussi choisir de valider chaque demande.",
   },
   {
     q: "Et les réservations par téléphone ?",
@@ -117,7 +117,7 @@ export default function Landing() {
             </span>
           </h1>
           <p className="animate-fade-up mx-auto mt-6 max-w-2xl text-lg text-stone-600" style={delay(200)}>
-            Baresto prend les réservations de votre restaurant 24h/24, les place sur votre plan de salle et vous évite tout
+            Monkomi prend les réservations de votre restaurant 24h/24, les place sur votre plan de salle et vous évite tout
             surbooking. Configuration en 5 minutes, sans compétence technique.
           </p>
           <div className="animate-fade-up mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row" style={delay(300)}>
@@ -135,7 +135,7 @@ export default function Landing() {
 
         <div className="relative mx-auto max-w-6xl px-4 pb-20">
           <div className="animate-fade-up lg:mr-44" style={delay(500)}>
-            <BrowserFrame url="baresto · Service du soir">
+            <BrowserFrame url="monkomi · Service du soir">
               <HeroService />
             </BrowserFrame>
           </div>
@@ -353,7 +353,7 @@ export default function Landing() {
             <Link href="/signup" className="transition-colors hover:text-stone-900">Inscription</Link>
             <Link href="/confidentialite" className="transition-colors hover:text-stone-900">Confidentialité</Link>
           </div>
-          <p>© {new Date().getFullYear()} Baresto</p>
+          <p>© {new Date().getFullYear()} Monkomi</p>
         </div>
       </footer>
     </div>

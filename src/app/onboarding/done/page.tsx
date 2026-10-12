@@ -31,7 +31,7 @@ export default async function OnboardingDone() {
       <section className={`${cardClass} space-y-3 p-6`}>
         <h2 className="font-semibold">2. Sur votre site web (optionnel)</h2>
         <p className="text-sm text-stone-500">Collez ce code là où le formulaire doit apparaître.</p>
-        <CopyBlock code={`<div data-baresto="reservation"></div>\n<script src="${base}/embed.js" data-restaurant="${restaurant.slug}" async></script>`} />
+        <CopyBlock code={`<div data-monkomi="reservation"></div>\n<script src="${base}/embed.js" data-restaurant="${restaurant.slug}" async></script>`} />
       </section>
 
       <div className="text-center">

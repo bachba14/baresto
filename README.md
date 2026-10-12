@@ -1,4 +1,4 @@
-# Baresto
+# Monkomi
 
 SaaS de réservations en ligne pour restaurants : chaque restaurateur s'inscrit, configure son restaurant en 5 minutes
 et reçoit des réservations placées automatiquement sur ses tables.
@@ -55,10 +55,10 @@ Chaque e-mail contient un lien secret `/reservation/{token}` : le client y voit 
 agenda (.ics), et peut la **modifier ou l'annuler jusqu'à 24 h avant** (contrôlé côté base).
 
 1. **Fournisseur** (au choix, offres gratuites) :
-   - [Brevo](https://www.brevo.com) : 300 e-mails/jour. *Senders, Domains* → ajouter et authentifier `bachba.be`
+   - [Brevo](https://www.brevo.com) : 300 e-mails/jour. *Senders, Domains* → ajouter et authentifier `monkomi.be`
      (enregistrements DKIM/DMARC à ajouter dans la zone DNS), puis *SMTP & API* → *API Keys* → `BREVO_API_KEY`.
    - ou [Resend](https://resend.com) : 3 000 e-mails/mois (100/jour). *Domains* → vérifier le domaine → `RESEND_API_KEY`.
-2. Variables : `EMAIL_FROM` (ex. `reservations@bachba.be`, sur le domaine vérifié), la clé du fournisseur,
+2. Variables : `EMAIL_FROM` (ex. `reservations@monkomi.be`, sur le domaine vérifié), la clé du fournisseur,
    `SUPABASE_SECRET_KEY` (Supabase → Project Settings → API Keys → *Secret key*) et `CRON_SECRET` (longue valeur aléatoire).
 3. **Tâche programmée** (rappels, avis, liste d'attente) : appeler `/api/cron` toutes les 15 minutes. Gratuit avec
    Supabase (SQL Editor, extensions `pg_cron` et `pg_net`) :
@@ -67,7 +67,7 @@ agenda (.ics), et peut la **modifier ou l'annuler jusqu'à 24 h avant** (contrô
    create extension if not exists pg_net;
    select cron.schedule('baresto-emails', '*/15 * * * *', $$
      select net.http_post(
-       url := 'https://baresto.bachba.be/api/cron',
+       url := 'https://monkomi.be/api/cron',
        headers := '{"Authorization": "Bearer VOTRE_CRON_SECRET"}'::jsonb
      );
    $$);
@@ -79,9 +79,9 @@ Sans ces variables, l'application fonctionne normalement mais n'envoie aucun e-m
 ## Intégration sur un site
 
 ```html
-<div data-baresto="reservation"></div>
-<div data-baresto="menu" data-theme="dark" data-color="#0f766e"></div>
-<button data-baresto-open="reservation">Réserver</button>
+<div data-monkomi="reservation"></div>
+<div data-monkomi="menu" data-theme="dark" data-color="#0f766e"></div>
+<button data-monkomi-open="reservation">Réserver</button>
 
 <script src="https://VOTRE-DOMAINE/embed.js" data-restaurant="mon-restaurant" async></script>
 ```
@@ -147,9 +147,9 @@ src/proxy.ts                protection de /admin et /onboarding
 Le bouton « Continuer avec Google » (inscription et connexion) utilise Supabase Auth. Pour l'activer :
 
 1. **Google Cloud Console** → APIs & Services → *OAuth consent screen* : configurer l'écran (type *External*,
-   nom « Baresto », e-mail d'assistance, domaine `bachba.be`), puis publier l'application.
+   nom « Monkomi », e-mail d'assistance, domaine `monkomi.be`), puis publier l'application.
 2. *Credentials* → *Create credentials* → *OAuth client ID* → type **Web application** :
-   - *Authorized JavaScript origins* : `https://baresto.bachba.be` (et `http://localhost:3000` pour le local)
+   - *Authorized JavaScript origins* : `https://monkomi.be` (et `http://localhost:3000` pour le local)
    - *Authorized redirect URIs* : `https://<projet>.supabase.co/auth/v1/callback`
 3. **Supabase** → Authentication → Sign In / Providers → **Google** : activer, coller le *Client ID* et le
    *Client Secret*, enregistrer.

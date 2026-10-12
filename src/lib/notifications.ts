@@ -35,7 +35,7 @@ ${button ? `<p style="margin:24px 0 8px"><a href="${esc(button.href)}" style="di
 </td></tr>
 ${contact ? `<tr><td style="padding:16px 24px;border-top:1px solid #e7e5e4;font-size:13px;color:#78716c">${contact}</td></tr>` : ""}
 </table>
-<p style="font-size:11px;color:#a8a29e;margin-top:12px">Réservation gérée avec Baresto</p>
+<p style="font-size:11px;color:#a8a29e;margin-top:12px">Réservation gérée avec Monkomi</p>
 </td></tr></table></body></html>`;
 }
 
@@ -120,7 +120,7 @@ export async function emailRestaurant(kind: "new" | "modified" | "cancelled", r:
   const body = `<p><strong>${titles[kind]}</strong></p>${summary(r)}${contact ? `<p>Contact : ${contact}</p>` : ""}`;
   return sendEmail({
     to: restaurant.email,
-    fromName: "Baresto",
+    fromName: "Monkomi",
     replyTo: r.email,
     subject: `${titles[kind]} : ${r.name}, ${people(r.party_size)}, ${formatDate(r.date)} ${formatTime(r.time)}`,
     html: layout(restaurant, body, { href: `${base}/admin/reservations?date=${r.date}`, label: "Ouvrir le back-office" }),

@@ -4,12 +4,12 @@ import { Logo } from "@/components/logo";
 
 export const metadata: Metadata = {
   title: "Politique de confidentialité",
-  description: "Comment Baresto collecte et utilise les données personnelles.",
+  description: "Comment Monkomi collecte et utilise les données personnelles.",
 };
 
 // ⚠️ À compléter par l'éditeur du service avant publication / validation Google :
 // identité de l'éditeur et adresse de contact pour les questions de données personnelles.
-const EDITEUR = process.env.NEXT_PUBLIC_LEGAL_NAME ?? "l'éditeur de Baresto";
+const EDITEUR = process.env.NEXT_PUBLIC_LEGAL_NAME ?? "l'éditeur de Monkomi";
 const CONTACT = process.env.NEXT_PUBLIC_LEGAL_EMAIL ?? null;
 const MISE_A_JOUR = "8 octobre 2026";
 
@@ -30,7 +30,7 @@ export default function PrivacyPage() {
           <section>
             <h2>Qui sommes-nous ?</h2>
             <p>
-              Baresto est un service en ligne de réservation et de gestion de salle pour restaurants, édité par {EDITEUR}.
+              Monkomi est un service en ligne de réservation et de gestion de salle pour restaurants, édité par {EDITEUR}.
               Cette page explique quelles données nous traitons, pourquoi, et quels sont vos droits.
             </p>
           </section>
@@ -47,7 +47,7 @@ export default function PrivacyPage() {
               <li>Nom, adresse e-mail et/ou téléphone, nombre de personnes, date et heure, remarques éventuelles.</li>
             </ul>
             <p className="mt-3">
-              Pour les réservations, Baresto agit pour le compte du restaurant concerné, qui reste responsable de l&apos;usage
+              Pour les réservations, Monkomi agit pour le compte du restaurant concerné, qui reste responsable de l&apos;usage
               de ces données.
             </p>
           </section>
@@ -105,7 +105,7 @@ export default function PrivacyPage() {
           <section>
             <h2>Cookies</h2>
             <p>
-              Baresto n&apos;utilise que des cookies strictement nécessaires (maintien de la connexion, sécurité de la
+              Monkomi n&apos;utilise que des cookies strictement nécessaires (maintien de la connexion, sécurité de la
               connexion avec Google). Aucun cookie publicitaire ni de mesure d&apos;audience.
             </p>
           </section>

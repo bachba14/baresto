@@ -1,13 +1,13 @@
 import { createHash, randomBytes } from "node:crypto";
 
-// Connexion Google « sur notre domaine » : Google renvoie vers baresto.bachba.be (et non vers
+// Connexion Google « sur notre domaine » : Google renvoie vers monkomi.be (et non vers
 // Supabase), si bien que l'écran de Google affiche notre domaine. La session Supabase est ensuite
 // ouverte avec l'ID token Google (signInWithIdToken).
 //
 // Actif seulement si GOOGLE_CLIENT_ID et GOOGLE_CLIENT_SECRET sont définis ; sinon on garde le
 // flux OAuth géré par Supabase.
 
-export const GOOGLE_COOKIE = "baresto_google_oauth";
+export const GOOGLE_COOKIE = "monkomi_google_oauth";
 
 export function googleOAuthConfig() {
   const clientId = process.env.GOOGLE_CLIENT_ID;

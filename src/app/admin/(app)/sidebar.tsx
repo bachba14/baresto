@@ -130,7 +130,7 @@ export function Sidebar({
                 <rect key={a} x="14" y="3.5" width="4" height="4" rx="1.2" fill="#fde68a" transform={`rotate(${a} 16 16)`} />
               ))}
             </svg>
-            <span className="text-lg font-bold tracking-tight text-stone-900">Baresto</span>
+            <span className="text-lg font-bold tracking-tight text-stone-900">Monkomi</span>
           </Link>
         </div>
 

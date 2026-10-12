@@ -1,4 +1,4 @@
-/** Logo Baresto : une table ronde vue de dessus. */
+/** Logo Monkomi : une table ronde vue de dessus. */
 export function Logo({ light = false }: { light?: boolean }) {
   return (
     <span className={`inline-flex items-center gap-2 text-lg font-bold tracking-tight ${light ? "text-white" : "text-stone-900"}`}>
@@ -9,7 +9,7 @@ export function Logo({ light = false }: { light?: boolean }) {
           <rect key={a} x="14" y="3.5" width="4" height="4" rx="1.2" fill="#fde68a" transform={`rotate(${a} 16 16)`} />
         ))}
       </svg>
-      Baresto
+      Monkomi
     </span>
   );
 }

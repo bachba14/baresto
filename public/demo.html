@@ -19,23 +19,23 @@
 <body>
   <header>
     <h1>Le site de votre restaurant</h1>
-    <p>Page de démonstration : les blocs ci-dessous viennent de Baresto.</p>
-    <button class="cta" data-baresto-open="reservation">Réserver une table</button>
+    <p>Page de démonstration : les blocs ci-dessous viennent de Monkomi.</p>
+    <button class="cta" data-monkomi-open="reservation">Réserver une table</button>
   </header>
 
   <main>
     <h2>Notre carte</h2>
-    <p class="note">&lt;div data-baresto="menu"&gt;&lt;/div&gt;</p>
-    <div class="card" data-baresto="menu"></div>
+    <p class="note">&lt;div data-monkomi="menu"&gt;&lt;/div&gt;</p>
+    <div class="card" data-monkomi="menu"></div>
 
     <h2>Réservation</h2>
-    <p class="note">&lt;div data-baresto="reservation"&gt;&lt;/div&gt;</p>
-    <div class="card" data-baresto="reservation"></div>
+    <p class="note">&lt;div data-monkomi="reservation"&gt;&lt;/div&gt;</p>
+    <div class="card" data-monkomi="reservation"></div>
   </main>
 
   <script src="/embed.js" data-restaurant="demo" async></script>
   <script>
-    window.addEventListener("baresto:reservation", function (e) {
+    window.addEventListener("monkomi:reservation", function (e) {
       console.log("Nouvelle réservation depuis le widget :", e.detail);
     });
   </script>

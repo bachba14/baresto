@@ -6,7 +6,7 @@ import { useEffect } from "react";
 export function AutoHeight({ frameId }: { frameId: string }) {
   useEffect(() => {
     if (window.parent === window) return;
-    const el = document.getElementById("baresto-widget");
+    const el = document.getElementById("monkomi-widget");
     if (!el) return;
 
     let last = 0;
@@ -14,7 +14,7 @@ export function AutoHeight({ frameId }: { frameId: string }) {
       const height = Math.ceil(el.getBoundingClientRect().height);
       if (height === last) return;
       last = height;
-      window.parent.postMessage({ type: "baresto:resize", frameId, height }, "*");
+      window.parent.postMessage({ type: "monkomi:resize", frameId, height }, "*");
     };
     const ro = new ResizeObserver(send);
     ro.observe(el);

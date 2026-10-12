@@ -58,7 +58,7 @@ export async function signup(_: AuthState, formData: FormData): Promise<AuthStat
  * /auth/callback. Un nouveau compte arrive dans l'assistant (via /admin → /onboarding).
  */
 export async function signInWithGoogle(): Promise<AuthState> {
-  // Flux sur notre domaine (Google affiche baresto…) si les identifiants Google sont configurés.
+  // Flux sur notre domaine (Google affiche monkomi.be) si les identifiants Google sont configurés.
   if (googleOAuthConfig()) redirect("/auth/google?next=/admin");
 
   // Sinon, flux OAuth géré par Supabase.

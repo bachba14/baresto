@@ -25,22 +25,22 @@ export default async function IntegrationPage() {
     {
       title: "Formulaire de réservation",
       text: "Collez ce code à l'endroit où le formulaire doit apparaître (page Contact, Réserver…).",
-      code: `<div data-baresto="reservation"></div>\n${script}`,
+      code: `<div data-monkomi="reservation"></div>\n${script}`,
     },
     {
       title: "Carte du restaurant",
       text: "Affiche votre carte, toujours à jour avec le back-office.",
-      code: `<div data-baresto="menu"></div>\n${script}`,
+      code: `<div data-monkomi="menu"></div>\n${script}`,
     },
     {
       title: "Bouton « Réserver » (fenêtre)",
       text: "N'importe quel bouton ou lien de votre site peut ouvrir la réservation en fenêtre.",
-      code: `<button data-baresto-open="reservation">Réserver une table</button>\n${script}`,
+      code: `<button data-monkomi-open="reservation">Réserver une table</button>\n${script}`,
     },
     {
       title: "Options d'apparence",
       text: "Thème sombre et couleur personnalisée, par widget. Sans option, la couleur des réglages est utilisée.",
-      code: `<div data-baresto="menu" data-theme="dark" data-color="#0f766e"></div>`,
+      code: `<div data-monkomi="menu" data-theme="dark" data-color="#0f766e"></div>`,
     },
     {
       title: "Iframe simple (WordPress, Wix, Squarespace…)",
@@ -50,7 +50,7 @@ export default async function IntegrationPage() {
     {
       title: "Suivi des réservations (Google Analytics, pixel…)",
       text: "Un événement est déclenché sur votre page à chaque réservation envoyée.",
-      code: `<script>\n  window.addEventListener("baresto:reservation", function (e) {\n    // e.detail = { date, time, partySize, status }\n    console.log("Réservation", e.detail);\n  });\n</script>`,
+      code: `<script>\n  window.addEventListener("monkomi:reservation", function (e) {\n    // e.detail = { date, time, partySize, status }\n    console.log("Réservation", e.detail);\n  });\n</script>`,
     },
     {
       title: "API JSON (développeurs)",

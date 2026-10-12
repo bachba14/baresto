@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: { default: "Baresto", template: "%s · Baresto" },
+  title: { default: "Monkomi", template: "%s · Monkomi" },
   description: "Carte et réservations en ligne pour votre restaurant.",
 };
 

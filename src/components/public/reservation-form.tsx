@@ -82,7 +82,7 @@ export function ReservationForm(props: {
       }
       setDone({ status: data.status, date, time, party, manageUrl: data.manage_url, calendar: data.calendar });
       window.parent?.postMessage(
-        { type: "baresto:reservation", frameId: props.frameId, status: data.status, date, time, partySize: party },
+        { type: "monkomi:reservation", frameId: props.frameId, status: data.status, date, time, partySize: party },
         "*",
       );
     } catch {

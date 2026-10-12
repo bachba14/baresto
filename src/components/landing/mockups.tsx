@@ -90,7 +90,7 @@ export function CodeMock({ base }: { base: string }) {
       <code>
         <span className="text-stone-500">{"<!-- Sur n'importe quelle page de votre site -->"}</span>
         {"\n"}
-        <span className="text-sky-300">{"<div"}</span> <span className="text-amber-300">data-baresto</span>=
+        <span className="text-sky-300">{"<div"}</span> <span className="text-amber-300">data-monkomi</span>=
         <span className="text-emerald-300">&quot;reservation&quot;</span>
         <span className="text-sky-300">{"></div>"}</span>
         {"\n\n"}
