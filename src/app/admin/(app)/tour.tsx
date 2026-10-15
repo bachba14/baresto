@@ -202,18 +202,22 @@ export function Tour({ autoStart }: { autoStart: boolean }) {
           </div>
         </div>
 
-        <div className="mt-5 flex items-center justify-between gap-3">
-          <div className="flex gap-1" aria-label={`Étape ${step + 1} sur ${STEPS.length}`}>
-            {STEPS.map((_, i) => (
-              <span key={i} className={`h-1.5 rounded-full transition-all ${i === step ? "w-4 bg-amber-500" : "w-1.5 bg-stone-200"}`} />
-            ))}
-          </div>
-          <div className="flex items-center gap-1">
-            {!last && (
-              <button type="button" onClick={close} className="rounded-lg px-2.5 py-2 text-sm text-stone-500 hover:text-stone-900">
-                Passer
-              </button>
-            )}
+        <div className="mt-4 flex gap-1" aria-label={`Étape ${step + 1} sur ${STEPS.length}`}>
+          {STEPS.map((_, i) => (
+            <span key={i} className={`h-1.5 rounded-full transition-all ${i === step ? "w-4 bg-amber-500" : "w-1.5 bg-stone-200"}`} />
+          ))}
+        </div>
+
+        {/* Points et boutons sur deux lignes : sur une seule, les boutons débordaient de la bulle. */}
+        <div className="mt-4 flex items-center justify-between gap-2">
+          {!last ? (
+            <button type="button" onClick={close} className="-ml-2.5 rounded-lg px-2.5 py-2 text-sm text-stone-500 hover:text-stone-900">
+              Passer
+            </button>
+          ) : (
+            <span />
+          )}
+          <div className="flex items-center gap-2">
             {step > 0 && (
               <button type="button" onClick={prev} className="rounded-lg border border-stone-200 px-3 py-2 text-sm font-medium hover:bg-stone-50">
                 Retour
