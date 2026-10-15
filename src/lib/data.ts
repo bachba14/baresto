@@ -43,12 +43,19 @@ export const requireUser = cache(async () => {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   if (!data?.claims) redirect("/login");
-  return { supabase, userId: data.claims.sub as string, email: data.claims.email as string | undefined };
+  const meta = data.claims.user_metadata as { tour_done?: boolean } | undefined;
+  return {
+    supabase,
+    userId: data.claims.sub as string,
+    email: data.claims.email as string | undefined,
+    /** Visite guidée du back-office déjà vue. */
+    tourDone: meta?.tour_done === true,
+  };
 });
 
 /** Restaurant de l'utilisateur connecté (ou null s'il n'en a pas encore créé). */
 export const getMyRestaurant = cache(async () => {
-  const { supabase, userId, email } = await requireUser();
+  const { supabase, userId, email, tourDone } = await requireUser();
   const { data } = await supabase
     .from("restaurant_members")
     .select("restaurants(*)")
@@ -57,7 +64,7 @@ export const getMyRestaurant = cache(async () => {
     .limit(1)
     .maybeSingle();
   const restaurant = (data?.restaurants ?? null) as unknown as Restaurant | null;
-  return { supabase, userId, email, restaurant };
+  return { supabase, userId, email, tourDone, restaurant };
 });
 
 /**

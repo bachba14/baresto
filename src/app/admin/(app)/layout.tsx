@@ -5,6 +5,7 @@ import { Sidebar } from "./sidebar";
 import { ScrollReset } from "./scroll-reset";
 import { NewReservationPanel } from "./new-reservation";
 import { Toaster } from "@/components/toaster";
+import { Tour } from "./tour";
 import { todayIn } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Back-office", robots: { index: false } };
@@ -19,7 +20,7 @@ const initials = (name: string) =>
     .join("");
 
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
-  const { email, restaurant } = await requireRestaurant();
+  const { email, tourDone, restaurant } = await requireRestaurant();
 
   return (
     <div className="min-h-screen bg-[#faf9f7] md:flex">
@@ -33,6 +34,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
       <ScrollReset />
       <NewReservationPanel today={todayIn(restaurant.timezone)} />
       <Toaster />
+      <Tour autoStart={!tourDone} />
 
       <main className="min-w-0 flex-1 p-4 md:p-8">{children}</main>
     </div>

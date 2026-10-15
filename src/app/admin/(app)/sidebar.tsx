@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { logout } from "@/app/(auth)/actions";
 import { LiveIndicator } from "./live-updates";
 import { openNewReservation } from "./new-reservation";
+import { openTour } from "./tour";
 
 
 /** Icônes au trait (24 × 24). */
@@ -53,6 +54,12 @@ const ICONS = {
   code: <path d="m8 7-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16" />,
   upload: <path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4" />,
   external: <path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />,
+  help: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.4M12 17h.01" />
+    </>
+  ),
   logout: <path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4M10 16l4-4-4-4M14 12H4" />,
 };
 
@@ -66,7 +73,7 @@ function Icon({ name, className = "h-[18px] w-[18px]" }: { name: IconName; class
   );
 }
 
-const GROUPS: { title?: string; links: { href: string; label: string; icon: IconName }[] }[] = [
+const GROUPS: { title?: string; tour?: string; links: { href: string; label: string; icon: IconName }[] }[] = [
   {
     links: [
       { href: "/admin", label: "Tableau de bord", icon: "home" },
@@ -76,6 +83,7 @@ const GROUPS: { title?: string; links: { href: string; label: string; icon: Icon
   },
   {
     title: "Suivi",
+    tour: "group-suivi",
     links: [
       { href: "/admin/clients", label: "Clients", icon: "users" },
       { href: "/admin/stats", label: "Statistiques", icon: "chart" },
@@ -83,6 +91,7 @@ const GROUPS: { title?: string; links: { href: string; label: string; icon: Icon
   },
   {
     title: "Restaurant",
+    tour: "group-restaurant",
     links: [
       { href: "/admin/menu", label: "Carte", icon: "menu" },
       { href: "/admin/floor", label: "Plan de salle", icon: "floor" },
@@ -157,6 +166,7 @@ export function Sidebar({
           <button
             type="button"
             onClick={() => openNewReservation()}
+            data-tour="new-reservation"
             title="Nouvelle réservation (raccourci : N)"
             className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-stone-900 text-sm font-medium text-white transition hover:bg-stone-700"
           >
@@ -167,14 +177,14 @@ export function Sidebar({
         {/* Liens */}
         <nav className="mt-6 space-y-4 px-3">
           {GROUPS.map((group, g) => (
-            <div key={g} className="space-y-0.5">
+            <div key={g} data-tour={group.tour} className="space-y-0.5">
               {group.title && (
                 <p className="px-[15px] pb-1 text-[11px] font-medium tracking-wider text-stone-500 uppercase">{group.title}</p>
               )}
               {group.links.map((l) => {
                 const active = isActive(l.href);
                 return (
-                  <Link key={l.href} href={l.href} aria-current={active ? "page" : undefined} className={linkClass(active)}>
+                  <Link key={l.href} href={l.href} data-tour={`nav-${l.href}`} aria-current={active ? "page" : undefined} className={linkClass(active)}>
                     <span className={iconClass(active)}><Icon name={l.icon} /></span>
                     <Label>{l.label}</Label>
                   </Link>
@@ -186,10 +196,14 @@ export function Sidebar({
 
         {/* Bas : page publique, compte */}
         <div className="mt-auto space-y-0.5 px-3 pt-6">
-          <a href={`/r/${restaurant.slug}`} target="_blank" className={linkClass(false)}>
+          <a href={`/r/${restaurant.slug}`} target="_blank" data-tour="public-page" className={linkClass(false)}>
             <span className={iconClass(false)}><Icon name="external" /></span>
             <Label>Ma page publique</Label>
           </a>
+          <button type="button" onClick={openTour} className={`${linkClass(false)} w-full`}>
+            <span className={iconClass(false)}><Icon name="help" /></span>
+            <Label>Revoir le tuto</Label>
+          </button>
           <form action={logout}>
             <button type="submit" title={email} className={`${linkClass(false)} w-full`}>
               <span className={iconClass(false)}><Icon name="logout" /></span>
@@ -212,7 +226,10 @@ export function Sidebar({
             <span className="text-sm font-medium">{restaurant.name}</span>
           </Link>
           <div className="flex items-center gap-2">
-            <button type="button" onClick={() => openNewReservation()} className="flex h-10 items-center rounded-lg bg-stone-900 px-3 text-sm font-medium text-white" aria-label="Nouvelle réservation">+ Résa</button>
+            <button type="button" onClick={() => openNewReservation()} data-tour="new-reservation" className="flex h-10 items-center rounded-lg bg-stone-900 px-3 text-sm font-medium text-white" aria-label="Nouvelle réservation">+ Résa</button>
+            <button type="button" onClick={openTour} aria-label="Revoir le tuto" className="rounded-lg p-1.5 text-stone-500 hover:bg-stone-900/5 hover:text-stone-900">
+              <Icon name="help" />
+            </button>
             <LiveIndicator />
             <form action={logout}>
               <button aria-label="Se déconnecter" className="rounded-lg p-1.5 text-stone-500 hover:bg-stone-900/5 hover:text-stone-900">
@@ -225,7 +242,7 @@ export function Sidebar({
           {GROUPS.flatMap((g) => g.links).map((l) => {
             const active = isActive(l.href);
             return (
-              <Link key={l.href} href={l.href} aria-current={active ? "page" : undefined} className={`${linkClass(active)} shrink-0 px-3`}>
+              <Link key={l.href} href={l.href} data-tour={`nav-${l.href}`} aria-current={active ? "page" : undefined} className={`${linkClass(active)} shrink-0 px-3`}>
                 <span className={iconClass(active)}><Icon name={l.icon} /></span>
                 {l.label}
               </Link>
