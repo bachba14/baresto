@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { markTourDone } from "./tour-actions";
 
 const OPEN_EVENT = "monkomi:tour";
@@ -17,6 +18,8 @@ type Step = {
   target?: string;
   /** Cible de repli quand la première n'est pas visible (barre mobile, sans groupes). */
   fallback?: string;
+  /** Page ouverte pendant l'étape, pour que l'utilisateur voie ce dont on parle. */
+  page?: string;
   emoji: string;
   title: string;
   text: string;
@@ -24,30 +27,35 @@ type Step = {
 
 const STEPS: Step[] = [
   {
+    page: "/admin",
     emoji: "👋",
     title: "Bienvenue sur Monkomi !",
     text: "On vous fait faire le tour du propriétaire en moins d'une minute. Vous pourrez revoir ce tuto quand vous voulez.",
   },
   {
     target: "new-reservation",
+    page: "/admin",
     emoji: "➕",
     title: "Ajouter une réservation",
     text: "Un client appelle ? Cliquez ici pour noter sa réservation. Astuce : la touche N fait la même chose, depuis n'importe quelle page.",
   },
   {
     target: "nav-/admin",
+    page: "/admin",
     emoji: "🏠",
     title: "Tableau de bord",
     text: "Votre point de départ : les réservations du jour et vos chiffres clés en un coup d'œil.",
   },
   {
     target: "nav-/admin/service",
+    page: "/admin/service",
     emoji: "🍽️",
     title: "Service",
     text: "À ouvrir pendant le service : voyez qui arrive, installez les clients à leur table et marquez-les arrivés puis partis.",
   },
   {
     target: "nav-/admin/reservations",
+    page: "/admin/reservations",
     emoji: "📅",
     title: "Réservations",
     text: "Toutes vos réservations, jour par jour ou sur le mois. Cliquez sur une réservation pour la modifier, la confirmer ou l'annuler.",
@@ -55,6 +63,7 @@ const STEPS: Step[] = [
   {
     target: "group-suivi",
     fallback: "nav-/admin/clients",
+    page: "/admin/clients",
     emoji: "📈",
     title: "Clients et statistiques",
     text: "Votre fichier clients se remplit tout seul (habitués, allergies, notes…) et les statistiques montrent comment évolue votre activité.",
@@ -62,6 +71,7 @@ const STEPS: Step[] = [
   {
     target: "group-restaurant",
     fallback: "nav-/admin/menu",
+    page: "/admin/floor",
     emoji: "🪑",
     title: "Votre restaurant",
     text: "Mettez votre carte en ligne, dessinez votre plan de salle et ajustez vos horaires ou jours de fermeture dans les Réglages.",
@@ -73,6 +83,7 @@ const STEPS: Step[] = [
     text: "C'est la page que voient vos clients. Partagez son lien sur Google, Instagram ou Facebook pour recevoir des réservations en ligne.",
   },
   {
+    page: "/admin",
     emoji: "🎉",
     title: "C'est parti !",
     text: "Premier conseil : dessinez votre plan de salle, puis faites une réservation test depuis votre page publique. Ce tuto reste disponible via « Revoir le tuto » dans le menu.",
@@ -96,6 +107,8 @@ export function Tour({ autoStart }: { autoStart: boolean }) {
   const [step, setStep] = useState<number | null>(null);
   const [rect, setRect] = useState<Rect | null>(null);
   const [vw, setVw] = useState(1024);
+  const router = useRouter();
+  const pathname = usePathname();
 
   // Ouverture automatique à la première visite, ou à la demande.
   useEffect(() => {
@@ -125,6 +138,11 @@ export function Tour({ autoStart }: { autoStart: boolean }) {
   const last = step === STEPS.length - 1;
   const next = useCallback(() => (last ? close() : setStep((s) => (s ?? 0) + 1)), [last, close]);
   const prev = useCallback(() => setStep((s) => Math.max(0, (s ?? 0) - 1)), []);
+
+  // Ouvre la page de l'étape en cours (la visite reste affichée : elle vit dans le layout).
+  useEffect(() => {
+    if (current?.page && current.page !== pathname) router.push(current.page, { scroll: false });
+  }, [current, pathname, router]);
 
   // Position de l'élément mis en lumière, suivie au redimensionnement et au défilement.
   useLayoutEffect(() => {
@@ -183,10 +201,10 @@ export function Tour({ autoStart }: { autoStart: boolean }) {
       {rect ? (
         <div
           className="pointer-events-none fixed rounded-2xl ring-2 ring-amber-400 transition-all duration-300 ease-out"
-          style={{ ...rect, boxShadow: "0 0 0 9999px rgb(28 25 23 / 0.55)" }}
+          style={{ ...rect, boxShadow: "0 0 0 9999px rgb(28 25 23 / 0.4)" }}
         />
       ) : (
-        <div className="pointer-events-none fixed inset-0 bg-stone-900/55" />
+        <div className="pointer-events-none fixed inset-0 bg-stone-900/40" />
       )}
 
       <div
