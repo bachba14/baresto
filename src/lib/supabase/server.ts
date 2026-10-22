@@ -35,6 +35,15 @@ export function createPublicClient() {
 }
 
 /**
+ * Client des formulaires publics de réservation et de liste d'attente. Les fonctions SQL create_reservation et
+ * join_waitlist ne sont pas ouvertes à la clé publique (migration 0007) : sans cela, un robot pourrait les appeler
+ * directement sur Supabase et échapper aux limites de l'API. Repli sur le client public en local sans clé secrète.
+ */
+export function createBookingClient() {
+  return createServiceClient() ?? createPublicClient();
+}
+
+/**
  * Client « secret » qui contourne les règles RLS : uniquement côté serveur, pour les tâches sans utilisateur
  * (e-mails programmés, liste d'attente). Null si SUPABASE_SECRET_KEY n'est pas configurée.
  */

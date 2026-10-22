@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { googleOAuthConfig } from "@/lib/google-oauth";
 import { clientIp, rateLimited, TOO_MANY } from "@/lib/rate-limit";
+import { DISPOSABLE_REFUSED, isDisposableEmail } from "@/lib/spam";
 
 export type AuthState = { error?: string; info?: string } | null;
 
@@ -17,9 +18,16 @@ async function siteUrl() {
 }
 
 export async function login(_: AuthState, formData: FormData): Promise<AuthState> {
+  // Essais de mots de passe en série : par connexion, et par compte visé (depuis plusieurs connexions).
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  if (
+    rateLimited(`connexion:${clientIp(await headers())}`, [[10, 15 * 60_000], [50, 86_400_000]]) ||
+    rateLimited(`connexion-compte:${email}`, [[8, 15 * 60_000]])
+  ) return { error: TOO_MANY };
+
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({
-    email: String(formData.get("email")),
+    email,
     password: String(formData.get("password")),
   });
   if (error) {
@@ -36,6 +44,12 @@ export async function signup(_: AuthState, formData: FormData): Promise<AuthStat
   const email = String(formData.get("email")).trim();
   const password = String(formData.get("password"));
   if (password.length < 8) return { error: "Le mot de passe doit faire au moins 8 caractères." };
+
+  // Robots : champ piège rempli → faux succès, aucun compte ni e-mail.
+  if (String(formData.get("website") ?? "")) return { info: `Presque fini ! Cliquez sur le lien envoyé à ${email} pour activer votre compte.` };
+  if (isDisposableEmail(email)) return { error: DISPOSABLE_REFUSED };
+  // Chaque inscription envoie un e-mail de confirmation : on limite par connexion.
+  if (rateLimited(`inscription:${clientIp(await headers())}`, [[3, 60 * 60_000], [10, 86_400_000]])) return { error: TOO_MANY };
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
@@ -104,7 +118,11 @@ export async function logout() {
 export async function forgotPassword(_: AuthState, formData: FormData): Promise<AuthState> {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { error: "Adresse e-mail invalide." };
-  if (rateLimited(`motdepasse:${clientIp(await headers())}`, [[5, 15 * 60_000]])) return { error: TOO_MANY };
+  // Par connexion, et par adresse visée (pour ne pas inonder une boîte depuis plusieurs connexions).
+  if (
+    rateLimited(`motdepasse:${clientIp(await headers())}`, [[5, 15 * 60_000]]) ||
+    rateLimited(`motdepasse-compte:${email}`, [[3, 60 * 60_000]])
+  ) return { error: TOO_MANY };
 
   const supabase = await createClient();
   const { error } = await supabase.auth.resetPasswordForEmail(email, {

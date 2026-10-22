@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { createPublicClient } from "@/lib/supabase/server";
+import { createBookingClient } from "@/lib/supabase/server";
+import { DISPOSABLE_REFUSED, hasLink, isDisposableEmail, LINK_REFUSED } from "@/lib/spam";
 import { getRestaurantBySlug } from "@/lib/data";
 import { isValidDate } from "@/lib/format";
 import { CORS_HEADERS } from "@/lib/cors";
@@ -32,13 +33,18 @@ export async function POST(request: NextRequest, ctx: RouteContext<"/api/r/[slug
   if (!isValidDate(date)) return fail("Date invalide.");
   if (time != null && time !== "" && (typeof time !== "string" || !/^\d{2}:\d{2}$/.test(time))) return fail("Heure invalide.");
 
-  const { error } = await createPublicClient().rpc("join_waitlist", {
+  const name = str(body.name, 120);
+  const email = str(body.email, 200);
+  if (hasLink(name)) return fail(LINK_REFUSED);
+  if (isDisposableEmail(email)) return fail(DISPOSABLE_REFUSED);
+
+  const { error } = await createBookingClient().rpc("join_waitlist", {
     p_restaurant: restaurant.id,
     p_date: date,
     p_time: time || null,
     p_party_size: Number(body.party_size),
-    p_name: str(body.name, 120),
-    p_email: str(body.email, 200),
+    p_name: name,
+    p_email: email,
     p_phone: str(body.phone, 40),
   });
   if (error) return error.code === "P0001" ? fail(error.message, 409) : fail("Une erreur est survenue, réessayez.", 500);

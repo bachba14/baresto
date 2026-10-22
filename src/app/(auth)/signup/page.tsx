@@ -24,6 +24,8 @@ export default function SignupPage() {
         <UrlError />
         <GoogleButton />
         <form action={action} className="mt-4 space-y-4">
+          {/* Champ piège anti-robots : invisible, rempli uniquement par les bots. */}
+          <input name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden />
           <label className="block">
             <span className={labelClass}>E-mail professionnel</span>
             <input name="email" type="email" required autoComplete="email" className={inputClass} />

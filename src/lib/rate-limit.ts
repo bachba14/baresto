@@ -5,12 +5,16 @@
 const hits = new Map<string, number[]>();
 let lastSweep = Date.now();
 
-/** Adresse IP du visiteur derrière le proxy de l'hébergeur. */
+/**
+ * Adresse IP du visiteur. Le site est servi par Cloudflare (CDN Hostinger), qui écrase cf-connecting-ip :
+ * on le lit en premier. x-forwarded-for vient ensuite, car son premier élément peut être inventé par le visiteur
+ * (il suffirait d'en changer à chaque requête pour échapper aux limites).
+ */
 export function clientIp(headers: Headers) {
   return (
-    headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    headers.get("x-real-ip")?.trim() ||
     headers.get("cf-connecting-ip")?.trim() ||
+    headers.get("x-real-ip")?.trim() ||
+    headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
     "inconnue"
   );
 }

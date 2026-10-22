@@ -1,5 +1,6 @@
 import { after, NextResponse, type NextRequest } from "next/server";
-import { createPublicClient } from "@/lib/supabase/server";
+import { createBookingClient } from "@/lib/supabase/server";
+import { DISPOSABLE_REFUSED, hasLink, isDisposableEmail, LINK_REFUSED } from "@/lib/spam";
 import { getRestaurantBySlug } from "@/lib/data";
 import { isValidDate } from "@/lib/format";
 import { CORS_HEADERS } from "@/lib/cors";
@@ -46,7 +47,10 @@ export async function POST(request: NextRequest, ctx: RouteContext<"/api/r/[slug
     phone: str(body.phone, 40).trim() || null,
     notes: str(body.notes, 1000).trim() || null,
   };
-  const { data, error } = await createPublicClient().rpc("create_reservation", {
+  if (hasLink(input.name, input.notes)) return fail(LINK_REFUSED);
+  if (isDisposableEmail(input.email)) return fail(DISPOSABLE_REFUSED);
+
+  const { data, error } = await createBookingClient().rpc("create_reservation", {
     p_restaurant: restaurant.id,
     p_date: date,
     p_time: time,
