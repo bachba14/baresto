@@ -89,6 +89,8 @@ Sans ces variables, l'application fonctionne normalement mais n'envoie aucun e-m
 ```
 
 Démo : `/demo.html`. API : `/api/r/{slug}/menu`, `/api/r/{slug}/availability?date=…&party=…`, `POST /api/r/{slug}/reservations`.
+Les disponibilités renvoient `{ time, available }` par créneau (disponible ou non pour `party` personnes), jamais le
+nombre de places restantes.
 
 ## Déploiement sur Hostinger
 

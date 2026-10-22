@@ -6,7 +6,7 @@ import type { CalendarLinks } from "@/lib/calendar";
 import { CalendarButtons } from "./calendar-buttons";
 import { WaitlistForm } from "./waitlist-form";
 
-type Slot = { time: string; remaining: number };
+type Slot = { time: string; available: boolean };
 
 const input =
   "w-full rounded-lg border border-stone-300 bg-transparent px-3 py-2 outline-none focus:border-[var(--brand)] focus:ring-2 focus:ring-[var(--brand)]/20 dark:border-stone-600";
@@ -128,7 +128,7 @@ export function ReservationForm(props: {
     );
   }
 
-  const available = slots?.filter((s) => s.remaining >= party) ?? [];
+  const available = slots?.filter((s) => s.available) ?? [];
   // Liste d'attente : seulement si le restaurant ouvre ce jour-là et qu'au moins un créneau est complet.
   const canWait = !!slots && slots.length > 0 && available.length < slots.length;
 
@@ -201,7 +201,7 @@ export function ReservationForm(props: {
         ) : (
           <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
             {slots.map((s) => {
-              const full = s.remaining < party;
+              const full = !s.available;
               const selected = time === s.time;
               return (
                 <button

@@ -26,7 +26,7 @@ export async function loadSlots(token: string, date: string, party: number) {
     p_date: date,
     p_party_size: party,
   });
-  return ((data as Slot[] | null) ?? []).map((s) => ({ time: s.slot.slice(0, 5), remaining: s.remaining }));
+  return ((data as Slot[] | null) ?? []).map((s) => ({ time: s.slot.slice(0, 5), available: s.remaining >= party }));
 }
 
 export async function cancelReservation(token: string): Promise<string | null> {

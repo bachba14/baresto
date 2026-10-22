@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { createPublicClient } from "@/lib/supabase/server";
+import { createBookingClient } from "@/lib/supabase/server";
 import { getRestaurantBySlug } from "@/lib/data";
 import { isValidDate } from "@/lib/format";
 import { CORS_HEADERS } from "@/lib/cors";
@@ -20,13 +20,14 @@ export async function GET(request: NextRequest, ctx: RouteContext<"/api/r/[slug]
   const party = Math.min(50, Math.max(1, Number(request.nextUrl.searchParams.get("party")) || 1));
   if (!isValidDate(date)) return fail("Paramètre date invalide (AAAA-MM-JJ).", 400);
 
-  const { data, error } = await createPublicClient().rpc("get_availability", {
+  const { data, error } = await createBookingClient().rpc("get_availability", {
     p_restaurant: restaurant.id,
     p_date: date,
     p_party_size: party,
   });
   if (error) return fail("Impossible de charger les disponibilités.", 500);
 
-  const slots = (data as Slot[]).map((s) => ({ time: s.slot.slice(0, 5), remaining: s.remaining }));
+  // Disponible ou non pour ce nombre de personnes : le nombre de places restantes révélerait le remplissage du restaurant.
+  const slots = (data as Slot[]).map((s) => ({ time: s.slot.slice(0, 5), available: s.remaining >= party }));
   return NextResponse.json({ date, slots }, { headers: { ...CORS_HEADERS, "Cache-Control": "no-store" } });
 }

@@ -9,7 +9,7 @@ const input =
   "w-full rounded-lg border border-stone-300 bg-white px-3 py-2 outline-none focus:border-[var(--brand)] focus:ring-2 focus:ring-[var(--brand)]/20";
 const label = "mb-1 block text-sm font-medium";
 
-type Slot = { time: string; remaining: number };
+type Slot = { time: string; available: boolean };
 
 export function ManageForm(props: {
   token: string;
@@ -107,7 +107,7 @@ export function ManageForm(props: {
           <span className={label}>Horaire</span>
           {slots === null ? (
             <p className="text-sm text-stone-500">Chargement des disponibilités…</p>
-          ) : slots.filter((s) => s.remaining >= party).length === 0 ? (
+          ) : !slots.some((s) => s.available) ? (
             <p className="text-sm text-stone-500">Aucun créneau disponible ce jour-là.</p>
           ) : (
             <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
@@ -115,7 +115,7 @@ export function ManageForm(props: {
                 <button
                   key={s.time}
                   type="button"
-                  disabled={s.remaining < party}
+                  disabled={!s.available}
                   onClick={() => setTime(s.time)}
                   className={`rounded-lg border px-2 py-2 text-sm ${
                     time === s.time ? "border-[var(--brand)] bg-[var(--brand)] text-white" : "border-stone-300 hover:border-[var(--brand)]"
