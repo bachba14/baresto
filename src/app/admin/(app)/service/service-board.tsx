@@ -252,6 +252,19 @@ export function ServiceBoard({
                   Installer
                 </button>
               )}
+              {(selectedRes.status === "pending" || selectedRes.status === "confirmed") && (
+                <button
+                  type="button"
+                  disabled={pending}
+                  onClick={() => {
+                    run(async () => (await updateStatus(selectedRes.id, "no_show"), null), `${selectedRes.name} : non venu, table libérée.`);
+                    setSelectedResId(null);
+                  }}
+                  className="rounded-md bg-white px-2 py-1 text-red-700 hover:bg-red-50"
+                >
+                  Non venu
+                </button>
+              )}
               <button type="button" onClick={() => setSelectedResId(null)} className="rounded-md px-2 py-1 text-stone-500">
                 ✕
               </button>

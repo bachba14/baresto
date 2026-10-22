@@ -40,7 +40,7 @@ export async function GET() {
     ["• Obligatoire : Date, Heure, Couverts, Nom. Un e-mail ou un téléphone permet de retrouver le client (fiche client automatique)."],
     ["• Date : 15/10/2026 (ou une date Excel). Heure : 20:00, 20h ou 20h30."],
     ["• Statut : Confirmée (par défaut si vide), En attente, Installée, Partie, Annulée ou Non venue."],
-    ["• Les réservations passées servent d'historique (statistiques, fidélité des clients)."],
+    ["• Les réservations passées servent d'historique (statistiques, fidélité des clients). Passées et « Confirmée », elles sont comptées comme venues."],
     ["• Les réservations à venir sont placées automatiquement sur une table libre quand c'est possible."],
     [""],
     ["Clients", true],

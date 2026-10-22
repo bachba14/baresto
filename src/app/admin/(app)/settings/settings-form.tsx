@@ -150,7 +150,8 @@ export function SettingsForm({ restaurant: settings, tableCount }: { restaurant:
             className={inputClass}
           />
           <span className="mt-1 block text-xs text-stone-500">
-            Renseigné, il est envoyé par e-mail le lendemain du repas pour demander un avis. Sur Google : fiche
+            Renseigné, il est envoyé par e-mail le lendemain du repas aux clients pointés venus (« Installée » ou
+            « Partie »). Sur Google : fiche
             d&apos;établissement → « Demander des avis » → copier le lien.
           </span>
         </label>

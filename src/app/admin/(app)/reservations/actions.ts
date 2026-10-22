@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { requireRestaurantAction } from "@/lib/data";
-import { isValidDate } from "@/lib/format";
+import { isValidDate, todayIn } from "@/lib/format";
 import { emailClient, type ClientEmailKind } from "@/lib/notifications";
 import { notifyWaitlist } from "@/lib/waitlist";
 import { siteUrl } from "@/lib/site";
@@ -51,6 +51,24 @@ export async function updateStatus(id: string, status: ReservationStatus) {
         (status === "cancelled" || status === "finished") && notifyWaitlist(base, { restaurantId: restaurant.id, date: r.date }),
       ]),
     );
+  }
+  done();
+}
+
+/**
+ * Rattrapage du pointage : les réservations passées encore « En attente » ou « Confirmée » sont marquées
+ * venues (« Partie »). todayIds : celles d'aujourd'hui dont le repas est déjà terminé.
+ */
+export async function markPastAsCame(todayIds: string[]) {
+  const { supabase, restaurant } = await requireRestaurantAction();
+  const unpointed = () =>
+    supabase.from("reservations").update({ status: "finished" }).eq("restaurant_id", restaurant.id).in("status", ["pending", "confirmed"]);
+
+  const { error } = await unpointed().lt("date", todayIn(restaurant.timezone));
+  if (error) throw new Error(error.message);
+  if (todayIds.length) {
+    const { error: e2 } = await unpointed().eq("date", todayIn(restaurant.timezone)).in("id", todayIds.slice(0, 500));
+    if (e2) throw new Error(e2.message);
   }
   done();
 }

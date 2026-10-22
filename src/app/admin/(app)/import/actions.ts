@@ -203,7 +203,13 @@ export async function importFile(_: ImportResult, formData: FormData): Promise<I
   for (let i = 0; i < fresh.length; i += 500) {
     const { data, error } = await supabase
       .from("reservations")
-      .insert(fresh.slice(i, i + 500).map((r) => ({ ...r, restaurant_id: restaurant.id, source: "admin" })))
+      .insert(fresh.slice(i, i + 500).map((r) => ({
+        ...r,
+        // Historique « Confirmée » : le client est venu, sinon tout l'import serait à pointer sur le tableau de bord.
+        status: r.date < today && r.status === "confirmed" ? "finished" : r.status,
+        restaurant_id: restaurant.id,
+        source: "admin",
+      })))
       .select("id, date, status");
     if (error) return { ...summary, error: `Import des réservations interrompu après ${insertedIds.length} lignes : ${error.message}` };
     insertedIds.push(...((data ?? []) as typeof insertedIds));

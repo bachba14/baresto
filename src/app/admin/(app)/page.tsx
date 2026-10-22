@@ -1,13 +1,15 @@
 import type { CSSProperties } from "react";
 import Link from "next/link";
 import { requireRestaurant } from "@/lib/data";
-import { addDays, DAYS, formatDate, formatTime, STATUS_LABELS, todayIn } from "@/lib/format";
+import { addDays, DAYS, formatDate, formatTime, nowMinutesIn, STATUS_LABELS, todayIn } from "@/lib/format";
+import { mealMinutes } from "@/lib/calendar";
+import { toMinutes } from "@/lib/floor";
 import { cardClass } from "@/components/admin-styles";
 import { SubmitButton } from "@/components/admin-ui";
 import { BarChart } from "@/components/bar-chart";
 import { CountUp } from "@/components/count-up";
 import { CustomerBadges } from "@/components/customer-badges";
-import { updateStatus } from "./reservations/actions";
+import { markPastAsCame, updateStatus } from "./reservations/actions";
 import { RESERVATION_SELECT, type ReservationWithTables } from "./reservations/reservation-row";
 import { PERIODS, Stats } from "./stats";
 import { NewReservationButton } from "./new-reservation";
@@ -34,7 +36,7 @@ export default async function Dashboard({ searchParams }: PageProps<"/admin">) {
   const today = todayIn(restaurant.timezone);
   const dinnerFrom = restaurant.dinner_from.slice(0, 5);
 
-  const [{ data: todayRes }, { data: pending }, { data: week }, { data: nextRes }, { count: tableCount }, { count: dishCount }, { count: onlineCount }] = await Promise.all([
+  const [{ data: todayRes }, { data: pending }, { data: week }, { data: nextRes }, { count: tableCount }, { count: dishCount }, { count: onlineCount }, { data: pastRes, count: pastCount }] = await Promise.all([
     supabase.from("reservations").select(RESERVATION_SELECT).eq("restaurant_id", restaurant.id).eq("date", today).in("status", ["pending", "confirmed", "seated", "finished"]).order("time"),
     supabase.from("reservations").select(RESERVATION_SELECT).eq("restaurant_id", restaurant.id).eq("status", "pending").gte("date", today).order("date").order("time").limit(50),
     supabase.from("reservations").select("date, party_size").eq("restaurant_id", restaurant.id).gte("date", today).lte("date", addDays(today, 6))
@@ -44,6 +46,9 @@ export default async function Dashboard({ searchParams }: PageProps<"/admin">) {
     supabase.from("dining_tables").select("*", { count: "exact", head: true }).eq("restaurant_id", restaurant.id),
     supabase.from("menu_items").select("*", { count: "exact", head: true }).eq("restaurant_id", restaurant.id),
     supabase.from("reservations").select("*", { count: "exact", head: true }).eq("restaurant_id", restaurant.id).eq("source", "widget"),
+    // Jours passés encore « En attente » ou « Confirmée » : à pointer (venue / non venue).
+    supabase.from("reservations").select(RESERVATION_SELECT, { count: "exact" }).eq("restaurant_id", restaurant.id).lt("date", today)
+      .in("status", ["pending", "confirmed"]).order("date", { ascending: false }).order("time", { ascending: false }).limit(6),
   ]);
 
   // Checklist de démarrage : affichée tant qu'une étape reste à faire.
@@ -59,7 +64,14 @@ export default async function Dashboard({ searchParams }: PageProps<"/admin">) {
 
 
   const todayList = (todayRes ?? []) as ReservationWithTables[];
-  const pendingList = (pending ?? []) as ReservationWithTables[];
+  // Aujourd'hui, repas déjà terminé sans pointage : à pointer plutôt qu'à confirmer.
+  const now = nowMinutesIn(restaurant.timezone);
+  const todayEnded = todayList.filter(
+    (r) => (r.status === "pending" || r.status === "confirmed") && toMinutes(r.time) + mealMinutes(restaurant, r.time, r.duration_minutes) <= now,
+  );
+  const toPoint = [...todayEnded.slice().reverse(), ...((pastRes ?? []) as ReservationWithTables[])];
+  const toPointCount = todayEnded.length + (pastCount ?? 0);
+  const pendingList = ((pending ?? []) as ReservationWithTables[]).filter((r) => !todayEnded.some((e) => e.id === r.id));
   // Confirmation automatique sans demande en attente : le bloc « À confirmer » n'apporte rien.
   const showPending = pendingList.length > 0 || !restaurant.auto_confirm;
   const covers = (list: { party_size: number }[]) => list.reduce((n, r) => n + r.party_size, 0);
@@ -149,6 +161,49 @@ export default async function Dashboard({ searchParams }: PageProps<"/admin">) {
         </section>
 
         <div className="space-y-4">
+          {/* Réservations passées sans pointage : sinon no-shows invisibles et demandes d'avis non envoyées. */}
+          {toPointCount > 0 && (
+            <section id="a-pointer" className={`${cardClass} animate-rise scroll-mt-6 bg-amber-50 ring-amber-200`} style={delay(260)}>
+              <div className="flex items-baseline justify-between gap-2">
+                <h2 className="text-lg">À pointer</h2>
+                <span className="text-sm text-amber-800 tabular-nums">{toPointCount}</span>
+              </div>
+              <p className="mt-1 text-xs text-stone-600">
+                Repas terminés : les clients sont-ils venus ? Le taux de non-venue et les demandes d&apos;avis en dépendent.
+              </p>
+              <ul className="mt-3 space-y-2">
+                {toPoint.slice(0, 6).map((r) => (
+                  <li key={r.id} className="rounded-xl bg-white p-3">
+                    <p className="text-sm font-medium">{r.name} · {r.party_size} pers.</p>
+                    <p className="text-xs text-stone-500 first-letter:uppercase">
+                      {r.date === today ? "Aujourd'hui" : formatDate(r.date)} à {formatTime(r.time)}
+                    </p>
+                    <div className="mt-2 flex gap-2">
+                      <form action={updateStatus.bind(null, r.id, "finished")}>
+                        <SubmitButton className="rounded-lg px-3 py-1.5 text-xs">Venue</SubmitButton>
+                      </form>
+                      <form action={updateStatus.bind(null, r.id, "no_show")}>
+                        <SubmitButton variant="secondary" className="rounded-lg px-3 py-1.5 text-xs">Non venue</SubmitButton>
+                      </form>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              {toPointCount > 1 && (
+                <form action={markPastAsCame.bind(null, todayEnded.map((r) => r.id))} className="mt-3 flex items-center justify-between gap-2">
+                  <span className="text-xs text-stone-500">{toPointCount > 6 ? `+ ${toPointCount - 6} autres` : ""}</span>
+                  <SubmitButton
+                    variant="ghost"
+                    className="rounded-lg px-3 py-1.5 text-xs"
+                    confirm={`Marquer les ${toPointCount} réservations comme venues ? Pointez d'abord les clients absents : ils seraient comptés comme venus.`}
+                  >
+                    Tout marquer venues
+                  </SubmitButton>
+                </form>
+              )}
+            </section>
+          )}
+
           {stepsDone < steps.length && (
             <section className={`${cardClass} animate-rise`} style={delay(280)}>
               <div className="flex items-baseline justify-between gap-2">

@@ -1,14 +1,11 @@
 import Link from "next/link";
 import { DateNav } from "@/components/date-nav";
 import { getFloor, getPlacedReservations, requireRestaurant } from "@/lib/data";
-import { formatDate, isValidDate, todayIn } from "@/lib/format";
+import { formatDate, isValidDate, nowMinutesIn, todayIn } from "@/lib/format";
 import { ServiceBoard } from "./service-board";
 
-function nowIn(timezone: string) {
-  const t = new Intl.DateTimeFormat("fr-FR", { timeZone: timezone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date());
-  const [h, m] = t.split(":").map(Number);
-  return h * 60 + Math.floor(m / 15) * 15;
-}
+/** Heure actuelle arrondie au quart d'heure (position initiale du curseur). */
+const nowIn = (timezone: string) => Math.floor(nowMinutesIn(timezone) / 15) * 15;
 
 export default async function ServicePage({ searchParams }: PageProps<"/admin/service">) {
   const [{ supabase, restaurant }, params] = await Promise.all([requireRestaurant(), searchParams]);

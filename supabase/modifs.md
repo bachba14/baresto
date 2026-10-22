@@ -9,14 +9,15 @@
 
 ---
 
-### [ ] 1. Réservations passées restées « Confirmée » (ex-point 3)
+### [x] 1. Réservations passées restées « Confirmée » (ex-point 3)
+- **Fait le 22/10/2026, option (b)** : encart « À pointer » sur le tableau de bord (Venue / Non venue, « Tout marquer venues »), bouton « Non venu » dans la vue Service, demande d'avis réservée aux clients pointés venus (`0006_avis_clients_venus.sql`), historique importé « Confirmée » enregistré comme venu.
 - **Constat** : les réservations passées restent « Confirmée » tant que personne ne les pointe. Le taux de no-show reste à 0 % et les statistiques sont faussées.
 - **Options** :
   - (a) Après la fin du service, passer automatiquement les réservations « Confirmée » en « Partie ».
   - (b) Afficher sur le tableau de bord un encart « X réservations passées à pointer », avec deux boutons rapides : Venue / Non venue.
 - **Recommandation** : **(b)**. L'option (a) marquerait comme venus des clients absents, et fausserait le taux de no-show dans l'autre sens.
 - **Critère d'acceptation** : aucune réservation passée ne reste « Confirmée » ou « En attente » sans signalement visible.
-- **Décision** : _à compléter_
+- **Décision** : option (b).
 
 ### [ ] 2. Mettre en pause les réservations en ligne (ex-point 22)
 - **Déjà fait** : le badge sous le nom du restaurant s'appelle maintenant « Mises à jour en direct » et a une infobulle. Il indique que le back-office se met à jour tout seul, pas que les réservations en ligne sont ouvertes.

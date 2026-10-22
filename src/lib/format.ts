@@ -40,6 +40,13 @@ export function todayIn(timezone: string) {
   return new Intl.DateTimeFormat("en-CA", { timeZone: timezone }).format(new Date());
 }
 
+/** Heure actuelle dans le fuseau du restaurant, en minutes depuis minuit. */
+export function nowMinutesIn(timezone: string) {
+  const t = new Intl.DateTimeFormat("fr-FR", { timeZone: timezone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date());
+  const [h, m] = t.split(":").map(Number);
+  return h * 60 + m;
+}
+
 export function addDays(date: string, days: number) {
   const d = new Date(`${date}T00:00:00Z`);
   d.setUTCDate(d.getUTCDate() + days);

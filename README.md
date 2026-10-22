@@ -16,7 +16,8 @@ Stack : Next.js 16 (App Router) · Supabase (Postgres, Auth, Storage) · Tailwin
 1. **Projet Supabase** sur [supabase.com](https://supabase.com).
 2. **Schéma** : SQL Editor → exécuter `supabase/migrations/0001_init.sql`, `0002_saas.sql` puis `0003_clients_emails.sql`
    (0002 remplace le schéma mono-restaurant de 0001 et crée le restaurant de démo `/r/demo` ; 0003 ajoute fiches
-   clients, liste d'attente, gestion de la réservation par le client et temps réel).
+   clients, liste d'attente, gestion de la réservation par le client et temps réel), puis les suivantes dans l'ordre
+   (`0004_…` à `0006_…`).
 3. **Authentification** (Supabase → Authentication → URL Configuration) :
    *Site URL* = l'URL du site (`http://localhost:3000` en local), et ajouter `…/auth/callback` aux *Redirect URLs*.
    La confirmation d'e-mail est activée par défaut ; le service d'e-mail intégré de Supabase est limité à quelques
@@ -47,7 +48,8 @@ Stack : Next.js 16 (App Router) · Supabase (Postgres, Auth, Storage) · Tailwin
 ## E-mails aux clients (gratuit)
 
 Envoyés : confirmation (ou « demande reçue »), confirmation / refus par le restaurant, modification, annulation,
-rappel dans les 48 h avant le repas, demande d'avis le lendemain (si un lien d'avis est renseigné dans les réglages),
+rappel dans les 48 h avant le repas, demande d'avis le lendemain aux clients pointés venus (si un lien d'avis est
+renseigné dans les réglages),
 « une table s'est libérée » pour la liste d'attente. Le restaurateur reçoit une alerte à chaque nouvelle réservation,
 modification ou annulation par un client (adresse e-mail des réglages).
 
@@ -108,6 +110,7 @@ Nécessite une offre avec **Node.js Apps** : Business, Cloud (Startup / Professi
    | `SUPABASE_SECRET_KEY` | clé *secret* Supabase (e-mails programmés, liste d'attente) |
    | `EMAIL_FROM`, `BREVO_API_KEY` ou `RESEND_API_KEY` | envoi des e-mails (voir « E-mails aux clients ») |
    | `CRON_SECRET` | protège `/api/cron` |
+   | `NEXT_PUBLIC_LEGAL_*` | identité de l'éditeur sur les pages légales (voir `.env.example`) |
 
 4. Associer le domaine à l'application, activer le SSL, déployer.
 5. Supabase → Authentication → URL Configuration : *Site URL* = `https://votre-domaine.fr`,
