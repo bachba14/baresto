@@ -85,6 +85,11 @@ export default async function RestaurantPage({ params, searchParams }: PageProps
         <Link href="/" className="inline-flex items-center gap-1 hover:text-stone-600">
           Réservations propulsées par <span className="scale-75"><Logo /></span>
         </Link>
+        <p className="mt-1">
+          <Link href="/confidentialite" className="hover:text-stone-600">Confidentialité</Link>
+          {" · "}
+          <Link href="/mentions-legales" className="hover:text-stone-600">Mentions légales</Link>
+        </p>
       </footer>
     </div>
   );

@@ -41,8 +41,10 @@ export default function SignupPage() {
         </>
       )}
       <p className="mt-4 text-xs text-stone-400">
-        En créant un compte, vous acceptez notre{" "}
-        <Link href="/confidentialite" className="underline hover:text-stone-600">politique de confidentialité</Link>.
+        En créant un compte, vous acceptez nos{" "}
+        <Link href="/conditions" className="underline hover:text-stone-600">conditions générales</Link>, notre{" "}
+        <Link href="/confidentialite" className="underline hover:text-stone-600">politique de confidentialité</Link> et l&apos;
+        <Link href="/sous-traitance" className="underline hover:text-stone-600">accord de sous-traitance des données</Link>.
       </p>
       <p className="mt-6 text-sm text-stone-500">
         Déjà inscrit ?{" "}

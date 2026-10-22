@@ -347,11 +347,13 @@ export default function Landing() {
       <footer className="border-t border-stone-200">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-8 text-sm text-stone-500 sm:flex-row">
           <Logo />
-          <div className="flex gap-6">
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
             <Link href="/r/demo" className="transition-colors hover:text-stone-900">Démo</Link>
             <Link href="/login" className="transition-colors hover:text-stone-900">Connexion</Link>
             <Link href="/signup" className="transition-colors hover:text-stone-900">Inscription</Link>
+            <Link href="/conditions" className="transition-colors hover:text-stone-900">Conditions</Link>
             <Link href="/confidentialite" className="transition-colors hover:text-stone-900">Confidentialité</Link>
+            <Link href="/mentions-legales" className="transition-colors hover:text-stone-900">Mentions légales</Link>
           </div>
           <p>© {new Date().getFullYear()} Monkomi</p>
         </div>

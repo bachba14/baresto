@@ -29,7 +29,9 @@ export function WidgetShell({
       <div className="bg-white p-4 text-stone-800 sm:p-6 dark:bg-stone-900 dark:text-stone-100">
         {children}
         <p className="mt-6 text-center text-[11px] text-stone-400">
-          Propulsé par Monkomi
+          Propulsé par Monkomi ·{" "}
+          {/* Le widget est dans une iframe : la page s'ouvre dans un nouvel onglet. */}
+          <a href="/confidentialite" target="_blank" rel="noreferrer" className="hover:underline">Confidentialité</a>
         </p>
       </div>
       <AutoHeight frameId={params.frame ?? ""} />
