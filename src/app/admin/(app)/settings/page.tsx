@@ -8,6 +8,7 @@ import type { Closure } from "@/lib/types";
 import { cancelDeletion, closeHoliday, removeClosure, setHolidayCountry } from "./actions";
 import { ClosureForm } from "./closure-form";
 import { DeleteRestaurant } from "./delete-restaurant";
+import { SectionNav } from "./section-nav";
 import { SettingsForm } from "./settings-form";
 
 const SECTIONS = [
@@ -42,13 +43,7 @@ export default async function SettingsPage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Réglages</h1>
       {/* Navigation entre les sections de la page */}
-      <nav aria-label="Sections des réglages" className="z-20 -mx-4 flex gap-1 overflow-x-auto bg-[#faf9f7]/90 px-4 py-2 backdrop-blur md:sticky md:top-0">
-        {SECTIONS.map(([id, label]) => (
-          <a key={id} href={`#${id}`} className="shrink-0 rounded-lg px-3 py-1.5 text-sm text-stone-600 transition hover:bg-stone-900/5 hover:text-stone-900">
-            {label}
-          </a>
-        ))}
-      </nav>
+      <SectionNav sections={SECTIONS} />
       <SettingsForm restaurant={restaurant} tableCount={count ?? 0} />
 
       <section id="fermetures" className={`${cardClass} scroll-mt-20 space-y-4`}>
