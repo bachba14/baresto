@@ -1,7 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireRestaurantAction } from "@/lib/data";
+import { redirect } from "next/navigation";
+import { requireAdminAction, requireRestaurantAction } from "@/lib/data";
 import { parseList } from "@/lib/format";
 
 export async function saveCustomer(id: string, _: string | null, formData: FormData): Promise<string | null> {
@@ -28,4 +29,13 @@ export async function saveCustomer(id: string, _: string | null, formData: FormD
   if (error) return error.code === "23505" ? "Un autre client a déjà cette adresse e-mail." : error.message;
   revalidatePath("/admin", "layout");
   return "ok";
+}
+
+/** RGPD : supprime la fiche ; ses réservations passées restent anonymisées pour les statistiques. */
+export async function forgetCustomer(id: string): Promise<string | null> {
+  const { supabase } = await requireAdminAction();
+  const { error } = await supabase.rpc("forget_customer", { p_customer: id });
+  if (error) return error.code === "P0001" ? error.message : "Suppression impossible, réessayez.";
+  revalidatePath("/admin", "layout");
+  redirect("/admin/clients");
 }

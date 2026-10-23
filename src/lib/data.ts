@@ -10,8 +10,16 @@ type Supabase = Awaited<ReturnType<typeof createClient>>;
 export const getRestaurantBySlug = cache(async (slug: string): Promise<Restaurant | null> => {
   if (!/^[a-z0-9-]{3,48}$/.test(slug)) return null;
   const { data } = await createPublicClient().from("restaurants").select("*").eq("slug", slug).maybeSingle();
-  return data as Restaurant | null;
+  const restaurant = data as Restaurant | null;
+  // Suppression demandée : page publique, widgets et API répondent « introuvable ».
+  return restaurant?.deletion_requested_at ? null : restaurant;
 });
+
+/** Date de suppression définitive d'un restaurant (30 jours après la demande). */
+export function deletionDate(restaurant: Pick<Restaurant, "deletion_requested_at">) {
+  if (!restaurant.deletion_requested_at) return null;
+  return new Date(new Date(restaurant.deletion_requested_at).getTime() + 30 * 86_400_000);
+}
 
 /** Restaurant public par son adresse, ou page 404. */
 export async function getRestaurantOr404(slug: string) {

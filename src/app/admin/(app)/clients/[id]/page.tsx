@@ -6,9 +6,10 @@ import { cardClass } from "@/components/admin-styles";
 import type { Customer } from "@/lib/types";
 import { RESERVATION_SELECT, ReservationRow, type ReservationWithTables } from "../../reservations/reservation-row";
 import { CustomerForm } from "./customer-form";
+import { ForgetCustomer } from "./forget-customer";
 
 export default async function CustomerPage({ params }: PageProps<"/admin/clients/[id]">) {
-  const [{ supabase, restaurant }, { id }] = await Promise.all([requireRestaurant(), params]);
+  const [{ supabase, restaurant, isAdmin }, { id }] = await Promise.all([requireRestaurant(), params]);
   if (!/^[0-9a-f-]{36}$/.test(id)) notFound();
 
   const [{ data: customer }, { data: history }] = await Promise.all([
@@ -59,6 +60,8 @@ export default async function CustomerPage({ params }: PageProps<"/admin/clients
           </ul>
         )}
       </section>
+
+      {isAdmin && <ForgetCustomer id={c.id} name={c.name} />}
     </div>
   );
 }

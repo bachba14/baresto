@@ -135,3 +135,21 @@ export async function setHolidayCountry(country: "BE" | "FR") {
   (await cookies()).set(HOLIDAY_COUNTRY_COOKIE, country, { path: "/admin", maxAge: 60 * 60 * 24 * 365, sameSite: "lax", httpOnly: true });
   revalidatePath("/admin/settings");
 }
+
+/** Demande de suppression du restaurant : il faut retaper son nom. Définitive 30 jours plus tard (tâche programmée). */
+export async function requestDeletion(_: string | null, formData: FormData): Promise<string | null> {
+  const { supabase, restaurant } = await requireAdminAction();
+  const typed = String(formData.get("confirm") ?? "").trim().toLowerCase();
+  if (typed !== restaurant.name.trim().toLowerCase()) return `Tapez exactement le nom du restaurant : « ${restaurant.name} ».`;
+  const { error } = await supabase.rpc("request_restaurant_deletion", { p_restaurant: restaurant.id });
+  if (error) return error.code === "P0001" ? error.message : "Demande impossible, réessayez.";
+  revalidatePath("/admin", "layout");
+  return null;
+}
+
+export async function cancelDeletion() {
+  const { supabase, restaurant } = await requireAdminAction();
+  const { error } = await supabase.rpc("cancel_restaurant_deletion", { p_restaurant: restaurant.id });
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin", "layout");
+}

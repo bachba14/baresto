@@ -4,6 +4,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { emailEnabled } from "@/lib/email";
 import { emailClient, emailReview } from "@/lib/notifications";
 import { notifyWaitlist } from "@/lib/waitlist";
+import { purgeDeletedRestaurants } from "@/lib/purge";
 import { siteUrl } from "@/lib/site";
 import type { Reservation, Restaurant } from "@/lib/types";
 
@@ -24,7 +25,12 @@ async function run(request: NextRequest) {
 
   const supabase = createServiceClient();
   if (!supabase) return NextResponse.json({ error: "SUPABASE_SECRET_KEY manquante." }, { status: 500 });
-  if (!emailEnabled()) return NextResponse.json({ error: "Envoi d'e-mails non configuré (EMAIL_FROM + clé Brevo ou Resend)." }, { status: 500 });
+  // Suppressions définitives (RGPD), indépendantes de l'envoi d'e-mails.
+  const purged = await purgeDeletedRestaurants(supabase).catch((e: Error) => {
+    console.error("[purge]", e.message);
+    return 0;
+  });
+  if (!emailEnabled()) return NextResponse.json({ error: "Envoi d'e-mails non configuré (EMAIL_FROM + clé Brevo ou Resend).", purged }, { status: 500 });
 
   const base = await siteUrl();
   const [{ data: reminders, error: e1 }, { data: reviews, error: e2 }] = await Promise.all([
@@ -60,7 +66,7 @@ async function run(request: NextRequest) {
   }
 
   const sentWaitlist = await notifyWaitlist(base);
-  return NextResponse.json({ reminders: sentReminders, reviews: sentReviews, waitlist: sentWaitlist });
+  return NextResponse.json({ reminders: sentReminders, reviews: sentReviews, waitlist: sentWaitlist, purged });
 }
 
 export const GET = run;

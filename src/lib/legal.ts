@@ -22,7 +22,7 @@ export const LEGAL = {
 /** Dates de dernière mise à jour des textes (à changer à chaque modification de fond). */
 export const LEGAL_UPDATED = {
   mentions: "22 octobre 2026",
-  conditions: "22 octobre 2026",
+  conditions: "23 octobre 2026",
   confidentialite: "22 octobre 2026",
   sousTraitance: "22 octobre 2026",
 };

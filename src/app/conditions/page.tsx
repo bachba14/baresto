@@ -127,8 +127,8 @@ export default function TermsPage() {
         <ul>
           <li>Le contrat est conclu pour une durée indéterminée à partir de la création du compte.</li>
           <li>
-            Le restaurant peut y mettre fin à tout moment, sans frais, en demandant la fermeture de son compte à{" "}
-            <ContactEmail />.
+            Le restaurant peut y mettre fin à tout moment, sans frais, depuis ses Réglages (« Supprimer mon
+            restaurant ») ou en écrivant à <ContactEmail />.
           </li>
           <li>
             L&apos;éditeur peut suspendre ou fermer un compte en cas de manquement grave aux présentes conditions, après
@@ -141,8 +141,11 @@ export default function TermsPage() {
       <section>
         <h2>9. Après la fermeture du compte</h2>
         <p>
-          Le restaurant dispose de 30 jours pour exporter ses données. Elles sont ensuite supprimées définitivement, y
-          compris des sauvegardes au plus tard 30 jours plus tard, sauf obligation légale de conservation.
+          Dès la demande de fermeture, la page publique et les réservations en ligne du restaurant sont coupées. Le
+          restaurant garde l&apos;accès à son back-office pendant 30 jours pour exporter ses données (Réglages → « Exporter
+          toutes mes données ») et peut annuler sa demande. Ses données et les comptes de son équipe sont ensuite
+          supprimés définitivement, y compris des sauvegardes au plus tard 30 jours plus tard, sauf obligation légale de
+          conservation.
         </p>
       </section>
 

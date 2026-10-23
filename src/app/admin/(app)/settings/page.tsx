@@ -1,12 +1,13 @@
 import { cookies } from "next/headers";
-import { requireAdmin } from "@/lib/data";
+import { deletionDate, requireAdmin } from "@/lib/data";
 import { closureLabel, formatDate, todayIn } from "@/lib/format";
 import { countryOf, HOLIDAY_COUNTRY_COOKIE, upcomingHolidays, type Country } from "@/lib/holidays";
 import { cardClass } from "@/components/admin-styles";
 import { SubmitButton } from "@/components/admin-ui";
 import type { Closure } from "@/lib/types";
-import { closeHoliday, removeClosure, setHolidayCountry } from "./actions";
+import { cancelDeletion, closeHoliday, removeClosure, setHolidayCountry } from "./actions";
 import { ClosureForm } from "./closure-form";
+import { DeleteRestaurant } from "./delete-restaurant";
 import { SettingsForm } from "./settings-form";
 
 const SECTIONS = [
@@ -16,6 +17,7 @@ const SECTIONS = [
   ["horaires", "Horaires"],
   ["fermetures", "Fermetures"],
   ["jours-feries", "Jours fériés"],
+  ["donnees", "Vos données"],
 ] as const;
 
 export default async function SettingsPage() {
@@ -25,10 +27,13 @@ export default async function SettingsPage() {
   const saved = cookieStore.get(HOLIDAY_COUNTRY_COOKIE)?.value;
   const country: Country = saved === "BE" || saved === "FR" ? saved : countryOf(restaurant);
 
-  const [{ count }, { data }] = await Promise.all([
+  const [{ count }, { data }, { count: upcoming }] = await Promise.all([
     supabase.from("dining_tables").select("*", { count: "exact", head: true }).eq("restaurant_id", restaurant.id),
     supabase.from("closures").select("*").eq("restaurant_id", restaurant.id).gte("date", today).order("date").order("start_time", { nullsFirst: true }),
+    supabase.from("reservations").select("*", { count: "exact", head: true }).eq("restaurant_id", restaurant.id).gte("date", today)
+      .in("status", ["pending", "confirmed"]),
   ]);
+  const deletesOn = deletionDate(restaurant);
   const closures = (data ?? []) as Closure[];
   const closedDays = new Set(closures.filter((c) => !c.start_time && !c.end_time).map((c) => c.date));
   const holidays = upcomingHolidays(today, country);
@@ -111,6 +116,43 @@ export default async function SettingsPage() {
             </li>
           ))}
         </ul>
+      </section>
+
+      <section id="donnees" className={`${cardClass} scroll-mt-20 space-y-5`}>
+        <div>
+          <h2 className="font-semibold">Vos données</h2>
+          <p className="text-sm text-stone-500">Elles vous appartiennent : récupérez-les quand vous voulez.</p>
+        </div>
+
+        <div>
+          <a href="/admin/export-donnees" className="inline-block rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm font-medium transition hover:bg-stone-50">
+            ⬇ Exporter toutes mes données (Excel)
+          </a>
+          <p className="mt-1 text-xs text-stone-500">Réservations, clients, liste d&apos;attente, carte, plan de salle, fermetures et équipe.</p>
+        </div>
+
+        <div id="suppression" className="scroll-mt-20 space-y-2 border-t border-stone-100 pt-5">
+          <h3 className="font-medium text-red-700">Supprimer mon restaurant</h3>
+          {deletesOn ? (
+            <div className="space-y-3 rounded-xl bg-red-50 p-4 text-sm text-red-900 ring-1 ring-red-200">
+              <p>
+                Suppression définitive prévue le{" "}
+                <strong>{deletesOn.toLocaleDateString("fr-FR", { timeZone: restaurant.timezone, day: "numeric", month: "long", year: "numeric" })}</strong>.
+                Votre page publique et les réservations en ligne sont coupées.
+              </p>
+              <form action={cancelDeletion}>
+                <SubmitButton>Annuler la suppression</SubmitButton>
+              </form>
+            </div>
+          ) : (
+            <>
+              <p className="text-sm text-stone-500">
+                Pensez à exporter vos données avant. Vous aurez 30 jours pour changer d&apos;avis.
+              </p>
+              <DeleteRestaurant name={restaurant.name} upcoming={upcoming ?? 0} />
+            </>
+          )}
+        </div>
       </section>
     </div>
   );

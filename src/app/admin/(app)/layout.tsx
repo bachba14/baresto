@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { requireRestaurant } from "@/lib/data";
+import Link from "next/link";
+import { deletionDate, requireRestaurant } from "@/lib/data";
 import { LiveUpdates } from "./live-updates";
 import { Sidebar } from "./sidebar";
 import { ScrollReset } from "./scroll-reset";
@@ -23,6 +24,7 @@ const initials = (name: string) =>
 
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const { email, tourDone, restaurant, isAdmin } = await requireRestaurant();
+  const deletesOn = deletionDate(restaurant);
 
   return (
     <RoleProvider isAdmin={isAdmin}>
@@ -40,7 +42,21 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
       <Tour autoStart={!tourDone} />
       <NotificationsPanel />
 
-      <main className="min-w-0 flex-1 p-4 md:p-8">{children}</main>
+      <main className="min-w-0 flex-1 p-4 md:p-8">
+        {deletesOn && (
+          <p className="mb-6 rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-900 ring-1 ring-red-200">
+            Suppression du restaurant prévue le{" "}
+            <strong>{deletesOn.toLocaleDateString("fr-FR", { timeZone: restaurant.timezone, day: "numeric", month: "long" })}</strong> : page
+            publique et réservations en ligne coupées.{" "}
+            {isAdmin ? (
+              <Link href="/admin/settings#suppression" className="font-medium underline">Annuler la suppression</Link>
+            ) : (
+              "Seul un administrateur peut l'annuler."
+            )}
+          </p>
+        )}
+        {children}
+      </main>
     </div>
     </RoleProvider>
   );
