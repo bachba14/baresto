@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { getRestaurantOr404 } from "@/lib/data";
+import { getRestaurantOr404, isOnlinePaused } from "@/lib/data";
 import { addDays, todayIn } from "@/lib/format";
+import { OnlineClosed } from "@/components/public/online-closed";
 import { ReservationForm } from "@/components/public/reservation-form";
 import { WidgetShell, type WidgetParams } from "../../widget-shell";
 
@@ -17,6 +18,9 @@ export default async function ReservationWidget({ params, searchParams }: PagePr
         <h1 className="text-xl font-semibold">Réserver une table</h1>
         <p className="text-sm text-stone-500 dark:text-stone-400">{restaurant.name}</p>
       </header>
+      {isOnlinePaused(restaurant) ? (
+        <OnlineClosed phone={restaurant.phone} resumeAt={restaurant.online_resume_at} timezone={restaurant.timezone} />
+      ) : (
       <ReservationForm
         apiBase={`/api/r/${restaurant.slug}`}
         minDate={today}
@@ -30,6 +34,7 @@ export default async function ReservationWidget({ params, searchParams }: PagePr
         initialDate={query.date}
         initialParty={Number(query.party) || undefined}
       />
+      )}
     </WidgetShell>
   );
 }

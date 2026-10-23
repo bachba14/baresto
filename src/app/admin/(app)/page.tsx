@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import Link from "next/link";
-import { requireRestaurant } from "@/lib/data";
+import { isOnlinePaused, pauseLabel, requireRestaurant } from "@/lib/data";
+import { resumeOnline } from "./settings/actions";
 import { addDays, DAYS, formatDate, formatTime, nowMinutesIn, STATUS_LABELS, todayIn } from "@/lib/format";
 import { mealMinutes } from "@/lib/calendar";
 import { toMinutes } from "@/lib/floor";
@@ -98,6 +99,18 @@ export default async function Dashboard({ searchParams }: PageProps<"/admin">) {
       </header>
 
       <NotificationsNudge />
+
+      {isOnlinePaused(restaurant) && (
+        <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-900 ring-1 ring-amber-200">
+          <span aria-hidden>⏸</span>
+          <p className="min-w-0 flex-1">{pauseLabel(restaurant)}</p>
+          {isAdmin && (
+            <form action={resumeOnline}>
+              <SubmitButton className="rounded-lg px-3 py-1.5 text-xs">Rouvrir maintenant</SubmitButton>
+            </form>
+          )}
+        </div>
+      )}
 
       {/* Chiffres clés */}
       <div className="grid gap-4 sm:grid-cols-3">

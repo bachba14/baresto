@@ -1,9 +1,10 @@
 import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getPublicMenu, getRestaurantOr404 } from "@/lib/data";
+import { getPublicMenu, getRestaurantOr404, isOnlinePaused } from "@/lib/data";
 import { addDays, DAY_ORDER, DAYS, formatTime, todayIn } from "@/lib/format";
 import { MenuList } from "@/components/public/menu-list";
+import { OnlineClosed } from "@/components/public/online-closed";
 import { ReservationForm } from "@/components/public/reservation-form";
 import { Logo } from "@/components/logo";
 
@@ -49,6 +50,9 @@ export default async function RestaurantPage({ params, searchParams }: PageProps
         <aside className="order-1 space-y-6 lg:order-2">
           <div id="reserver" className="rounded-2xl bg-white p-4 shadow-sm sm:p-6 lg:sticky lg:top-6">
             <h2 className="mb-4 text-xl font-bold">Réserver une table</h2>
+            {isOnlinePaused(restaurant) ? (
+              <OnlineClosed phone={restaurant.phone} resumeAt={restaurant.online_resume_at} timezone={restaurant.timezone} />
+            ) : (
             <ReservationForm
               apiBase={`/api/r/${restaurant.slug}`}
               minDate={today}
@@ -62,6 +66,7 @@ export default async function RestaurantPage({ params, searchParams }: PageProps
               initialDate={typeof query.date === "string" ? query.date : undefined}
               initialParty={Number(query.party) || undefined}
             />
+            )}
           </div>
 
           <div className="rounded-2xl bg-white p-4 text-sm shadow-sm sm:p-6">

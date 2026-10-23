@@ -1,17 +1,19 @@
 import { cookies } from "next/headers";
-import { deletionDate, requireAdmin } from "@/lib/data";
-import { closureLabel, formatDate, todayIn } from "@/lib/format";
+import { deletionDate, isOnlinePaused, pauseLabel, requireAdmin } from "@/lib/data";
+import { addDays, closureLabel, formatDate, todayIn } from "@/lib/format";
 import { countryOf, HOLIDAY_COUNTRY_COOKIE, upcomingHolidays, type Country } from "@/lib/holidays";
 import { cardClass } from "@/components/admin-styles";
 import { SubmitButton } from "@/components/admin-ui";
 import type { Closure } from "@/lib/types";
-import { cancelDeletion, closeHoliday, removeClosure, setHolidayCountry } from "./actions";
+import { cancelDeletion, closeHoliday, removeClosure, resumeOnline, setHolidayCountry } from "./actions";
+import { PauseOnlineForm } from "./pause-online";
 import { ClosureForm } from "./closure-form";
 import { DeleteRestaurant } from "./delete-restaurant";
 import { SectionNav } from "./section-nav";
 import { SettingsForm } from "./settings-form";
 
 const SECTIONS = [
+  ["pause", "Pause en ligne"],
   ["etablissement", "Établissement"],
   ["reservations-en-ligne", "Réservations en ligne"],
   ["e-mails", "E-mails"],
@@ -44,6 +46,26 @@ export default async function SettingsPage() {
       <h1 className="text-2xl font-bold">Réglages</h1>
       {/* Navigation entre les sections de la page */}
       <SectionNav sections={SECTIONS} />
+
+      <section id="pause" className={`${cardClass} scroll-mt-20 space-y-3`}>
+        <div>
+          <h2 className="font-semibold">Mettre en pause les réservations en ligne</h2>
+          <p className="text-sm text-stone-500">
+            Cuisine en panne, privatisation, salle complète… Votre page et vos widgets affichent « momentanément fermées »
+            avec votre téléphone. Vous pouvez toujours ajouter des réservations vous-même.
+          </p>
+        </div>
+        {isOnlinePaused(restaurant) ? (
+          <div className="flex flex-wrap items-center gap-3 rounded-xl bg-amber-50 p-4 text-sm text-amber-900 ring-1 ring-amber-200">
+            <p className="min-w-0 flex-1">⏸ {pauseLabel(restaurant)}</p>
+            <form action={resumeOnline}>
+              <SubmitButton>Rouvrir maintenant</SubmitButton>
+            </form>
+          </div>
+        ) : (
+          <PauseOnlineForm phone={restaurant.phone} defaultUntil={`${addDays(today, 1)}T10:00`} />
+        )}
+      </section>
       <SettingsForm restaurant={restaurant} tableCount={count ?? 0} />
 
       <section id="fermetures" className={`${cardClass} scroll-mt-20 space-y-4`}>

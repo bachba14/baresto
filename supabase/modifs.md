@@ -19,7 +19,8 @@
 - **Critère d'acceptation** : aucune réservation passée ne reste « Confirmée » ou « En attente » sans signalement visible.
 - **Décision** : option (b).
 
-### [ ] 2. Mettre en pause les réservations en ligne (ex-point 22)
+### [x] 2. Mettre en pause les réservations en ligne (ex-point 22)
+- **Fait le 23/10/2026** : Réglages → « Pause en ligne » (admins), jusqu'à réouverture manuelle ou réouverture automatique à une date ; page publique et widget affichent « momentanément fermées » avec le téléphone ; modifications en ligne des clients bloquées, annulations possibles ; bandeau sur le tableau de bord ; refus aussi en base (`0012_pause_en_ligne.sql`).
 - **Déjà fait** : le badge sous le nom du restaurant s'appelle maintenant « Mises à jour en direct » et a une infobulle. Il indique que le back-office se met à jour tout seul, pas que les réservations en ligne sont ouvertes.
 - **À décider** : un interrupteur « Mettre en pause les réservations en ligne » (avec confirmation). C'est une nouvelle fonctionnalité :
   - un champ en base ;

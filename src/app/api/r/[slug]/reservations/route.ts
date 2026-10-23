@@ -1,7 +1,7 @@
 import { after, NextResponse, type NextRequest } from "next/server";
 import { createBookingClient } from "@/lib/supabase/server";
 import { DISPOSABLE_REFUSED, hasLink, isDisposableEmail, LINK_REFUSED } from "@/lib/spam";
-import { getRestaurantBySlug } from "@/lib/data";
+import { getRestaurantBySlug, isOnlinePaused, ONLINE_PAUSED } from "@/lib/data";
 import { isValidDate } from "@/lib/format";
 import { CORS_HEADERS } from "@/lib/cors";
 import { emailClient, emailRestaurant } from "@/lib/notifications";
@@ -26,6 +26,7 @@ export async function POST(request: NextRequest, ctx: RouteContext<"/api/r/[slug
 
   const restaurant = await getRestaurantBySlug((await ctx.params).slug);
   if (!restaurant) return fail("Restaurant introuvable.", 404);
+  if (isOnlinePaused(restaurant)) return fail(ONLINE_PAUSED, 409);
 
   let body: Record<string, unknown>;
   try {

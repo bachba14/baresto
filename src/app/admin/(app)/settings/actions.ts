@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { HOLIDAY_COUNTRY_COOKIE } from "@/lib/holidays";
 import { requireAdminAction } from "@/lib/data";
-import { addDays, isValidDate } from "@/lib/format";
+import { addDays, isValidDate, zonedToUtc } from "@/lib/format";
 import type { OpeningHours } from "@/lib/types";
 
 const TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
@@ -152,4 +152,36 @@ export async function cancelDeletion() {
   const { error } = await supabase.rpc("cancel_restaurant_deletion", { p_restaurant: restaurant.id });
   if (error) throw new Error(error.message);
   revalidatePath("/admin", "layout");
+}
+
+export type PauseState = { error?: string } | null;
+
+/** Pause des réservations en ligne : jusqu'à réouverture manuelle, ou jusqu'à une date (heure du restaurant). */
+export async function pauseOnline(_: PauseState, formData: FormData): Promise<PauseState> {
+  const { supabase, restaurant } = await requireAdminAction();
+  let resumeAt: string | null = null;
+  if (formData.get("mode") === "until") {
+    const [date, time] = String(formData.get("until") ?? "").split("T");
+    if (!isValidDate(date) || !TIME.test(time ?? "")) return { error: "Indiquez la date et l'heure de réouverture." };
+    const at = zonedToUtc(date, time, restaurant.timezone);
+    if (at.getTime() <= Date.now()) return { error: "La réouverture doit être dans le futur." };
+    if (at.getTime() > Date.now() + 365 * 86_400_000) return { error: "Réouverture dans moins d'un an, ou choisissez « jusqu'à ce que je rouvre »." };
+    resumeAt = at.toISOString();
+  }
+  const { error } = await supabase
+    .from("restaurants")
+    .update({ online_paused_at: new Date().toISOString(), online_resume_at: resumeAt })
+    .eq("id", restaurant.id);
+  if (error) return { error: "Mise en pause impossible, réessayez." };
+  revalidatePath("/admin", "layout");
+  revalidatePath(`/r/${restaurant.slug}`);
+  return null;
+}
+
+export async function resumeOnline() {
+  const { supabase, restaurant } = await requireAdminAction();
+  const { error } = await supabase.from("restaurants").update({ online_paused_at: null, online_resume_at: null }).eq("id", restaurant.id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin", "layout");
+  revalidatePath(`/r/${restaurant.slug}`);
 }

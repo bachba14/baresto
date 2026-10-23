@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 import { after } from "next/server";
 import { clientIp, rateLimited, TOO_MANY } from "@/lib/rate-limit";
 import { createPublicClient } from "@/lib/supabase/server";
-import { getReservationByToken } from "@/lib/data";
+import { getReservationByToken, isOnlinePaused } from "@/lib/data";
 import { isValidDate } from "@/lib/format";
 import { emailClient, emailRestaurant } from "@/lib/notifications";
 import { pushReservation } from "@/lib/push";
@@ -22,6 +22,8 @@ async function tooMany() {
 export async function loadSlots(token: string, date: string, party: number) {
   if (rateLimited(`slots:${clientIp(await headers())}`, [[60, 60_000]])) return [];
   if (!isValidDate(date) || !Number.isInteger(party) || party < 1 || party > 50) return [];
+  const current = await getReservationByToken(token);
+  if (current && isOnlinePaused(current.restaurant)) return [];
   const { data } = await createPublicClient().rpc("availability_for_token", {
     p_token: token,
     p_date: date,
@@ -59,6 +61,8 @@ export async function modifyReservation(token: string, date: string, time: strin
   if (!Number.isInteger(party) || party < 1 || party > 50) return "Nombre de personnes invalide.";
   const before = await getReservationByToken(token);
   if (!before) return "Réservation introuvable.";
+  // Pause : modifier revient à réserver un autre créneau ; l'annulation reste possible.
+  if (isOnlinePaused(before.restaurant)) return "Les modifications en ligne sont momentanément fermées. Merci d'appeler le restaurant.";
 
   const { data: status, error } = await createPublicClient().rpc("modify_reservation_by_token", {
     p_token: token,

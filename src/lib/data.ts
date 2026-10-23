@@ -15,6 +15,23 @@ export const getRestaurantBySlug = cache(async (slug: string): Promise<Restauran
   return restaurant?.deletion_requested_at ? null : restaurant;
 });
 
+/** Réservations en ligne en pause (même règle que online_paused() en SQL). */
+export function isOnlinePaused(restaurant: Pick<Restaurant, "online_paused_at" | "online_resume_at">) {
+  if (!restaurant.online_paused_at) return false;
+  return !restaurant.online_resume_at || new Date(restaurant.online_resume_at) > new Date();
+}
+
+/** « Réservations en ligne en pause jusqu'à… » pour le back-office. */
+export function pauseLabel(restaurant: Pick<Restaurant, "online_resume_at" | "timezone">) {
+  if (!restaurant.online_resume_at) return "Réservations en ligne en pause jusqu'à ce que vous les rouvriez.";
+  const until = new Date(restaurant.online_resume_at).toLocaleString("fr-FR", {
+    timeZone: restaurant.timezone, weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit",
+  });
+  return `Réservations en ligne en pause, réouverture automatique ${until}.`;
+}
+
+export const ONLINE_PAUSED ="Les réservations en ligne sont momentanément fermées. Merci d'appeler le restaurant.";
+
 /** Date de suppression définitive d'un restaurant (30 jours après la demande). */
 export function deletionDate(restaurant: Pick<Restaurant, "deletion_requested_at">) {
   if (!restaurant.deletion_requested_at) return null;

@@ -35,6 +35,10 @@ export type Restaurant = {
   cancel_deadline_hours: number;
   /** Suppression demandée : site public coupé, suppression définitive 30 jours plus tard (annulable). */
   deletion_requested_at: string | null;
+  /** Réservations en ligne en pause depuis cette date (null : ouvertes). */
+  online_paused_at: string | null;
+  /** Réouverture automatique (null : jusqu'à réouverture manuelle). */
+  online_resume_at: string | null;
 };
 
 /** Fermeture exceptionnelle : journée entière si start_time et end_time sont vides. */

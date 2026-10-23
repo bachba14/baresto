@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createBookingClient } from "@/lib/supabase/server";
-import { getRestaurantBySlug } from "@/lib/data";
+import { getRestaurantBySlug, isOnlinePaused } from "@/lib/data";
 import { isValidDate } from "@/lib/format";
 import { CORS_HEADERS } from "@/lib/cors";
 import { clientIp, rateLimited, TOO_MANY } from "@/lib/rate-limit";
@@ -19,6 +19,10 @@ export async function GET(request: NextRequest, ctx: RouteContext<"/api/r/[slug]
   const date = request.nextUrl.searchParams.get("date");
   const party = Math.min(50, Math.max(1, Number(request.nextUrl.searchParams.get("party")) || 1));
   if (!isValidDate(date)) return fail("Paramètre date invalide (AAAA-MM-JJ).", 400);
+  // Pause : aucun créneau proposé.
+  if (isOnlinePaused(restaurant)) {
+    return NextResponse.json({ date, slots: [], paused: true }, { headers: { ...CORS_HEADERS, "Cache-Control": "no-store" } });
+  }
 
   const { data, error } = await createBookingClient().rpc("get_availability", {
     p_restaurant: restaurant.id,
