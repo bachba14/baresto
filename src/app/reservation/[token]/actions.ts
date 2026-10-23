@@ -8,6 +8,7 @@ import { createPublicClient } from "@/lib/supabase/server";
 import { getReservationByToken } from "@/lib/data";
 import { isValidDate } from "@/lib/format";
 import { emailClient, emailRestaurant } from "@/lib/notifications";
+import { pushReservation } from "@/lib/push";
 import { notifyWaitlist } from "@/lib/waitlist";
 import { siteUrl } from "@/lib/site";
 import type { ReservationStatus, Slot } from "@/lib/types";
@@ -43,6 +44,7 @@ export async function cancelReservation(token: string): Promise<string | null> {
     Promise.all([
       emailClient("cancelled", r, restaurant, base),
       emailRestaurant("cancelled", r, restaurant, base),
+      pushReservation("cancelled", r, restaurant),
       // La table libérée peut servir à quelqu'un en liste d'attente.
       notifyWaitlist(base, { restaurantId: restaurant.id, date: r.date }),
     ]),
@@ -73,6 +75,7 @@ export async function modifyReservation(token: string, date: string, time: strin
     Promise.all([
       emailClient("modified", r, restaurant, base),
       emailRestaurant("modified", r, restaurant, base),
+      pushReservation("modified", r, restaurant),
       notifyWaitlist(base, { restaurantId: restaurant.id, date: reservation.date }),
     ]),
   );

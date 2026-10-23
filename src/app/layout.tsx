@@ -21,6 +21,8 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: { default: "Monkomi", template: "%s · Monkomi" },
   description: "Carte et réservations en ligne pour votre restaurant.",
+  // Application ajoutée à l'écran d'accueil de l'iPhone : plein écran, nom court.
+  appleWebApp: { capable: true, title: "Monkomi", statusBarStyle: "default" },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

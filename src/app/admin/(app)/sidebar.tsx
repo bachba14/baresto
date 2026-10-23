@@ -8,6 +8,7 @@ import { LiveIndicator } from "./live-updates";
 import { openNewReservation } from "./new-reservation";
 import { openTour } from "./tour";
 import { useIsAdmin } from "./role";
+import { openNotifications } from "./notifications";
 
 
 /** Icônes au trait (24 × 24). */
@@ -54,6 +55,7 @@ const ICONS = {
   ),
   code: <path d="m8 7-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16" />,
   upload: <path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4" />,
+  bell: <path d="M6 9a6 6 0 1 1 12 0c0 5 2 6.5 2 6.5H4S6 14 6 9M10 19.5a2 2 0 0 0 4 0" />,
   team: (
     <>
       <path d="M12 3 4.5 6v5.5c0 4.6 3.2 8.4 7.5 9.5 4.3-1.1 7.5-4.9 7.5-9.5V6z" />
@@ -213,6 +215,10 @@ export function Sidebar({
             <span className={iconClass(false)}><Icon name="external" /></span>
             <Label>Ma page publique</Label>
           </a>
+          <button type="button" onClick={openNotifications} className={`${linkClass(false)} w-full`}>
+            <span className={iconClass(false)}><Icon name="bell" /></span>
+            <Label>Notifications</Label>
+          </button>
           <button type="button" onClick={openTour} className={`${linkClass(false)} w-full`}>
             <span className={iconClass(false)}><Icon name="help" /></span>
             <Label>Revoir le tuto</Label>
@@ -240,6 +246,9 @@ export function Sidebar({
           </Link>
           <div className="flex items-center gap-2">
             <button type="button" onClick={() => openNewReservation()} data-tour="new-reservation" className="flex h-10 items-center rounded-lg bg-stone-900 px-3 text-sm font-medium text-white" aria-label="Nouvelle réservation">+ Résa</button>
+            <button type="button" onClick={openNotifications} aria-label="Notifications" className="rounded-lg p-1.5 text-stone-500 hover:bg-stone-900/5 hover:text-stone-900">
+              <Icon name="bell" />
+            </button>
             <button type="button" onClick={openTour} aria-label="Revoir le tuto" className="rounded-lg p-1.5 text-stone-500 hover:bg-stone-900/5 hover:text-stone-900">
               <Icon name="help" />
             </button>

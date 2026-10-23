@@ -113,6 +113,7 @@ Nécessite une offre avec **Node.js Apps** : Business, Cloud (Startup / Professi
    | `EMAIL_FROM`, `BREVO_API_KEY` ou `RESEND_API_KEY` | envoi des e-mails (voir « E-mails aux clients ») |
    | `CRON_SECRET` | protège `/api/cron` |
    | `NEXT_PUBLIC_LEGAL_*` | identité de l'éditeur sur les pages légales (voir `.env.example`) |
+   | `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | notifications sur téléphone (`npx web-push generate-vapid-keys`) |
 
 4. Associer le domaine à l'application, activer le SSL, déployer.
 5. Supabase → Authentication → URL Configuration : *Site URL* = `https://votre-domaine.fr`,

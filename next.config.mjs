@@ -37,6 +37,15 @@ const nextConfig = {
         ],
       },
       {
+        // Service worker des notifications : toujours la dernière version, limité au site lui-même.
+        source: "/sw.js",
+        headers: [
+          { key: "Content-Type", value: "application/javascript; charset=utf-8" },
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+          { key: "Content-Security-Policy", value: "default-src 'self'; script-src 'self'" },
+        ],
+      },
+      {
         source: "/embed.js",
         headers: [
           { key: "Access-Control-Allow-Origin", value: "*" },

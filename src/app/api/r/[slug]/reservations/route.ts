@@ -5,6 +5,7 @@ import { getRestaurantBySlug } from "@/lib/data";
 import { isValidDate } from "@/lib/format";
 import { CORS_HEADERS } from "@/lib/cors";
 import { emailClient, emailRestaurant } from "@/lib/notifications";
+import { pushReservation } from "@/lib/push";
 import { siteUrl } from "@/lib/site";
 import { calendarLinks } from "@/lib/calendar";
 import { clientIp, rateLimited, TOO_MANY } from "@/lib/rate-limit";
@@ -74,6 +75,7 @@ export async function POST(request: NextRequest, ctx: RouteContext<"/api/r/[slug
     Promise.all([
       emailClient(row.status === "confirmed" ? "confirmed" : "received", reservation, restaurant, base),
       emailRestaurant("new", reservation, restaurant, base),
+      pushReservation("new", reservation, restaurant),
     ]),
   );
 

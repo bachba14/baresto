@@ -13,6 +13,7 @@ import { markPastAsCame, updateStatus } from "./reservations/actions";
 import { RESERVATION_SELECT, type ReservationWithTables } from "./reservations/reservation-row";
 import { PERIODS, Stats } from "./stats";
 import { NewReservationButton } from "./new-reservation";
+import { NotificationsNudge } from "./notifications";
 
 const STATUS_DOT: Record<string, string> = {
   pending: "bg-amber-500",
@@ -95,6 +96,8 @@ export default async function Dashboard({ searchParams }: PageProps<"/admin">) {
         </div>
         <NewReservationButton className="rounded-xl bg-stone-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-700" />
       </header>
+
+      <NotificationsNudge />
 
       {/* Chiffres clés */}
       <div className="grid gap-4 sm:grid-cols-3">

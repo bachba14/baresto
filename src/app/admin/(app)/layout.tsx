@@ -7,6 +7,7 @@ import { NewReservationPanel } from "./new-reservation";
 import { Toaster } from "@/components/toaster";
 import { Tour } from "./tour";
 import { RoleProvider } from "./role";
+import { NotificationsPanel } from "./notifications";
 import { todayIn } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Back-office", robots: { index: false } };
@@ -37,6 +38,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
       <NewReservationPanel today={todayIn(restaurant.timezone)} />
       <Toaster />
       <Tour autoStart={!tourDone} />
+      <NotificationsPanel />
 
       <main className="min-w-0 flex-1 p-4 md:p-8">{children}</main>
     </div>
