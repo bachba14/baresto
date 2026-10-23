@@ -20,7 +20,7 @@ export function deadlineText(r: Pick<Reservation, "date" | "time">, hours: numbe
   return `${formatDate(date)} à ${formatTime(time)}`;
 }
 
-function layout(restaurant: Restaurant, body: string, button?: { href: string; label: string }) {
+function layout(restaurant: Restaurant, body: string, button?: { href: string; label: string }, footer = "Réservation gérée avec Monkomi") {
   const color = /^#[0-9a-f]{6}$/i.test(restaurant.primary_color) ? restaurant.primary_color : "#b45309";
   const contact = [
     restaurant.address && esc([restaurant.address, restaurant.city].filter(Boolean).join(", ")),
@@ -35,7 +35,7 @@ ${button ? `<p style="margin:24px 0 8px"><a href="${esc(button.href)}" style="di
 </td></tr>
 ${contact ? `<tr><td style="padding:16px 24px;border-top:1px solid #e7e5e4;font-size:13px;color:#78716c">${contact}</td></tr>` : ""}
 </table>
-<p style="font-size:11px;color:#a8a29e;margin-top:12px">Réservation gérée avec Monkomi</p>
+<p style="font-size:11px;color:#a8a29e;margin-top:12px">${esc(footer)}</p>
 </td></tr></table></body></html>`;
 }
 
@@ -157,5 +157,22 @@ export async function emailWaitlist(entry: WaitlistEntry, times: string[], resta
     replyTo: restaurant.email,
     subject: `Une table s'est libérée le ${formatDate(entry.date)}`,
     html: layout(restaurant, body, { href: link, label: "Réserver maintenant" }),
+  });
+}
+
+/** Invitation à rejoindre l'équipe d'un restaurant sur Monkomi (lien valable 7 jours). */
+export async function emailInvitation(to: string, role: "owner" | "staff", link: string, restaurant: Restaurant, invitedBy?: string) {
+  const roleText = role === "owner" ? "administrateur" : "membre de l'équipe";
+  const body = `<p>Bonjour,</p>
+<p>${invitedBy ? `${esc(invitedBy)} vous invite` : "Vous êtes invité"} à rejoindre <strong>${esc(restaurant.name)}</strong> sur Monkomi,
+en tant que ${roleText}, pour gérer les réservations et le service.</p>
+<p>Cliquez sur le bouton pour choisir votre mot de passe (ou vous connecter si vous avez déjà un compte).
+Ce lien est valable 7 jours.</p>`;
+  return sendEmail({
+    to,
+    fromName: restaurant.name,
+    replyTo: restaurant.email,
+    subject: `Invitation à rejoindre ${restaurant.name} sur Monkomi`,
+    html: layout(restaurant, body, { href: link, label: "Rejoindre l'équipe" }, "Monkomi · réservations pour restaurants"),
   });
 }

@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { getMyRestaurant, requireRestaurantAction } from "@/lib/data";
+import { ADMIN_ONLY, getMyRestaurant, requireAdminAction } from "@/lib/data";
 import { createPublicClient } from "@/lib/supabase/server";
 import type { OpeningHours } from "@/lib/types";
 
@@ -24,7 +24,8 @@ export async function checkSlug(slug: string): Promise<"ok" | "taken" | "invalid
 
 // 1. Le restaurant
 export async function saveRestaurantStep(_: StepState, formData: FormData): Promise<StepState> {
-  const { supabase, restaurant } = await getMyRestaurant();
+  const { supabase, restaurant, isAdmin } = await getMyRestaurant();
+  if (restaurant && !isAdmin) return { error: ADMIN_ONLY };
   const name = text(formData, "name");
   const slug = String(formData.get("slug") ?? "").trim().toLowerCase();
   if (!name || name.length < 2) return { error: "Indiquez le nom de votre restaurant." };
@@ -55,7 +56,7 @@ export async function saveRestaurantStep(_: StepState, formData: FormData): Prom
 
 // 2. Horaires
 export async function saveHoursStep(hours: OpeningHours, slotMinutes: number): Promise<StepState> {
-  const { supabase, restaurant } = await requireRestaurantAction();
+  const { supabase, restaurant } = await requireAdminAction();
   for (const ranges of Object.values(hours)) {
     for (const r of ranges) {
       if (!TIME.test(r.start) || !TIME.test(r.end) || r.end < r.start) return { error: `Service mal défini : ${r.start} → ${r.end}.` };
@@ -72,7 +73,7 @@ export async function saveHoursStep(hours: OpeningHours, slotMinutes: number): P
 
 // 3. Tables : sans plan, une simple limite de couverts par créneau
 export async function skipTablesStep(maxCovers: number): Promise<StepState> {
-  const { supabase, restaurant } = await requireRestaurantAction();
+  const { supabase, restaurant } = await requireAdminAction();
   if (!(maxCovers >= 1 && maxCovers <= 1000)) return { error: "Nombre de couverts invalide." };
   const { error } = await supabase.from("restaurants").update({ max_covers_per_slot: maxCovers }).eq("id", restaurant.id);
   if (error) return { error: error.message };
@@ -81,7 +82,7 @@ export async function skipTablesStep(maxCovers: number): Promise<StepState> {
 
 // 4. Carte
 export async function menuStep(withExample: boolean): Promise<StepState> {
-  const { supabase, restaurant } = await requireRestaurantAction();
+  const { supabase, restaurant } = await requireAdminAction();
   if (withExample) {
     const { count } = await supabase
       .from("menu_categories")
@@ -97,7 +98,7 @@ export async function menuStep(withExample: boolean): Promise<StepState> {
 
 // 5. Règles de réservation → fin
 export async function finishStep(_: StepState, formData: FormData): Promise<StepState> {
-  const { supabase, restaurant } = await requireRestaurantAction();
+  const { supabase, restaurant } = await requireAdminAction();
   const int = (k: string, min: number, max: number) => {
     const n = Number(formData.get(k));
     return Number.isInteger(n) && n >= min && n <= max ? n : null;

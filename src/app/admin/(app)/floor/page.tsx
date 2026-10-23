@@ -1,4 +1,4 @@
-import { getFloor, requireRestaurant } from "@/lib/data";
+import { getFloor, requireAdmin } from "@/lib/data";
 import { cardClass, inputClass } from "@/components/admin-styles";
 import { SubmitButton } from "@/components/admin-ui";
 import { createRoom } from "./actions";
@@ -6,7 +6,7 @@ import { FloorEditor } from "./floor-editor";
 import { QuickSetup } from "./quick-setup";
 
 export default async function FloorPage({ searchParams }: PageProps<"/admin/floor">) {
-  const [{ supabase, restaurant }, params] = await Promise.all([requireRestaurant(), searchParams]);
+  const [{ supabase, restaurant }, params] = await Promise.all([requireAdmin(), searchParams]);
   const { rooms, tables } = await getFloor(supabase, restaurant.id);
   const roomParam = typeof params.room === "string" ? params.room : undefined;
   const current = rooms.find((r) => r.id === roomParam) ?? rooms[0];

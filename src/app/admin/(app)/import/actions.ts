@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireRestaurantAction } from "@/lib/data";
+import { requireAdminAction } from "@/lib/data";
 import { todayIn } from "@/lib/format";
 import { fullName, isEmail, parseDate, parseStatus, parseTime, phoneKey, readImportFile, text, type RawRow } from "@/lib/import";
 import type { ReservationStatus } from "@/lib/types";
@@ -82,7 +82,7 @@ export async function importFile(_: ImportResult, formData: FormData): Promise<I
   const empty = { mode, reservations: { valid: 0, upcoming: 0, past: 0, duplicates: 0 }, customers: { created: 0, updated: 0 }, problems: [] } as const;
   const fail = (error: string): ImportResult => ({ ...empty, problems: [], error });
 
-  const { supabase, restaurant } = await requireRestaurantAction();
+  const { supabase, restaurant } = await requireAdminAction();
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) return fail("Choisissez un fichier Excel (.xlsx) ou CSV.");
   if (file.size > 5 * 1024 * 1024) return fail("Fichier trop lourd (5 Mo maximum). Découpez-le en plusieurs fichiers.");

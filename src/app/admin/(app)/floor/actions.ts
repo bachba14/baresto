@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireRestaurantAction } from "@/lib/data";
+import { requireAdminAction } from "@/lib/data";
 import { tableSize } from "@/lib/floor";
 import type { DiningTable, Room, TableShape } from "@/lib/types";
 
@@ -39,7 +39,7 @@ export async function saveRoom(
   tables: Partial<DiningTable>[],
 ): Promise<{ error: string } | { tables: DiningTable[] }> {
   try {
-    const { supabase, restaurant } = await requireRestaurantAction();
+    const { supabase, restaurant } = await requireAdminAction();
     const width = Number(room.width);
     const depth = Number(room.depth);
     if (!(width >= 2 && width <= 100 && depth >= 2 && depth <= 100)) throw new Error("Dimensions de salle invalides (2 à 100 m).");
@@ -87,7 +87,7 @@ export async function saveRoom(
 }
 
 export async function createRoom(formData: FormData) {
-  const { supabase, restaurant } = await requireRestaurantAction();
+  const { supabase, restaurant } = await requireAdminAction();
   const name = String(formData.get("name") ?? "").trim() || "Nouvelle salle";
   const { count } = await supabase
     .from("rooms")
@@ -101,7 +101,7 @@ export async function createRoom(formData: FormData) {
 }
 
 export async function deleteRoom(id: string) {
-  const { supabase } = await requireRestaurantAction();
+  const { supabase } = await requireAdminAction();
   const { error } = await supabase.from("rooms").delete().eq("id", id);
   if (error) throw new Error(error.message);
   done();
@@ -121,7 +121,7 @@ export async function quickSetup(
   replaceAll: boolean,
 ): Promise<string | null> {
   try {
-    const { supabase, restaurant } = await requireRestaurantAction();
+    const { supabase, restaurant } = await requireAdminAction();
     const list = groups
       .filter((g) => g.count > 0 && g.seats > 0)
       .flatMap((g) => Array.from({ length: Math.min(100, Math.round(g.count)) }, () => Math.min(30, Math.round(g.seats))))

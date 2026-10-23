@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { markTourDone } from "./tour-actions";
+import { useIsAdmin } from "./role";
 
 const OPEN_EVENT = "monkomi:tour";
 /** Repli local : évite de revoir la visite si l'enregistrement sur le compte a échoué. */
@@ -23,6 +24,8 @@ type Step = {
   emoji: string;
   title: string;
   text: string;
+  /** Étape montrée seulement aux administrateurs ou seulement aux employés. */
+  only?: "admin" | "staff";
 };
 
 const STEPS: Step[] = [
@@ -61,6 +64,7 @@ const STEPS: Step[] = [
     text: "Toutes vos réservations, jour par jour ou sur le mois. Cliquez sur une réservation pour la modifier, la confirmer ou l'annuler.",
   },
   {
+    only: "admin",
     target: "group-suivi",
     fallback: "nav-/admin/clients",
     page: "/admin/clients",
@@ -69,24 +73,42 @@ const STEPS: Step[] = [
     text: "Votre fichier clients se remplit tout seul (habitués, allergies, notes…) et les statistiques montrent comment évolue votre activité.",
   },
   {
+    only: "staff",
+    target: "nav-/admin/clients",
+    page: "/admin/clients",
+    emoji: "📇",
+    title: "Clients",
+    text: "Les fiches des clients : habitués, allergies, préférences. Ajoutez une note dès que vous apprenez quelque chose d'utile pour la prochaine visite.",
+  },
+  {
+    only: "admin",
     target: "group-restaurant",
     fallback: "nav-/admin/menu",
     page: "/admin/floor",
     emoji: "🪑",
     title: "Votre restaurant",
-    text: "Mettez votre carte en ligne, dessinez votre plan de salle et ajustez vos horaires ou jours de fermeture dans les Réglages.",
+    text: "Mettez votre carte en ligne, dessinez votre plan de salle, ajustez vos horaires dans les Réglages et invitez votre équipe.",
   },
   {
+    only: "admin",
     target: "public-page",
     emoji: "🔗",
     title: "Votre page de réservation",
     text: "C'est la page que voient vos clients. Partagez son lien sur Google, Instagram ou Facebook pour recevoir des réservations en ligne.",
   },
   {
+    only: "admin",
     page: "/admin",
     emoji: "🎉",
     title: "C'est parti !",
     text: "Premier conseil : dessinez votre plan de salle, puis faites une réservation test depuis votre page publique. Ce tuto reste disponible via « Revoir le tuto » dans le menu.",
+  },
+  {
+    only: "staff",
+    page: "/admin",
+    emoji: "🎉",
+    title: "C'est parti !",
+    text: "Vous avez l'essentiel pour le service. Ce tuto reste disponible via « Revoir le tuto » dans le menu.",
   },
 ];
 
@@ -134,8 +156,10 @@ export function Tour({ autoStart }: { autoStart: boolean }) {
     if (autoStart) void markTourDone().catch(() => {});
   }, [autoStart]);
 
-  const current = step === null ? null : STEPS[step];
-  const last = step === STEPS.length - 1;
+  const isAdmin = useIsAdmin();
+  const steps = STEPS.filter((s) => !s.only || (s.only === "admin") === isAdmin);
+  const current = step === null ? null : steps[step];
+  const last = step === steps.length - 1;
   const next = useCallback(() => (last ? close() : setStep((s) => (s ?? 0) + 1)), [last, close]);
   const prev = useCallback(() => setStep((s) => Math.max(0, (s ?? 0) - 1)), []);
 
@@ -220,8 +244,8 @@ export function Tour({ autoStart }: { autoStart: boolean }) {
           </div>
         </div>
 
-        <div className="mt-4 flex gap-1" aria-label={`Étape ${step + 1} sur ${STEPS.length}`}>
-          {STEPS.map((_, i) => (
+        <div className="mt-4 flex gap-1" aria-label={`Étape ${step + 1} sur ${steps.length}`}>
+          {steps.map((_, i) => (
             <span key={i} className={`h-1.5 rounded-full transition-all ${i === step ? "w-4 bg-amber-500" : "w-1.5 bg-stone-200"}`} />
           ))}
         </div>

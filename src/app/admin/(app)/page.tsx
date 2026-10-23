@@ -32,7 +32,7 @@ function greeting(timezone: string) {
 export default async function Dashboard({ searchParams }: PageProps<"/admin">) {
   const { p } = await searchParams;
   const period = PERIODS.find((n) => String(n) === p) ?? 30;
-  const { supabase, restaurant } = await requireRestaurant();
+  const { supabase, restaurant, isAdmin } = await requireRestaurant();
   const today = todayIn(restaurant.timezone);
   const dinnerFrom = restaurant.dinner_from.slice(0, 5);
 
@@ -204,7 +204,7 @@ export default async function Dashboard({ searchParams }: PageProps<"/admin">) {
             </section>
           )}
 
-          {stepsDone < steps.length && (
+          {isAdmin && stepsDone < steps.length && (
             <section className={`${cardClass} animate-rise`} style={delay(280)}>
               <div className="flex items-baseline justify-between gap-2">
                 <h2 className="text-lg">Bien démarrer</h2>
@@ -276,9 +276,12 @@ export default async function Dashboard({ searchParams }: PageProps<"/admin">) {
         </div>
       </div>
 
-      <div className="animate-rise" style={delay(420)}>
-        <Stats supabase={supabase} restaurant={restaurant} period={period} />
-      </div>
+      {/* Statistiques : réservées aux administrateurs. */}
+      {isAdmin && (
+        <div className="animate-rise" style={delay(420)}>
+          <Stats supabase={supabase} restaurant={restaurant} period={period} />
+        </div>
+      )}
     </div>
   );
 }

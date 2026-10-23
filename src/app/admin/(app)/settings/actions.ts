@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { HOLIDAY_COUNTRY_COOKIE } from "@/lib/holidays";
-import { requireRestaurantAction } from "@/lib/data";
+import { requireAdminAction } from "@/lib/data";
 import { addDays, isValidDate } from "@/lib/format";
 import type { OpeningHours } from "@/lib/types";
 
@@ -24,7 +24,7 @@ function parseHours(raw: string): OpeningHours {
 
 export async function saveSettings(_: string | null, formData: FormData): Promise<string | null> {
   try {
-    const { supabase, restaurant } = await requireRestaurantAction();
+    const { supabase, restaurant } = await requireAdminAction();
     const text = (k: string) => String(formData.get(k) ?? "").trim() || null;
     const int = (k: string) => {
       const n = Number(formData.get(k));
@@ -76,7 +76,7 @@ export type ClosureState = { error?: string; ok?: string } | null;
  * journée entière, midi, soir, ou plage horaire personnalisée.
  */
 export async function addClosure(_: ClosureState, formData: FormData): Promise<ClosureState> {
-  const { supabase, restaurant } = await requireRestaurantAction();
+  const { supabase, restaurant } = await requireAdminAction();
   const from = String(formData.get("date"));
   const toRaw = String(formData.get("date_to") ?? "");
   if (!isValidDate(from)) return { error: "Date invalide." };
@@ -114,7 +114,7 @@ export async function addClosure(_: ClosureState, formData: FormData): Promise<C
 /** Fermeture d'un jour férié en un clic (journée entière). */
 export async function closeHoliday(date: string, name: string) {
   if (!isValidDate(date)) throw new Error("Date invalide.");
-  const { supabase, restaurant } = await requireRestaurantAction();
+  const { supabase, restaurant } = await requireAdminAction();
   const { error } = await supabase
     .from("closures")
     .insert({ restaurant_id: restaurant.id, date, reason: name.slice(0, 200) });
@@ -123,7 +123,7 @@ export async function closeHoliday(date: string, name: string) {
 }
 
 export async function removeClosure(id: string) {
-  const { supabase, restaurant } = await requireRestaurantAction();
+  const { supabase, restaurant } = await requireAdminAction();
   const { error } = await supabase.from("closures").delete().eq("restaurant_id", restaurant.id).eq("id", id);
   if (error) throw new Error(error.message);
   revalidatePath("/admin", "layout");

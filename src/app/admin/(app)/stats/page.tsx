@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireRestaurant } from "@/lib/data";
+import { requireAdmin } from "@/lib/data";
 import { addDays, DAY_ORDER, DAYS, formatDate, formatTime, isValidDate, STATUS_LABELS, todayIn } from "@/lib/format";
 import { fetchReservationRows, isKept, type StatRow } from "@/lib/reservation-rows";
 import { cardClass, inputClass } from "@/components/admin-styles";
@@ -49,7 +49,7 @@ function summarize(rows: StatRow[], days: number) {
 }
 
 export default async function StatsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const [{ supabase, restaurant }, params] = await Promise.all([requireRestaurant(), searchParams]);
+  const [{ supabase, restaurant }, params] = await Promise.all([requireAdmin(), searchParams]);
   const today = todayIn(restaurant.timezone);
 
   // Période : préréglage (N derniers jours) ou dates choisies.

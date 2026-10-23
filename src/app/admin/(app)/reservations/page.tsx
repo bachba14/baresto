@@ -11,7 +11,7 @@ import { deleteWaitlistEntry } from "./actions";
 import { RESERVATION_SELECT, ReservationRow, type ReservationWithTables } from "./reservation-row";
 
 export default async function ReservationsPage({ searchParams }: PageProps<"/admin/reservations">) {
-  const [{ supabase, restaurant }, params] = await Promise.all([requireRestaurant(), searchParams]);
+  const [{ supabase, restaurant, isAdmin }, params] = await Promise.all([requireRestaurant(), searchParams]);
   const today = todayIn(restaurant.timezone);
   const date = isValidDate(params.date) ? params.date : today;
   // Recherche sur toutes les dates (nom, e-mail ou téléphone). Caractères réservés de PostgREST retirés.
@@ -71,6 +71,7 @@ export default async function ReservationsPage({ searchParams }: PageProps<"/adm
           <button className="rounded-lg border border-stone-200 bg-white px-4 py-2 font-medium transition hover:bg-stone-50">Rechercher</button>
         </form>
         <a href={`/admin/print?date=${date}`} target="_blank" className={toolLink}>🖨 Imprimer</a>
+        {isAdmin && (
         <details className="relative">
           <summary className={`${toolLink} cursor-pointer list-none`}>⬇ Exporter</summary>
           <div className="absolute right-0 z-10 mt-1 w-72 space-y-2 rounded-xl bg-white p-3 shadow-lg ring-1 ring-stone-900/10">
@@ -82,6 +83,7 @@ export default async function ReservationsPage({ searchParams }: PageProps<"/adm
             </form>
           </div>
         </details>
+        )}
       </div>
 
       {found && (

@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { requireRestaurant } from "@/lib/data";
+import { requireAdmin } from "@/lib/data";
 import { closureLabel, formatDate, todayIn } from "@/lib/format";
 import { countryOf, HOLIDAY_COUNTRY_COOKIE, upcomingHolidays, type Country } from "@/lib/holidays";
 import { cardClass } from "@/components/admin-styles";
@@ -19,7 +19,7 @@ const SECTIONS = [
 ] as const;
 
 export default async function SettingsPage() {
-  const [{ supabase, restaurant }, cookieStore] = await Promise.all([requireRestaurant(), cookies()]);
+  const [{ supabase, restaurant }, cookieStore] = await Promise.all([requireAdmin(), cookies()]);
   const today = todayIn(restaurant.timezone);
   // Pays des jours fériés : celui choisi (mémorisé), sinon déduit de l'adresse et du téléphone du restaurant.
   const saved = cookieStore.get(HOLIDAY_COUNTRY_COOKIE)?.value;

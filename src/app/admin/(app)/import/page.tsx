@@ -1,7 +1,9 @@
 import { cardClass } from "@/components/admin-styles";
+import { requireAdmin } from "@/lib/data";
 import { ImportForm } from "./import-form";
 
-export default function ImportPage() {
+export default async function ImportPage() {
+  await requireAdmin();
   return (
     <div className="space-y-6">
       <div>

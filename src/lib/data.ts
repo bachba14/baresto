@@ -58,13 +58,15 @@ export const getMyRestaurant = cache(async () => {
   const { supabase, userId, email, tourDone } = await requireUser();
   const { data } = await supabase
     .from("restaurant_members")
-    .select("restaurants(*)")
+    .select("role, restaurants(*)")
     .eq("user_id", userId)
     .order("created_at")
     .limit(1)
     .maybeSingle();
   const restaurant = (data?.restaurants ?? null) as unknown as Restaurant | null;
-  return { supabase, userId, email, tourDone, restaurant };
+  /** Administrateur (rôle « owner ») ou employé (« staff »). */
+  const isAdmin = data?.role === "owner";
+  return { supabase, userId, email, tourDone, restaurant, isAdmin };
 });
 
 /**
@@ -77,11 +79,27 @@ export const requireRestaurant = cache(async () => {
   return { ...ctx, restaurant: ctx.restaurant };
 });
 
+/** Page réservée aux administrateurs : un employé est renvoyé au tableau de bord. */
+export async function requireAdmin() {
+  const ctx = await requireRestaurant();
+  if (!ctx.isAdmin) redirect("/admin");
+  return ctx;
+}
+
 /** Pour les Server Actions : restaurant de l'utilisateur, sans exiger la fin de l'assistant. */
 export async function requireRestaurantAction() {
   const ctx = await getMyRestaurant();
   if (!ctx.restaurant) throw new Error("Aucun restaurant associé à ce compte.");
   return { ...ctx, restaurant: ctx.restaurant };
+}
+
+export const ADMIN_ONLY = "Réservé aux administrateurs du restaurant.";
+
+/** Server Action réservée aux administrateurs (les droits sont aussi vérifiés en base). */
+export async function requireAdminAction() {
+  const ctx = await requireRestaurantAction();
+  if (!ctx.isAdmin) throw new Error(ADMIN_ONLY);
+  return ctx;
 }
 
 /** Salles et tables du restaurant. */

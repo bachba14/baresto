@@ -8,7 +8,7 @@ import { ServiceBoard } from "./service-board";
 const nowIn = (timezone: string) => Math.floor(nowMinutesIn(timezone) / 15) * 15;
 
 export default async function ServicePage({ searchParams }: PageProps<"/admin/service">) {
-  const [{ supabase, restaurant }, params] = await Promise.all([requireRestaurant(), searchParams]);
+  const [{ supabase, restaurant, isAdmin }, params] = await Promise.all([requireRestaurant(), searchParams]);
   const today = todayIn(restaurant.timezone);
   const date = isValidDate(params.date) ? params.date : today;
   const [{ rooms, tables }, reservations] = await Promise.all([
@@ -32,8 +32,15 @@ export default async function ServicePage({ searchParams }: PageProps<"/admin/se
 
       {tables.length === 0 ? (
         <p className="rounded-lg bg-amber-50 p-4 text-sm text-amber-800">
-          Aucune table configurée. <Link href="/admin/floor" className="font-medium underline">Créer le plan de salle</Link>{" "}
-          (la configuration rapide prend 30 secondes).
+          Aucune table configurée.{" "}
+          {isAdmin ? (
+            <>
+              <Link href="/admin/floor" className="font-medium underline">Créer le plan de salle</Link> (la configuration rapide
+              prend 30 secondes).
+            </>
+          ) : (
+            "Demandez à un administrateur du restaurant de créer le plan de salle."
+          )}
         </p>
       ) : (
         <ServiceBoard

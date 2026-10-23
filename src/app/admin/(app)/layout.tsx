@@ -6,6 +6,7 @@ import { ScrollReset } from "./scroll-reset";
 import { NewReservationPanel } from "./new-reservation";
 import { Toaster } from "@/components/toaster";
 import { Tour } from "./tour";
+import { RoleProvider } from "./role";
 import { todayIn } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Back-office", robots: { index: false } };
@@ -20,9 +21,10 @@ const initials = (name: string) =>
     .join("");
 
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
-  const { email, tourDone, restaurant } = await requireRestaurant();
+  const { email, tourDone, restaurant, isAdmin } = await requireRestaurant();
 
   return (
+    <RoleProvider isAdmin={isAdmin}>
     <div className="min-h-screen bg-[#faf9f7] md:flex">
       <Sidebar
         restaurant={{ name: restaurant.name, slug: restaurant.slug, color: restaurant.primary_color, initials: initials(restaurant.name) }}
@@ -38,5 +40,6 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
 
       <main className="min-w-0 flex-1 p-4 md:p-8">{children}</main>
     </div>
+    </RoleProvider>
   );
 }

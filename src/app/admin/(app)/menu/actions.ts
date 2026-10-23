@@ -1,10 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireRestaurantAction } from "@/lib/data";
+import { requireAdminAction } from "@/lib/data";
 import { parseList } from "@/lib/format";
 
-type Supabase = Awaited<ReturnType<typeof requireRestaurantAction>>["supabase"];
+type Supabase = Awaited<ReturnType<typeof requireAdminAction>>["supabase"];
 
 function done() {
   revalidatePath("/admin/menu");
@@ -20,7 +20,7 @@ const text = (fd: FormData, k: string) => String(fd.get(k) ?? "").trim() || null
 // ── Catégories ─────────────────────────────────────────────
 
 export async function createCategory(formData: FormData) {
-  const { supabase, restaurant } = await requireRestaurantAction();
+  const { supabase, restaurant } = await requireAdminAction();
   const name = text(formData, "name");
   if (!name) throw new Error("Nom requis.");
   const { count } = await supabase
@@ -32,7 +32,7 @@ export async function createCategory(formData: FormData) {
 }
 
 export async function updateCategory(id: string, formData: FormData) {
-  const { supabase } = await requireRestaurantAction();
+  const { supabase } = await requireAdminAction();
   check(
     (
       await supabase
@@ -49,7 +49,7 @@ export async function updateCategory(id: string, formData: FormData) {
 }
 
 export async function deleteCategory(id: string) {
-  const { supabase } = await requireRestaurantAction();
+  const { supabase } = await requireAdminAction();
   check((await supabase.from("menu_categories").delete().eq("id", id)).error);
   done();
 }
@@ -94,7 +94,7 @@ async function itemFields(supabase: Supabase, restaurantId: string, formData: Fo
 }
 
 export async function createItem(categoryId: string, formData: FormData) {
-  const { supabase, restaurant } = await requireRestaurantAction();
+  const { supabase, restaurant } = await requireAdminAction();
   const { count } = await supabase
     .from("menu_items")
     .select("*", { count: "exact", head: true })
@@ -108,7 +108,7 @@ export async function createItem(categoryId: string, formData: FormData) {
 }
 
 export async function updateItem(id: string, formData: FormData) {
-  const { supabase, restaurant } = await requireRestaurantAction();
+  const { supabase, restaurant } = await requireAdminAction();
   const fields = await itemFields(supabase, restaurant.id, formData);
   const categoryId = text(formData, "category_id");
   if (categoryId) fields.category_id = categoryId;
@@ -117,13 +117,13 @@ export async function updateItem(id: string, formData: FormData) {
 }
 
 export async function toggleItem(id: string, available: boolean) {
-  const { supabase } = await requireRestaurantAction();
+  const { supabase } = await requireAdminAction();
   check((await supabase.from("menu_items").update({ is_available: available }).eq("id", id)).error);
   done();
 }
 
 export async function deleteItem(id: string) {
-  const { supabase } = await requireRestaurantAction();
+  const { supabase } = await requireAdminAction();
   check((await supabase.from("menu_items").delete().eq("id", id)).error);
   done();
 }
@@ -132,7 +132,7 @@ export async function deleteItem(id: string) {
 
 export async function move(table: "menu_categories" | "menu_items", id: string, direction: -1 | 1) {
   if (table !== "menu_categories" && table !== "menu_items") throw new Error("Table invalide.");
-  const { supabase, restaurant } = await requireRestaurantAction();
+  const { supabase, restaurant } = await requireAdminAction();
 
   let query = supabase.from(table).select("id, position").eq("restaurant_id", restaurant.id).order("position").order("created_at");
   if (table === "menu_items") {
@@ -157,7 +157,7 @@ export async function move(table: "menu_categories" | "menu_items", id: string, 
 
 /** Crée d'un coup les catégories d'un modèle (ex. Entrées, Plats, Desserts, Vins). */
 export async function createCategories(names: string[]) {
-  const { supabase, restaurant } = await requireRestaurantAction();
+  const { supabase, restaurant } = await requireAdminAction();
   const clean = names.map((n) => n.trim().slice(0, 80)).filter(Boolean).slice(0, 12);
   if (!clean.length) return;
   const { count } = await supabase
@@ -172,7 +172,7 @@ export async function createCategories(names: string[]) {
 
 /** Carte d'exemple complète (catégories et plats), à adapter. */
 export async function seedExampleMenu() {
-  const { supabase, restaurant } = await requireRestaurantAction();
+  const { supabase, restaurant } = await requireAdminAction();
   check((await supabase.rpc("seed_example_menu", { p_restaurant: restaurant.id })).error);
   done();
 }

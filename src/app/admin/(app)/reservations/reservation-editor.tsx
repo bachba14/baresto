@@ -6,6 +6,7 @@ import { toast } from "@/components/toaster";
 import { STATUS_LABELS } from "@/lib/format";
 import type { Reservation, ReservationStatus } from "@/lib/types";
 import { deleteReservation, editReservation, updateStatus } from "./actions";
+import { useIsAdmin } from "../role";
 
 type Editable = Pick<Reservation, "id" | "date" | "time" | "party_size" | "name" | "email" | "phone" | "notes" | "status">;
 
@@ -29,6 +30,7 @@ export function RowActions({ r }: { r: Editable }) {
   const [menu, setMenu] = useState(false);
   const [editing, setEditing] = useState(false);
   const [pending, startTransition] = useTransition();
+  const isAdmin = useIsAdmin();
   const menuRef = useRef<HTMLDivElement>(null);
   const primary = PRIMARY[r.status];
 
@@ -126,13 +128,17 @@ export function RowActions({ r }: { r: Editable }) {
                   </span>
                 </button>
               )}
-              <div className="my-1 border-t border-stone-100" />
-              <button type="button" role="menuitem" className={`${item} text-red-700 hover:bg-red-50`} onClick={remove}>
-                <span>
-                  Supprimer définitivement
-                  <span className="block text-xs text-red-600/80">effacée de l&apos;historique, sans e-mail</span>
-                </span>
-              </button>
+              {isAdmin && (
+                <>
+                  <div className="my-1 border-t border-stone-100" />
+                  <button type="button" role="menuitem" className={`${item} text-red-700 hover:bg-red-50`} onClick={remove}>
+                    <span>
+                      Supprimer définitivement
+                      <span className="block text-xs text-red-600/80">effacée de l&apos;historique, sans e-mail</span>
+                    </span>
+                  </button>
+                </>
+              )}
             </div>
           )}
         </div>

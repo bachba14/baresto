@@ -1,4 +1,4 @@
-import { requireRestaurant } from "@/lib/data";
+import { requireAdmin } from "@/lib/data";
 import { formatPrice } from "@/lib/format";
 import { cardClass, inputClass, labelClass } from "@/components/admin-styles";
 import { SubmitButton } from "@/components/admin-ui";
@@ -17,7 +17,7 @@ import {
 } from "./actions";
 
 export default async function MenuPage() {
-  const { supabase, restaurant } = await requireRestaurant();
+  const { supabase, restaurant } = await requireAdmin();
   const [{ data: cats }, { data: items }] = await Promise.all([
     supabase.from("menu_categories").select("*").eq("restaurant_id", restaurant.id).order("position").order("created_at"),
     supabase.from("menu_items").select("*").eq("restaurant_id", restaurant.id).order("position").order("created_at"),

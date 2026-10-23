@@ -7,6 +7,7 @@ import { logout } from "@/app/(auth)/actions";
 import { LiveIndicator } from "./live-updates";
 import { openNewReservation } from "./new-reservation";
 import { openTour } from "./tour";
+import { useIsAdmin } from "./role";
 
 
 /** Icônes au trait (24 × 24). */
@@ -53,6 +54,12 @@ const ICONS = {
   ),
   code: <path d="m8 7-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16" />,
   upload: <path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4" />,
+  team: (
+    <>
+      <path d="M12 3 4.5 6v5.5c0 4.6 3.2 8.4 7.5 9.5 4.3-1.1 7.5-4.9 7.5-9.5V6z" />
+      <path d="m9 12 2 2 4-4" />
+    </>
+  ),
   external: <path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />,
   help: (
     <>
@@ -73,7 +80,9 @@ function Icon({ name, className = "h-[18px] w-[18px]" }: { name: IconName; class
   );
 }
 
-const GROUPS: { title?: string; tour?: string; links: { href: string; label: string; icon: IconName }[] }[] = [
+type NavLink = { href: string; label: string; icon: IconName; /** Réservé aux administrateurs. */ admin?: true };
+
+const GROUPS: { title?: string; tour?: string; links: NavLink[] }[] = [
   {
     links: [
       { href: "/admin", label: "Tableau de bord", icon: "home" },
@@ -86,18 +95,19 @@ const GROUPS: { title?: string; tour?: string; links: { href: string; label: str
     tour: "group-suivi",
     links: [
       { href: "/admin/clients", label: "Clients", icon: "users" },
-      { href: "/admin/stats", label: "Statistiques", icon: "chart" },
+      { href: "/admin/stats", label: "Statistiques", icon: "chart", admin: true },
     ],
   },
   {
     title: "Restaurant",
     tour: "group-restaurant",
     links: [
-      { href: "/admin/menu", label: "Carte", icon: "menu" },
-      { href: "/admin/floor", label: "Plan de salle", icon: "floor" },
-      { href: "/admin/settings", label: "Réglages", icon: "settings" },
-      { href: "/admin/import", label: "Importer", icon: "upload" },
-      { href: "/admin/integration", label: "Intégration", icon: "code" },
+      { href: "/admin/menu", label: "Carte", icon: "menu", admin: true },
+      { href: "/admin/floor", label: "Plan de salle", icon: "floor", admin: true },
+      { href: "/admin/settings", label: "Réglages", icon: "settings", admin: true },
+      { href: "/admin/equipe", label: "Équipe", icon: "team", admin: true },
+      { href: "/admin/import", label: "Importer", icon: "upload", admin: true },
+      { href: "/admin/integration", label: "Intégration", icon: "code", admin: true },
     ],
   },
 ];
@@ -115,6 +125,9 @@ export function Sidebar({
 }) {
   const pathname = usePathname();
   const isActive = (href: string) => (href === "/admin" ? pathname === href : pathname.startsWith(href));
+  const isAdmin = useIsAdmin();
+  // Un employé ne voit pas les pages réservées aux administrateurs (ni un groupe devenu vide).
+  const groups = GROUPS.map((g) => ({ ...g, links: g.links.filter((l) => isAdmin || !l.admin) })).filter((g) => g.links.length > 0);
 
   const linkClass = (active: boolean) =>
     `group flex h-10 items-center gap-3 rounded-xl px-[15px] text-sm transition-colors duration-200 ${
@@ -176,7 +189,7 @@ export function Sidebar({
 
         {/* Liens */}
         <nav className="mt-6 space-y-4 px-3">
-          {GROUPS.map((group, g) => (
+          {groups.map((group, g) => (
             <div key={g} data-tour={group.tour} className="space-y-0.5">
               {group.title && (
                 <p className="px-[15px] pb-1 text-[11px] font-medium tracking-wider text-stone-500 uppercase">{group.title}</p>
@@ -209,7 +222,7 @@ export function Sidebar({
               <span className={iconClass(false)}><Icon name="logout" /></span>
               <Label>
                 <span className="block text-left">Se déconnecter</span>
-                <span className="block truncate text-left text-[11px] text-stone-500">{email}</span>
+                <span className="block truncate text-left text-[11px] text-stone-500">{isAdmin ? "Admin" : "Employé"} · {email}</span>
               </Label>
             </button>
           </form>
@@ -239,7 +252,7 @@ export function Sidebar({
           </div>
         </div>
         <nav aria-label="Navigation du back-office" className="flex gap-1 overflow-x-auto px-3 pb-3">
-          {GROUPS.flatMap((g) => g.links).map((l) => {
+          {groups.flatMap((g) => g.links).map((l) => {
             const active = isActive(l.href);
             return (
               <Link key={l.href} href={l.href} data-tour={`nav-${l.href}`} aria-current={active ? "page" : undefined} className={`${linkClass(active)} shrink-0 px-3`}>

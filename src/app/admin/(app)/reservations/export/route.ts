@@ -18,8 +18,8 @@ const cell = (v: unknown) => {
 
 /** Export CSV des réservations d'une période (?from=AAAA-MM-JJ&to=AAAA-MM-JJ). */
 export async function GET(request: NextRequest) {
-  const { supabase, restaurant } = await getMyRestaurant();
-  if (!restaurant) return new Response("Aucun restaurant.", { status: 403 });
+  const { supabase, restaurant, isAdmin } = await getMyRestaurant();
+  if (!restaurant || !isAdmin) return new Response("Réservé aux administrateurs du restaurant.", { status: 403 });
 
   const today = todayIn(restaurant.timezone);
   const params = request.nextUrl.searchParams;

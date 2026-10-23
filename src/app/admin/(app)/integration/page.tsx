@@ -1,11 +1,11 @@
 import QRCode from "qrcode";
-import { requireRestaurant } from "@/lib/data";
+import { requireAdmin } from "@/lib/data";
 import { siteUrl } from "@/lib/site";
 import { cardClass } from "@/components/admin-styles";
 import { CopyBlock } from "./copy-block";
 
 export default async function IntegrationPage() {
-  const { restaurant } = await requireRestaurant();
+  const { restaurant } = await requireAdmin();
   const base = await siteUrl();
   const pageUrl = `${base}/r/${restaurant.slug}`;
   const [qrSvg, qrPng] = await Promise.all([

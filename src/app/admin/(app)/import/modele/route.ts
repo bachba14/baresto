@@ -20,8 +20,8 @@ function header(sheet: ExcelJS.Worksheet, columns: { header: string; key: string
 
 /** Modèle Excel à remplir puis à réimporter (réservations et clients). */
 export async function GET() {
-  const { restaurant } = await getMyRestaurant();
-  if (!restaurant) return new Response("Aucun restaurant.", { status: 403 });
+  const { restaurant, isAdmin } = await getMyRestaurant();
+  if (!restaurant || !isAdmin) return new Response("Réservé aux administrateurs du restaurant.", { status: 403 });
 
   const wb = new ExcelJS.Workbook();
   wb.creator = "Monkomi";

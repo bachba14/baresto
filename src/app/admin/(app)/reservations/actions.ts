@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { after } from "next/server";
-import { requireRestaurantAction } from "@/lib/data";
+import { requireAdminAction, requireRestaurantAction } from "@/lib/data";
 import { isValidDate, todayIn } from "@/lib/format";
 import { emailClient, type ClientEmailKind } from "@/lib/notifications";
 import { notifyWaitlist } from "@/lib/waitlist";
@@ -74,7 +74,7 @@ export async function markPastAsCame(todayIds: string[]) {
 }
 
 export async function deleteReservation(id: string) {
-  const { supabase, restaurant } = await requireRestaurantAction();
+  const { supabase, restaurant } = await requireAdminAction();
   const { data: deleted, error } = await supabase.from("reservations").delete().eq("id", id).select("date, status").maybeSingle();
   if (error) throw new Error(error.message);
   if (deleted && deleted.status !== "cancelled" && deleted.status !== "no_show") {

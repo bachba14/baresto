@@ -8,6 +8,12 @@ export const metadata: Metadata = { title: "Configuration", robots: { index: fal
 export default async function OnboardingPage({ searchParams }: PageProps<"/onboarding">) {
   const [{ supabase, restaurant, email }, params] = await Promise.all([getMyRestaurant(), searchParams]);
   if (restaurant?.onboarding_completed) redirect("/admin");
+  // Invité dans l'équipe d'un restaurant (connexion ou inscription sans passer par le lien) : on l'y conduit
+  // plutôt que de lui faire créer un restaurant.
+  if (!restaurant) {
+    const { data: invitation } = await supabase.rpc("my_pending_invitation");
+    if (typeof invitation === "string" && invitation) redirect(`/invitation/${invitation}`);
+  }
 
   // Sans restaurant, on commence forcément par l'étape 1.
   const requested = Number(params.step) || 1;
