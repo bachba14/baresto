@@ -4,6 +4,7 @@
 import webpush from "web-push";
 import { createServiceClient } from "./supabase/server";
 import { formatDate, formatTime } from "./format";
+import { recordError, recordOk } from "./health";
 import type { Reservation, Restaurant } from "./types";
 
 export type PushMessage = { title: string; body: string; url: string; tag?: string };
@@ -36,12 +37,13 @@ async function send(subs: Subscription[], message: PushMessage) {
       try {
         // TTL 1 h : une alerte de réservation n'a plus d'intérêt au-delà.
         await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, payload, { TTL: 3600, urgency: "high" });
+        await recordOk("push");
         return true;
       } catch (e) {
         const status = (e as { statusCode?: number }).statusCode;
         // Abonnement expiré ou révoqué (application désinstallée, permission retirée) : on l'oublie.
         if (status === 404 || status === 410) await supabase.from("push_subscriptions").delete().eq("id", s.id);
-        else console.error("[push]", status, (e as Error).message);
+        else await recordError("push", `${status ?? "réseau"} : ${(e as Error).message}`);
         return false;
       }
     }),

@@ -1,6 +1,8 @@
 // Envoi d'e-mails transactionnels via l'API HTTP de Resend (3 000 e-mails/mois et 100/jour gratuits).
 // Sans clé configurée, les e-mails sont ignorés.
 
+import { recordError, recordOk } from "./health";
+
 export type Email = {
   to: string;
   toName?: string;
@@ -42,10 +44,11 @@ export async function sendEmail(email: Email): Promise<boolean> {
         html: email.html,
       }),
     });
-    if (!res.ok) console.error("[email]", res.status, await res.text().catch(() => ""));
+    if (res.ok) await recordOk("email");
+    else await recordError("email", `Resend ${res.status} : ${await res.text().catch(() => "")}`);
     return res.ok;
   } catch (e) {
-    console.error("[email]", e);
+    await recordError("email", `Resend injoignable : ${(e as Error).message}`);
     return false;
   }
 }
