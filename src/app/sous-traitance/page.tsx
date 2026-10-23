@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ContactEmail, Legal, LegalPage } from "@/components/legal-page";
-import { LEGAL, LEGAL_UPDATED, SUBPROCESSORS } from "@/lib/legal";
+import { LEGAL, LEGAL_UPDATED, SUBPROCESSORS, TRANSFER_SAFEGUARDS } from "@/lib/legal";
 
 export const metadata: Metadata = {
   title: "Accord de sous-traitance des données",
@@ -78,7 +78,7 @@ export default function DpaPage() {
           </li>
           <li>Accès des convives à leur réservation par un lien secret propre à chaque réservation.</li>
           <li>Protection contre les envois abusifs sur les formulaires publics.</li>
-          <li>Hébergement des données dans l&apos;Union européenne et sauvegardes chez l&apos;hébergeur de la base.</li>
+          <li>Base de données hébergée dans l&apos;Union européenne, avec sauvegardes chez son hébergeur.</li>
         </ul>
       </section>
 
@@ -92,6 +92,7 @@ export default function DpaPage() {
             </li>
           ))}
         </ul>
+        <p>{TRANSFER_SAFEGUARDS}</p>
         <p>
           Le sous-traitant impose à chacun des obligations de protection équivalentes à celles du présent accord. Il
           informe les restaurants par e-mail de tout ajout ou remplacement au moins 30 jours à l&apos;avance. Un

@@ -23,13 +23,22 @@ export const LEGAL = {
 export const LEGAL_UPDATED = {
   mentions: "22 octobre 2026",
   conditions: "23 octobre 2026",
-  confidentialite: "22 octobre 2026",
-  sousTraitance: "22 octobre 2026",
+  confidentialite: "23 octobre 2026",
+  sousTraitance: "23 octobre 2026",
 };
 
 /** Sous-traitants ultérieurs (repris par la politique de confidentialité et l'accord de sous-traitance). */
 export const SUBPROCESSORS = [
   { name: "Supabase Inc.", role: "Base de données, authentification et stockage des photos", place: "Union européenne (Paris)" },
   { name: "Hostinger International Ltd", role: "Hébergement du site et des serveurs applicatifs", place: "Union européenne" },
-  { name: "Sendinblue SAS (Brevo)", role: "Envoi des e-mails de réservation", place: "Union européenne (France)" },
+  {
+    name: "Resend, Inc.",
+    role: "Envoi des e-mails de réservation",
+    place: "envoi depuis l'Union européenne (Irlande) ; société établie aux États-Unis",
+  },
 ];
+
+/** Garanties des transferts hors Union européenne (sous-traitants établis aux États-Unis). */
+export const TRANSFER_SAFEGUARDS =
+  "Lorsqu'un sous-traitant est établi hors de l'Union européenne, les transferts de données sont encadrés par les " +
+  "clauses contractuelles types adoptées par la Commission européenne.";

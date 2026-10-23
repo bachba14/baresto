@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ContactEmail, Legal, LegalPage } from "@/components/legal-page";
-import { LEGAL, LEGAL_UPDATED, SUBPROCESSORS } from "@/lib/legal";
+import { LEGAL, LEGAL_UPDATED, SUBPROCESSORS, TRANSFER_SAFEGUARDS } from "@/lib/legal";
 
 export const metadata: Metadata = {
   title: "Politique de confidentialité",
@@ -78,6 +78,7 @@ export default function PrivacyPage() {
           ))}
           <li>Connexion avec Google (facultative) : Google.</li>
         </ul>
+        <p>{TRANSFER_SAFEGUARDS}</p>
       </section>
 
       <section>

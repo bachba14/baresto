@@ -21,7 +21,7 @@ Stack : Next.js 16 (App Router) · Supabase (Postgres, Auth, Storage) · Tailwin
 3. **Authentification** (Supabase → Authentication → URL Configuration) :
    *Site URL* = l'URL du site (`http://localhost:3000` en local), et ajouter `…/auth/callback` aux *Redirect URLs*.
    La confirmation d'e-mail est activée par défaut ; le service d'e-mail intégré de Supabase est limité à quelques
-   envois par heure : configurez un SMTP (Resend, Brevo…) avant l'ouverture au public.
+   envois par heure : configurez le SMTP de Resend (Authentication → SMTP Settings : `smtp.resend.com`, port 465, utilisateur `resend`, mot de passe = la clé Resend) avant l'ouverture au public.
 4. **App** :
    ```bash
    cp .env.example .env.local   # URL + clé publishable Supabase (Project Settings → API)
@@ -56,11 +56,10 @@ modification ou annulation par un client (adresse e-mail des réglages).
 Chaque e-mail contient un lien secret `/reservation/{token}` : le client y voit sa réservation, l'ajoute à son
 agenda (.ics), et peut la **modifier ou l'annuler jusqu'à 24 h avant** (contrôlé côté base).
 
-1. **Fournisseur** (au choix, offres gratuites) :
-   - [Brevo](https://www.brevo.com) : 300 e-mails/jour. *Senders, Domains* → ajouter et authentifier `monkomi.be`
-     (enregistrements DKIM/DMARC à ajouter dans la zone DNS), puis *SMTP & API* → *API Keys* → `BREVO_API_KEY`.
-   - ou [Resend](https://resend.com) : 3 000 e-mails/mois (100/jour). *Domains* → vérifier le domaine → `RESEND_API_KEY`.
-2. Variables : `EMAIL_FROM` (ex. `reservations@monkomi.be`, sur le domaine vérifié), la clé du fournisseur,
+1. **Fournisseur** : [Resend](https://resend.com), gratuit jusqu'à 3 000 e-mails/mois (100/jour). *Domains* → ajouter
+   `monkomi.be` (région Irlande) → ajouter les enregistrements DNS indiqués dans la zone DNS du domaine → *Verify*, puis
+   *API Keys* → `RESEND_API_KEY` (permission *Sending access*).
+2. Variables : `EMAIL_FROM` (ex. `reservations@monkomi.be`, sur le domaine vérifié), `RESEND_API_KEY`,
    `SUPABASE_SECRET_KEY` (Supabase → Project Settings → API Keys → *Secret key*) et `CRON_SECRET` (longue valeur aléatoire).
 3. **Tâche programmée** (rappels, avis, liste d'attente) : appeler `/api/cron` toutes les 15 minutes. Gratuit avec
    Supabase (SQL Editor, extensions `pg_cron` et `pg_net`) :
@@ -110,7 +109,7 @@ Nécessite une offre avec **Node.js Apps** : Business, Cloud (Startup / Professi
    | `NEXT_PUBLIC_SITE_URL` | `https://votre-domaine.fr` |
    | `WIDGET_ALLOWED_ORIGINS` | (optionnel) sites autorisés à afficher les widgets |
    | `SUPABASE_SECRET_KEY` | clé *secret* Supabase (e-mails programmés, liste d'attente) |
-   | `EMAIL_FROM`, `BREVO_API_KEY` ou `RESEND_API_KEY` | envoi des e-mails (voir « E-mails aux clients ») |
+   | `EMAIL_FROM`, `RESEND_API_KEY` | envoi des e-mails (voir « E-mails aux clients ») |
    | `CRON_SECRET` | protège `/api/cron` |
    | `NEXT_PUBLIC_LEGAL_*` | identité de l'éditeur sur les pages légales (voir `.env.example`) |
    | `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | notifications sur téléphone (`npx web-push generate-vapid-keys`) |

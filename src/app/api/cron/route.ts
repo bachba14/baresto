@@ -30,7 +30,7 @@ async function run(request: NextRequest) {
     console.error("[purge]", e.message);
     return 0;
   });
-  if (!emailEnabled()) return NextResponse.json({ error: "Envoi d'e-mails non configuré (EMAIL_FROM + clé Brevo ou Resend).", purged }, { status: 500 });
+  if (!emailEnabled()) return NextResponse.json({ error: "Envoi d'e-mails non configuré (EMAIL_FROM + RESEND_API_KEY).", purged }, { status: 500 });
 
   const base = await siteUrl();
   const [{ data: reminders, error: e1 }, { data: reviews, error: e2 }] = await Promise.all([
