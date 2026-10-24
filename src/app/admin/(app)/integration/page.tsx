@@ -1,3 +1,4 @@
+import Link from "next/link";
 import QRCode from "qrcode";
 import { requireAdmin } from "@/lib/data";
 import { siteUrl } from "@/lib/site";
@@ -84,7 +85,15 @@ export default async function IntegrationPage() {
           </p>
           <p className="font-mono text-xs break-all text-stone-600">{pageUrl}</p>
           <div className="flex flex-wrap gap-2 pt-1">
-            <a href={qrPng} download={`qr-${restaurant.slug}.png`} className="rounded-lg bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-700">
+            <Link href="/admin/affiche?format=a4" target="_blank" className="rounded-lg bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-700">
+              🖨 Affiche A4 à imprimer
+            </Link>
+            <Link href="/admin/affiche?format=table" target="_blank" className="rounded-lg bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-700">
+              🖨 Chevalets de table
+            </Link>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <a href={qrPng} download={`qr-${restaurant.slug}.png`} className="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm font-medium hover:bg-stone-50">
               Télécharger (PNG)
             </a>
             <a
