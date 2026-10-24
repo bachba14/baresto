@@ -39,6 +39,8 @@ export type Restaurant = {
   online_paused_at: string | null;
   /** Réouverture automatique (null : jusqu'à réouverture manuelle). */
   online_resume_at: string | null;
+  /** Validité des bons cadeaux, en mois (12 minimum). */
+  gift_card_months: number;
 };
 
 /** Fermeture exceptionnelle : journée entière si start_time et end_time sont vides. */
@@ -156,5 +158,19 @@ export type WaitlistEntry = {
   phone: string | null;
   status: WaitlistStatus;
   notified_at: string | null;
+  created_at: string;
+};
+
+export type GiftCard = {
+  id: string;
+  restaurant_id: string;
+  token: string;
+  amount: number;
+  offered_by: string | null;
+  recipient_name: string | null;
+  message: string | null;
+  send_email: string | null;
+  expires_at: string;
+  used_at: string | null;
   created_at: string;
 };

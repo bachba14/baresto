@@ -1,7 +1,7 @@
 import { calendarLinks } from "./calendar";
 import { sendEmail } from "./email";
-import { formatDate, formatTime } from "./format";
-import type { Reservation, Restaurant, WaitlistEntry } from "./types";
+import { formatDate, formatPrice, formatTime } from "./format";
+import type { GiftCard, Reservation, Restaurant, WaitlistEntry } from "./types";
 
 type R = Pick<Reservation, "date" | "time" | "party_size" | "name" | "email" | "phone" | "notes" | "token" | "status">;
 
@@ -174,5 +174,30 @@ Ce lien est valable 7 jours.</p>`;
     replyTo: restaurant.email,
     subject: `Invitation à rejoindre ${restaurant.name} sur Monkomi`,
     html: layout(restaurant, body, { href: link, label: "Rejoindre l'équipe" }, "Monkomi · réservations pour restaurants"),
+  });
+}
+
+/** Bon cadeau envoyé par e-mail : montant, de la part de, pour, validité et lien vers le bon à imprimer. */
+export async function emailGiftCard(
+  to: string,
+  card: Pick<GiftCard, "token" | "amount" | "offered_by" | "recipient_name" | "message" | "expires_at">,
+  restaurant: Restaurant,
+  base: string,
+) {
+  const amount = formatPrice(Number(card.amount), restaurant.currency);
+  const body = `<p>Bonjour,</p>
+<p>Voici ${card.recipient_name ? `le bon cadeau pour <strong>${esc(card.recipient_name)}</strong>` : "votre bon cadeau"}
+chez <strong>${esc(restaurant.name)}</strong>${card.offered_by ? `, offert par <strong>${esc(card.offered_by)}</strong>` : ""}.</p>
+${card.message ? `<p style="color:#57534e">« ${esc(card.message)} »</p>` : ""}
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:16px 0;background:#fafaf9;border-radius:8px;width:100%">
+<tr><td style="padding:16px"><strong style="font-size:24px">${esc(amount)}</strong><br>
+<span style="color:#78716c">Valable jusqu'au ${esc(formatDate(card.expires_at))}.</span></td></tr></table>
+<p>Ouvrez le bon pour l'imprimer ou l'enregistrer en PDF, puis présentez-le au restaurant.</p>`;
+  return sendEmail({
+    to,
+    fromName: restaurant.name,
+    replyTo: restaurant.email,
+    subject: `Votre bon cadeau de ${amount} — ${restaurant.name}`,
+    html: layout(restaurant, body, { href: `${base}/bon/${card.token}`, label: "Voir et imprimer le bon" }, "Bon cadeau géré avec Monkomi"),
   });
 }

@@ -40,7 +40,7 @@ export async function GET() {
     }
   }
 
-  const [reservations, customers, waitlist, categories, items, rooms, tables, closures, team] = await Promise.all([
+  const [reservations, customers, waitlist, categories, items, rooms, tables, closures, team, giftCards] = await Promise.all([
     all("reservations", "*, reservation_tables(dining_tables(label))", "date"),
     all("customers"),
     all("waitlist"),
@@ -50,6 +50,7 @@ export async function GET() {
     all("dining_tables", "*", "label"),
     all("closures", "*", "date"),
     supabase.rpc("team_members", { p_restaurant: id }).then(({ data }) => (data ?? []) as Row[]),
+    all("gift_cards"),
   ]);
 
   const wb = new ExcelJS.Workbook();
@@ -102,6 +103,13 @@ export async function GET() {
     { header: "Date", key: "date", width: 12 }, { header: "De", key: "start_time", width: 8 }, { header: "À", key: "end_time", width: 8 },
     { header: "Motif", key: "reason", width: 30 },
   ], closures);
+
+  addSheet(wb, "Bons cadeaux", [
+    { header: "Montant", key: "amount", width: 10 }, { header: "Pour", key: "recipient_name", width: 20 },
+    { header: "De la part de", key: "offered_by", width: 20 }, { header: "Message", key: "message", width: 30 },
+    { header: "Envoyé à", key: "send_email", width: 28 }, { header: "Valable jusqu'au", key: "expires_at", width: 14 },
+    { header: "Utilisé le", key: "used_at", width: 22 }, { header: "Créé le", key: "created_at", width: 22 },
+  ], giftCards.map((g) => ({ ...g, amount: Number(g.amount) })));
 
   addSheet(wb, "Équipe", [
     { header: "E-mail", key: "email", width: 30 }, { header: "Rôle", key: "role", width: 16 }, { header: "Membre depuis", key: "created_at", width: 22 },

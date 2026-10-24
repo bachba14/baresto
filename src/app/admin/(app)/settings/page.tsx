@@ -145,7 +145,7 @@ export default async function SettingsPage() {
           <a href="/admin/export-donnees" className="inline-block rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm font-medium transition hover:bg-stone-50">
             ⬇ Exporter toutes mes données (Excel)
           </a>
-          <p className="mt-1 text-xs text-stone-500">Réservations, clients, liste d&apos;attente, carte, plan de salle, fermetures et équipe.</p>
+          <p className="mt-1 text-xs text-stone-500">Réservations, clients, liste d&apos;attente, bons cadeaux, carte, plan de salle, fermetures et équipe.</p>
         </div>
 
         <div id="suppression" className="scroll-mt-20 space-y-2 border-t border-stone-100 pt-5">

@@ -55,7 +55,13 @@ const ICONS = {
   ),
   code: <path d="m8 7-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16" />,
   upload: <path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4" />,
-  bell: <path d="M6 9a6 6 0 1 1 12 0c0 5 2 6.5 2 6.5H4S6 14 6 9M10 19.5a2 2 0 0 0 4 0" />,
+  gift: (
+    <>
+      <rect x="3.5" y="8" width="17" height="4.5" rx="1" />
+      <path d="M5 12.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7.5M12 8v13M12 8S10.5 3.5 8 4.5 9 8 12 8M12 8s1.5-4.5 4-3.5S15 8 12 8" />
+    </>
+  ),
+  bell:<path d="M6 9a6 6 0 1 1 12 0c0 5 2 6.5 2 6.5H4S6 14 6 9M10 19.5a2 2 0 0 0 4 0" />,
   team: (
     <>
       <path d="M12 3 4.5 6v5.5c0 4.6 3.2 8.4 7.5 9.5 4.3-1.1 7.5-4.9 7.5-9.5V6z" />
@@ -97,6 +103,7 @@ const GROUPS: { title?: string; tour?: string; links: NavLink[] }[] = [
     tour: "group-suivi",
     links: [
       { href: "/admin/clients", label: "Clients", icon: "users" },
+      { href: "/admin/bons", label: "Bons cadeaux", icon: "gift" },
       { href: "/admin/stats", label: "Statistiques", icon: "chart", admin: true },
     ],
   },
