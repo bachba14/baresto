@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { PRICES, price } from "@/lib/pricing";
+import { PRICES, percent, price } from "@/lib/pricing";
 import { IconCheck } from "./icons";
 
 const INCLUDED = [
@@ -24,7 +24,7 @@ const INCLUDED = [
 export function Pricing() {
   const [annual, setAnnual] = useState(true);
   const standard = annual ? PRICES.annual : PRICES.monthly;
-  const yearlySaving = Math.round((PRICES.monthly - PRICES.annual) * 12);
+  const discount = percent(1 - PRICES.annual / PRICES.monthly);
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -46,7 +46,7 @@ export function Pricing() {
               {label as string}
               {value && (
                 <span className={`ml-2 rounded-full px-1.5 py-0.5 text-[11px] ${annual ? "bg-white/15 text-white" : "bg-amber-100 text-amber-800"}`}>
-                  −{yearlySaving} €/an
+                  −{discount}
                 </span>
               )}
             </button>

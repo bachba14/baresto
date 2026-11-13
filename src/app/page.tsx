@@ -34,7 +34,7 @@ import { StickyCta } from "@/components/landing/sticky-cta";
 export const metadata: Metadata = {
   title: { absolute: "Monkomi — Réservations en ligne sans commission pour restaurants" },
   description:
-    "Recevez des réservations 24h/24, placées automatiquement sur la bonne table. Zéro commission, zéro surbooking, plan de salle 2D/3D, rappels e-mail. Dès 24,99 € HT par mois, tout compris.",
+    "Recevez des réservations 24h/24, placées automatiquement sur la bonne table. Zéro commission, zéro surbooking, plan de salle 2D/3D, rappels e-mail. Dès 25 € HT par mois, tout compris.",
 };
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "https://monkomi.be";
