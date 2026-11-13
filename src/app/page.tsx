@@ -26,13 +26,15 @@ import {
 } from "@/components/landing/icons";
 import { BrowserFrame, CodeMock, MenuMock, PhoneWidget } from "@/components/landing/mockups";
 import { Reveal } from "@/components/landing/reveal";
+import { Pricing } from "@/components/landing/pricing";
+import { PRICES, price } from "@/lib/pricing";
 import { SavingsCalculator } from "@/components/landing/savings-calculator";
 import { StickyCta } from "@/components/landing/sticky-cta";
 
 export const metadata: Metadata = {
   title: { absolute: "Monkomi — Réservations en ligne sans commission pour restaurants" },
   description:
-    "Recevez des réservations 24h/24, placées automatiquement sur la bonne table. Zéro commission, zéro surbooking, plan de salle 2D/3D, rappels e-mail. Gratuit pendant la bêta.",
+    "Recevez des réservations 24h/24, placées automatiquement sur la bonne table. Zéro commission, zéro surbooking, plan de salle 2D/3D, rappels e-mail. Dès 24,99 € par mois, tout compris.",
 };
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "https://monkomi.be";
@@ -72,29 +74,18 @@ const STEPS = [
   { title: "Partagez votre lien", text: "Sur Google Maps, Instagram, votre site ou en QR code sur vos tables." },
 ];
 
-const INCLUDED = [
-  "Réservations en ligne illimitées",
-  "0 € de commission",
-  "Placement automatique sur les tables",
-  "Plan de salle 2D & 3D",
-  "Rappels et confirmations par e-mail",
-  "Liste d'attente automatique",
-  "Notifications sur téléphone",
-  "Fiches clients et statistiques",
-  "Carte en ligne avec photos",
-  "Widget + page de réservation",
-  "Bons cadeaux",
-  "Équipe illimitée",
-];
-
 const FAQ = [
   {
     q: "Prenez-vous une commission sur les réservations ?",
     a: "Non, jamais. Que vous receviez 10 ou 2 000 réservations par mois, vous ne payez rien par couvert.",
   },
   {
-    q: "Est-ce vraiment gratuit ? Et après la bêta ?",
-    a: "Oui : pendant la bêta, toutes les fonctionnalités sont gratuites, sans engagement. Aucune carte bancaire n'est demandée, donc rien ne peut vous être prélevé sans votre accord.",
+    q: "Combien coûte Monkomi ?",
+    a: `${price(PRICES.annual)} € par mois en paiement annuel, ou ${price(PRICES.monthly)} € par mois en paiement mensuel, tout compris. Les ${PRICES.founderSeats} premiers restaurants profitent du prix fondateur : ${price(PRICES.founder)} € par mois.`,
+  },
+  {
+    q: "Qu'est-ce que le prix fondateur ?",
+    a: `Une offre réservée aux ${PRICES.founderSeats} premiers restaurants qui rejoignent Monkomi : ${price(PRICES.founder)} € par mois au lieu de ${price(PRICES.annual)} €, avec exactement les mêmes fonctionnalités. Une fois les ${PRICES.founderSeats} places prises, l'offre disparaît.`,
   },
   {
     q: "Je n'ai pas de site web, est-ce que ça marche ?",
@@ -144,7 +135,7 @@ export default function Landing() {
               href="/signup"
               className="rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-700"
             >
-              Essai gratuit
+              Commencer
             </Link>
           </div>
         </nav>
@@ -161,7 +152,7 @@ export default function Landing() {
               style={delay(0)}
             >
               <span className="animate-pulse-dot h-1.5 w-1.5 rounded-full bg-amber-600" />
-              Bêta ouverte : tout est gratuit
+              Prix fondateur : {price(PRICES.founder)} € / mois pour les {PRICES.founderSeats} premiers
               <IconArrow className="h-3 w-3 text-stone-400 transition-transform group-hover:translate-x-0.5" />
             </a>
             <h1
@@ -182,7 +173,7 @@ export default function Landing() {
               </Link>
             </div>
             <ul className="animate-fade-up mt-6 flex flex-wrap justify-center gap-x-5 gap-y-1 text-sm text-stone-500" style={delay(320)}>
-              {["Sans carte bancaire", "Sans engagement", "Prêt en 5 minutes"].map((x) => (
+              {["0 € de commission", "Sans carte bancaire pour commencer", "Prêt en 5 minutes"].map((x) => (
                 <li key={x} className="flex items-center gap-1.5">
                   <IconCheck className="h-4 w-4 text-emerald-600" /> {x}
                 </li>
@@ -442,38 +433,11 @@ export default function Landing() {
           <div className="mx-auto max-w-6xl px-4 sm:px-6">
             <Reveal className="mx-auto max-w-2xl text-center">
               <p className={eyebrow}>Tarifs</p>
-              <h2 className={h2}>Gratuit pendant la bêta. Tout compris.</h2>
-              <p className="mt-4 text-lg text-stone-600">Pas d&apos;options payantes, pas de commission, pas de carte bancaire.</p>
+              <h2 className={h2}>Un prix simple. Tout compris.</h2>
+              <p className="mt-4 text-lg text-stone-600">Pas d&apos;options payantes, pas de commission sur vos couverts.</p>
             </Reveal>
-            <Reveal delay={100}>
-              <div className="mx-auto mt-14 grid max-w-4xl overflow-hidden rounded-3xl bg-white shadow-xl shadow-stone-900/[0.04] ring-1 ring-stone-900/[0.08] md:grid-cols-[1fr_1.3fr]">
-                <div className="flex flex-col p-8 sm:p-10">
-                  <p className="font-medium">Monkomi Bêta</p>
-                  <p className="mt-1 text-sm text-stone-500">Toutes les fonctionnalités, sans limite.</p>
-                  <p className="mt-8 flex items-baseline gap-1">
-                    <span className="text-6xl font-semibold tracking-tight">0 €</span>
-                    <span className="text-stone-500">/ mois</span>
-                  </p>
-                  <p className="mt-1 text-sm text-stone-500">0 € de commission par couvert</p>
-                  <Link
-                    href="/signup"
-                    className="mt-8 block rounded-full bg-amber-700 py-3.5 text-center font-semibold text-white transition hover:bg-amber-600 md:mt-auto"
-                  >
-                    Créer mon restaurant
-                  </Link>
-                  <p className="mt-3 text-center text-xs text-stone-500">Sans carte bancaire · Sans engagement</p>
-                </div>
-                <div className="border-t border-stone-900/[0.06] bg-stone-50/50 p-8 sm:p-10 md:border-t-0 md:border-l">
-                  <p className="text-sm font-medium text-stone-500">Inclus</p>
-                  <ul className="mt-5 grid gap-x-6 gap-y-3 text-[15px] sm:grid-cols-2">
-                    {INCLUDED.map((x) => (
-                      <li key={x} className="flex gap-2.5">
-                        <IconCheck className="mt-1 h-4 w-4 shrink-0 text-amber-700" /> {x}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
+            <Reveal delay={100} className="mt-12">
+              <Pricing />
             </Reveal>
             <Reveal delay={150}>
               <ul className="mx-auto mt-8 flex max-w-4xl flex-wrap justify-center gap-x-8 gap-y-2 text-sm text-stone-500">
@@ -491,7 +455,7 @@ export default function Landing() {
             <p className={eyebrow}>FAQ</p>
             <h2 className={h2}>Vos questions.</h2>
             <p className="mt-4 text-stone-600">
-              Une autre question ? Créez votre compte et explorez : c&apos;est gratuit, et la visite guidée vous montre tout.
+              Une autre question ? Créez votre compte et explorez : la visite guidée vous montre tout.
             </p>
           </Reveal>
           <Reveal delay={100}>
@@ -521,7 +485,8 @@ export default function Landing() {
                   Vos premières réservations en ligne, dès ce soir.
                 </h2>
                 <p className="mx-auto mt-5 max-w-xl text-lg text-stone-400">
-                  5 minutes pour configurer votre restaurant. Gratuit pendant la bêta, sans carte bancaire.
+                  5 minutes pour configurer votre restaurant. Prix fondateur à {price(PRICES.founder)} € par mois, réservé
+                  aux {PRICES.founderSeats} premiers restaurants.
                 </p>
                 <div className="mt-9 w-full max-w-md">
                   <EmailCta id="email-final" dark />

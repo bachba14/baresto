@@ -41,7 +41,7 @@ export function StickyCta() {
         tabIndex={visible ? 0 : -1}
         className="block rounded-xl bg-amber-700 py-3 text-center font-semibold text-white"
       >
-        Créer mon restaurant gratuitement
+        Créer mon restaurant
       </Link>
     </div>
   );

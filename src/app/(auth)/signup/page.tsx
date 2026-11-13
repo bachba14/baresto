@@ -12,7 +12,7 @@ export default function SignupPage() {
   const [state, action, pending] = useActionState(signup, null);
 
   return (
-    <AuthShell title="Créez votre restaurant" subtitle="Gratuit pendant la bêta · sans carte bancaire.">
+    <AuthShell title="Créez votre restaurant" subtitle="Configuration en 5 minutes · sans carte bancaire.">
       {state?.info ? (
         <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5 text-emerald-900">
           <p className="text-2xl">📬</p>
@@ -29,7 +29,7 @@ export default function SignupPage() {
           <SignupFields />
           {state?.error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{state.error}</p>}
           <button disabled={pending} className="w-full rounded-lg bg-amber-700 px-4 py-2.5 font-medium text-white hover:bg-amber-600 disabled:opacity-60">
-            {pending ? "Création…" : "Commencer gratuitement"}
+            {pending ? "Création…" : "Créer mon restaurant"}
           </button>
         </form>
         </>

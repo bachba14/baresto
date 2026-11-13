@@ -22,7 +22,7 @@ export function AuthShell({ title, subtitle, children }: { title: string; subtit
           <p className="text-3xl leading-snug font-semibold">
             Des réservations qui arrivent toutes seules, déjà placées sur la bonne table.
           </p>
-          <p className="mt-4 text-stone-300">Configurez votre restaurant en 5 minutes. Gratuit pendant la bêta.</p>
+          <p className="mt-4 text-stone-300">Configurez votre restaurant en 5 minutes. Zéro commission.</p>
         </div>
       </div>
     </main>
