@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
-import { inputClass, labelClass } from "@/components/admin-styles";
 import { AuthShell } from "../auth-shell";
+import { SignupFields } from "../email-field";
 import { GoogleButton } from "../google-button";
 import { UrlError } from "../url-error";
 import { signup } from "../actions";
@@ -26,15 +26,7 @@ export default function SignupPage() {
         <form action={action} className="mt-4 space-y-4">
           {/* Champ piège anti-robots : invisible, rempli uniquement par les bots. */}
           <input name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden />
-          <label className="block">
-            <span className={labelClass}>E-mail professionnel</span>
-            <input name="email" type="email" required autoComplete="email" className={inputClass} />
-          </label>
-          <label className="block">
-            <span className={labelClass}>Mot de passe</span>
-            <input name="password" type="password" required minLength={8} autoComplete="new-password" className={inputClass} />
-            <span className="text-xs text-stone-500">8 caractères minimum.</span>
-          </label>
+          <SignupFields />
           {state?.error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{state.error}</p>}
           <button disabled={pending} className="w-full rounded-lg bg-amber-700 px-4 py-2.5 font-medium text-white hover:bg-amber-600 disabled:opacity-60">
             {pending ? "Création…" : "Commencer gratuitement"}
