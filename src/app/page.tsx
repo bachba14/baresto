@@ -34,7 +34,7 @@ import { StickyCta } from "@/components/landing/sticky-cta";
 export const metadata: Metadata = {
   title: { absolute: "Monkomi — Réservations en ligne sans commission pour restaurants" },
   description:
-    "Recevez des réservations 24h/24, placées automatiquement sur la bonne table. Zéro commission, zéro surbooking, plan de salle 2D/3D, rappels e-mail. Dès 24,99 € par mois, tout compris.",
+    "Recevez des réservations 24h/24, placées automatiquement sur la bonne table. Zéro commission, zéro surbooking, plan de salle 2D/3D, rappels e-mail. Dès 24,99 € HT par mois, tout compris.",
 };
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "https://monkomi.be";
@@ -81,11 +81,11 @@ const FAQ = [
   },
   {
     q: "Combien coûte Monkomi ?",
-    a: `${price(PRICES.annual)} € par mois en paiement annuel, ou ${price(PRICES.monthly)} € par mois en paiement mensuel, tout compris. Les ${PRICES.founderSeats} premiers restaurants profitent du prix fondateur : ${price(PRICES.founder)} € par mois.`,
+    a: `${price(PRICES.annual)} € HT par mois en paiement annuel, ou ${price(PRICES.monthly)} € HT par mois en paiement mensuel, tout compris. Les ${PRICES.founderSeats} premiers restaurants profitent du prix fondateur : ${price(PRICES.founder)} € HT par mois, payé à l'année.`,
   },
   {
     q: "Qu'est-ce que le prix fondateur ?",
-    a: `Une offre réservée aux ${PRICES.founderSeats} premiers restaurants qui rejoignent Monkomi : ${price(PRICES.founder)} € par mois au lieu de ${price(PRICES.annual)} €, avec exactement les mêmes fonctionnalités. Une fois les ${PRICES.founderSeats} places prises, l'offre disparaît.`,
+    a: `Une offre réservée aux ${PRICES.founderSeats} premiers restaurants qui rejoignent Monkomi : ${price(PRICES.founder)} € HT par mois au lieu de ${price(PRICES.annual)} €, payé à l'année (${price(PRICES.founder * 12)} € HT par an), avec exactement les mêmes fonctionnalités. Ce prix vous est garanti à vie. Une fois les ${PRICES.founderSeats} places prises, l'offre disparaît.`,
   },
   {
     q: "Je n'ai pas de site web, est-ce que ça marche ?",
@@ -152,7 +152,7 @@ export default function Landing() {
               style={delay(0)}
             >
               <span className="animate-pulse-dot h-1.5 w-1.5 rounded-full bg-amber-600" />
-              Prix fondateur : {price(PRICES.founder)} € / mois pour les {PRICES.founderSeats} premiers
+              Prix fondateur garanti à vie : {price(PRICES.founder)} € HT / mois
               <IconArrow className="h-3 w-3 text-stone-400 transition-transform group-hover:translate-x-0.5" />
             </a>
             <h1
@@ -485,7 +485,7 @@ export default function Landing() {
                   Vos premières réservations en ligne, dès ce soir.
                 </h2>
                 <p className="mx-auto mt-5 max-w-xl text-lg text-stone-400">
-                  5 minutes pour configurer votre restaurant. Prix fondateur à {price(PRICES.founder)} € par mois, réservé
+                  5 minutes pour configurer votre restaurant. Prix fondateur à {price(PRICES.founder)} € HT par mois garanti à vie, réservé
                   aux {PRICES.founderSeats} premiers restaurants.
                 </p>
                 <div className="mt-9 w-full max-w-md">

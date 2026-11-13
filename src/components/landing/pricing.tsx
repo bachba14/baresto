@@ -68,10 +68,14 @@ export function Pricing() {
             <p className="mt-1 text-sm text-stone-400">Pour les {PRICES.founderSeats} premiers restaurants.</p>
             <p className="mt-8 flex items-baseline gap-1.5">
               <span className="text-5xl font-semibold tracking-tight tabular-nums sm:text-6xl">{price(PRICES.founder)} €</span>
-              <span className="text-stone-400">/ mois</span>
+              <span className="text-stone-400">HT / mois</span>
             </p>
             <p className="mt-1 text-sm text-stone-400">
-              au lieu de <span className="line-through">{price(PRICES.annual)} €</span>, tout compris
+              facturé {price(PRICES.founder * 12)} € HT par an, au lieu de{" "}
+              <span className="line-through">{price(PRICES.annual * 12)} €</span>
+            </p>
+            <p className="mt-5 flex items-center gap-2 text-sm font-medium text-amber-300">
+              <IconCheck className="h-4 w-4" /> Prix garanti à vie
             </p>
             <Link
               href="/signup"
@@ -88,10 +92,10 @@ export function Pricing() {
           <p className="mt-1 text-sm text-stone-500">Toutes les fonctionnalités, sans limite.</p>
           <p className="mt-8 flex items-baseline gap-1.5">
             <span className="text-5xl font-semibold tracking-tight tabular-nums sm:text-6xl">{price(standard)} €</span>
-            <span className="text-stone-500">/ mois</span>
+            <span className="text-stone-500">HT / mois</span>
           </p>
           <p className="mt-1 text-sm text-stone-500" aria-live="polite">
-            {annual ? `facturé ${price(PRICES.annual * 12)} € par an` : "facturé chaque mois"}
+            {annual ? `facturé ${price(PRICES.annual * 12)} € HT par an` : "facturé chaque mois"}
           </p>
           <Link
             href="/signup"
